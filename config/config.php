@@ -27,7 +27,8 @@ return [
 
     "tables" => [
         'category' => 'categories',
-        'category_path' => 'category_paths'
+        'category_path' => 'category_paths',
+        'category_relation' => 'category_relations'
     ],
 
 ];
