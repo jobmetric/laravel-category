@@ -15,6 +15,8 @@ return new class extends Migration {
         Schema::create(config('category.tables.category'), function (Blueprint $table) {
             $table->id();
 
+            $table->string('slug')->nullable()->index();
+
             $table->unsignedBigInteger('parent_id')->index();
             /**
              * The parent_id field is used to store the parent category ID.
@@ -43,6 +45,8 @@ return new class extends Migration {
              */
 
             $table->timestamps();
+
+            $table->unique(['slug', 'type'], 'CATEGORY_SLUG_TYPE_UNIQUE');
         });
 
         cache()->forget('category');
