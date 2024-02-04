@@ -4,6 +4,7 @@ namespace JobMetric\Category\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * JobMetric\Category\Models\CategoryPath
@@ -40,5 +41,25 @@ class CategoryPath extends Model
     public function getTable()
     {
         return config('category.tables.category_path', parent::getTable());
+    }
+
+    /**
+     * Get the category that owns the path.
+     *
+     * @return BelongsTo
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'category_id');
+    }
+
+    /**
+     * Get the path that owns the category.
+     * 
+     * @return BelongsTo
+     */
+    public function path(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'path_id');
     }
 }
