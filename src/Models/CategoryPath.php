@@ -55,7 +55,7 @@ class CategoryPath extends Model
 
     /**
      * Get the path that owns the category.
-     * 
+     *
      * @return BelongsTo
      */
     public function path(): BelongsTo
