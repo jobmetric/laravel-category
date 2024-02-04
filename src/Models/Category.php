@@ -13,6 +13,8 @@ use JobMetric\Translation\HasTranslation;
  * JobMetric\Category\Models\Category
  *
  * @property int id
+ * @property int slug
+ * @property int parent_id
  * @property int type
  * @property int ordering
  * @property int status
@@ -23,6 +25,7 @@ class Category extends Model
     use HasFactory, HasTranslation;
 
     protected $fillable = [
+        'slug',
         'parent_id',
         'type',
         'ordering',
