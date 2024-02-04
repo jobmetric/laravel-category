@@ -5,6 +5,7 @@ namespace JobMetric\Category\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use JobMetric\Translation\HasTranslation;
 
 /**
  * JobMetric\Category\Models\Category
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Category extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTranslation;
 
     protected $fillable = [
         'parent_id',
