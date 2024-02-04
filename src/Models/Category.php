@@ -5,6 +5,8 @@ namespace JobMetric\Category\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use JobMetric\Translation\HasTranslation;
 
 /**
@@ -59,5 +61,35 @@ class Category extends Model
     public function scopeOfType(Builder $query, string $type): Builder
     {
         return $query->where('type', $type);
+    }
+
+    /**
+     * Get the parent category.
+     *
+     * @return HasMany
+     */
+    public function children(): HasMany
+    {
+        return $this->hasMany(Category::class, 'parent_id', 'id');
+    }
+
+    /**
+     * Get the parent category.
+     *
+     * @return BelongsTo
+     */
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'parent_id');
+    }
+
+    /**
+     * Get the paths of the category.
+     *
+     * @return HasMany
+     */
+    public function paths(): HasMany
+    {
+        return $this->hasMany(CategoryPath::class, 'category_id');
     }
 }
