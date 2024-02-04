@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use JobMetric\Translation\Contracts\TranslationContract;
 use JobMetric\Translation\HasTranslation;
 
 /**
@@ -20,7 +21,7 @@ use JobMetric\Translation\HasTranslation;
  * @property int status
  * @property int semaphore
  */
-class Category extends Model
+class Category extends Model implements TranslationContract
 {
     use HasFactory, HasTranslation;
 
@@ -51,6 +52,17 @@ class Category extends Model
     public function getTable()
     {
         return config('category.tables.category', parent::getTable());
+    }
+
+    public function translationAllowFields(): array
+    {
+        return [
+            'title',
+            'body',
+            'meta_title',
+            'meta_description',
+            'meta_keywords',
+        ];
     }
 
     /**
