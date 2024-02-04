@@ -20,12 +20,27 @@ class CategoryFactory extends Factory
     public function definition(): array
     {
         return [
+            'slug' => null,
             'parent_id' => 0,
             'type' => null,
             'ordering' => 0,
             'status' => true,
             'semaphore' => null,
         ];
+    }
+
+    /**
+     * set slug
+     *
+     * @param string $slug
+     *
+     * @return static
+     */
+    public function setSlug(string $slug): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'slug' => $slug
+        ]);
     }
 
     /**
