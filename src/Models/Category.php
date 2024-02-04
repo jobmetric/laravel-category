@@ -51,6 +51,19 @@ class Category extends Model
     }
 
     /**
+     * Scope a query to only include categories of a given slug.
+     *
+     * @param Builder $query
+     * @param string $slug
+     *
+     * @return Builder
+     */
+    public function scopeOfSlug(Builder $query, string $slug): Builder
+    {
+        return $query->where('slug', $slug);
+    }
+
+    /**
      * Scope a query to only include categories of a given type.
      *
      * @param Builder $query
