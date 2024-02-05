@@ -19,6 +19,9 @@ class CategoryPath extends Model
 {
     use HasFactory;
 
+    const CREATED_AT = null;
+    const UPDATED_AT = null;
+
     protected $fillable = [
         'type',
         'category_id',
