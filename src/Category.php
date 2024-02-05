@@ -3,6 +3,11 @@
 namespace JobMetric\Category;
 
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Support\Str;
+use JobMetric\Category\Http\Requests\StoreCategoryRequest;
+use JobMetric\Category\Models\Category as CategoryModel;
+use JobMetric\Category\Models\CategoryPath;
+use Throwable;
 
 class Category
 {
@@ -21,5 +26,50 @@ class Category
     public function __construct(Application $app)
     {
         $this->app = $app;
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param StoreCategoryRequest $request
+     * @return CategoryModel
+     * @throws Throwable
+     */
+    public function store(array $data): CategoryModel
+    {
+        $category = new CategoryModel;
+        $category->slug = Str::slug($data['slug'] ?? null);
+        $category->parent_id = $data['parent_id'] ?? 0;
+        $category->type = $data['type'] ?? 'category';
+        $category->ordering = $data['ordering'] ?? 0;
+        $category->status = $data['status'] ?? true;
+        $category->save();
+
+        foreach ($data['translations'] ?? [] as $locale => $value) {
+            $category->translate($locale, $value);
+        }
+
+        $level = 0;
+
+        $paths = CategoryPath::query()->where([
+            'category_id' => $category->parent_id,
+            'type' => $category->type
+        ])->orderBy('level')->get()->toArray();
+
+        $paths[] = last($paths);
+        $paths[count($paths) - 1]['path_id'] = $category->id;
+
+        foreach ($paths as $path) {
+            $categoryPath = new CategoryPath;
+            $categoryPath->type = $category->type;
+            $categoryPath->category_id = $category->id;
+            $categoryPath->path_id = $path['path_id'];
+            $categoryPath->level = $level++;
+            $categoryPath->save();
+
+            unset($categoryPath);
+        }
+
+        return $category;
     }
 }

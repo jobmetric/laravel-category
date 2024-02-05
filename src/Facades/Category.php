@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @see \JobMetric\Category\Category
+ *
+ * @method static \JobMetric\Category\Models\Category store(\JobMetric\Category\Http\Requests\StoreCategoryRequest $request)
  */
 class Category extends Facade
 {
