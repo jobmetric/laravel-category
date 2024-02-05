@@ -40,6 +40,7 @@ class Category extends Model implements TranslationContract
      * @var array<string, string>
      */
     protected $casts = [
+        'slug' => 'string',
         'parent_id' => 'integer',
         'type' => 'string',
         'ordering' => 'integer',
