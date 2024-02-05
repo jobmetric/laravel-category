@@ -17,7 +17,7 @@ return new class extends Migration {
 
             $table->string('slug')->nullable()->index();
 
-            $table->unsignedBigInteger('parent_id')->index();
+            $table->unsignedBigInteger('parent_id')->default(0)->index();
             /**
              * The parent_id field is used to store the parent category ID.
              * If the parent_id field is 0, it means that the category is a top-level category.
