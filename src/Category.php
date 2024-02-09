@@ -3,6 +3,7 @@
 namespace JobMetric\Category;
 
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use JobMetric\Category\Http\Requests\StoreCategoryRequest;
 use JobMetric\Category\Models\Category as CategoryModel;
@@ -31,12 +32,23 @@ class Category
     /**
      * Store a newly created resource in storage.
      *
-     * @param StoreCategoryRequest $request
-     * @return CategoryModel
+     * @param array $data
+     * @return array
      * @throws Throwable
      */
-    public function store(array $data): CategoryModel
+    public function store(array $data): array
     {
+        $validator = Validator::make($data, app(StoreCategoryRequest::class)->rules());
+        if ($validator->fails()) {
+            $errors = $validator->errors()->all();
+
+            return [
+                'ok' => false,
+                'message' => trans('category::base.validation'),
+                'errors' => $errors
+            ];
+        }
+
         $category = new CategoryModel;
         $category->slug = Str::slug($data['slug'] ?? null);
         $category->parent_id = $data['parent_id'] ?? 0;
