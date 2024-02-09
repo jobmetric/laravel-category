@@ -21,6 +21,7 @@ class CategoryServiceProvider extends PackageCoreServiceProvider
         $package->name('laravel-category')
             ->hasConfig()
             ->hasMigration()
+            ->hasTranslation()
             ->registerClass('Category', Category::class);
     }
 }
