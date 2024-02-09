@@ -23,14 +23,14 @@ class StoreCategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'slug' => 'nullable|string',
+            'slug' => 'string|nullable',
             'parent_id' => 'integer',
             'type' => 'string',
             'ordering' => 'integer',
             'status' => 'boolean',
 
-            'translations' => 'required|array',
-            'translations.*.title' => 'required|string',
+            'translations' => 'array',
+            'translations.*.title' => 'string|required',
             'translations.*.body' => 'string|nullable',
             'translations.*.meta_title' => 'string|nullable',
             'translations.*.meta_description' => 'string|nullable',
