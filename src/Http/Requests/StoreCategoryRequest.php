@@ -4,9 +4,12 @@ namespace JobMetric\Category\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use JobMetric\Category\Rules\CheckSlugInTypeRule;
 
 class StoreCategoryRequest extends FormRequest
 {
+    public array $data = [];
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -22,8 +25,18 @@ class StoreCategoryRequest extends FormRequest
      */
     public function rules(): array
     {
+        if(empty($this->data)) {
+            $type = $this->input('type');
+        } else {
+            $type = $this->data['type'] ?? null;
+        }
+
         return [
-            'slug' => 'string|nullable',
+            'slug' => [
+                'string',
+                'nullable',
+                new CheckSlugInTypeRule($type)
+            ],
             'parent_id' => 'integer',
             'type' => 'string',
             'ordering' => 'integer',
@@ -36,5 +49,12 @@ class StoreCategoryRequest extends FormRequest
             'translations.*.meta_description' => 'string|nullable',
             'translations.*.meta_keywords' => 'string|nullable',
         ];
+    }
+
+    public function setData(array $data): static
+    {
+        $this->data = $data;
+
+        return $this;
     }
 }

@@ -12,6 +12,13 @@ return [
     |
     */
 
-    'validation' => 'Validation errors occurred.',
+    'validation' => [
+        'errors' => 'Validation errors occurred.',
+        'slug_in_type' => 'The slug already exists in type (:type).',
+    ],
+
+    'messages' => [
+        'created' => 'The category was created successfully.',
+    ],
 
 ];

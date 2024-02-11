@@ -38,13 +38,13 @@ class Category
      */
     public function store(array $data): array
     {
-        $validator = Validator::make($data, app(StoreCategoryRequest::class)->rules());
+        $validator = Validator::make($data, (new StoreCategoryRequest)->setData($data)->rules());
         if ($validator->fails()) {
             $errors = $validator->errors()->all();
 
             return [
                 'ok' => false,
-                'message' => trans('category::base.validation'),
+                'message' => trans('category::base.validation.errors'),
                 'errors' => $errors
             ];
         }
@@ -82,6 +82,10 @@ class Category
             unset($categoryPath);
         }
 
-        return $category;
+        return [
+            'ok' => true,
+            'message' => trans('category::base.messages.created'),
+            'data' => $category
+        ];
     }
 }
