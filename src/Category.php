@@ -3,6 +3,7 @@
 namespace JobMetric\Category;
 
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use JobMetric\Category\Http\Requests\StoreCategoryRequest;
@@ -49,43 +50,45 @@ class Category
             ];
         }
 
-        $category = new CategoryModel;
-        $category->slug = Str::slug($data['slug'] ?? null);
-        $category->parent_id = $data['parent_id'] ?? 0;
-        $category->type = $data['type'] ?? 'category';
-        $category->ordering = $data['ordering'] ?? 0;
-        $category->status = $data['status'] ?? true;
-        $category->save();
+        return DB::transaction(function () use ($data) {
+            $category = new CategoryModel;
+            $category->slug = Str::slug($data['slug'] ?? null);
+            $category->parent_id = $data['parent_id'] ?? 0;
+            $category->type = $data['type'] ?? 'category';
+            $category->ordering = $data['ordering'] ?? 0;
+            $category->status = $data['status'] ?? true;
+            $category->save();
 
-        foreach ($data['translations'] ?? [] as $locale => $value) {
-            $category->translate($locale, $value);
-        }
+            foreach ($data['translations'] ?? [] as $locale => $value) {
+                $category->translate($locale, $value);
+            }
 
-        $level = 0;
+            $level = 0;
 
-        $paths = CategoryPath::query()->where([
-            'category_id' => $category->parent_id,
-            'type' => $category->type
-        ])->orderBy('level')->get()->toArray();
+            $paths = CategoryPath::query()->where([
+                'category_id' => $category->parent_id,
+                'type' => $category->type
+            ])->orderBy('level')->get()->toArray();
 
-        $paths[] = last($paths);
-        $paths[count($paths) - 1]['path_id'] = $category->id;
+            $paths[] = last($paths);
+            $paths[count($paths) - 1]['path_id'] = $category->id;
 
-        foreach ($paths as $path) {
-            $categoryPath = new CategoryPath;
-            $categoryPath->type = $category->type;
-            $categoryPath->category_id = $category->id;
-            $categoryPath->path_id = $path['path_id'];
-            $categoryPath->level = $level++;
-            $categoryPath->save();
+            foreach ($paths as $path) {
+                $categoryPath = new CategoryPath;
+                $categoryPath->type = $category->type;
+                $categoryPath->category_id = $category->id;
+                $categoryPath->path_id = $path['path_id'];
+                $categoryPath->level = $level++;
+                $categoryPath->save();
 
-            unset($categoryPath);
-        }
+                unset($categoryPath);
+            }
 
-        return [
-            'ok' => true,
-            'message' => trans('category::base.messages.created'),
-            'data' => $category
-        ];
+            return [
+                'ok' => true,
+                'message' => trans('category::base.messages.created'),
+                'data' => $category
+            ];
+        });
     }
 }

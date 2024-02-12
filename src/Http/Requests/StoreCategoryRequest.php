@@ -4,6 +4,7 @@ namespace JobMetric\Category\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use JobMetric\Category\Rules\CategoryExistRule;
 use JobMetric\Category\Rules\CheckSlugInTypeRule;
 
 class StoreCategoryRequest extends FormRequest
@@ -37,7 +38,10 @@ class StoreCategoryRequest extends FormRequest
                 'nullable',
                 new CheckSlugInTypeRule($type)
             ],
-            'parent_id' => 'integer',
+            'parent_id' => [
+                'integer',
+                new CategoryExistRule($type)
+            ],
             'type' => 'string',
             'ordering' => 'integer',
             'status' => 'boolean',

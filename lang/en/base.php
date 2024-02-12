@@ -15,6 +15,7 @@ return [
     'validation' => [
         'errors' => 'Validation errors occurred.',
         'slug_in_type' => 'The slug already exists in type (:type).',
+        'category_exist' => 'The category does not exist in type (:type).',
     ],
 
     'messages' => [
