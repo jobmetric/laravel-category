@@ -15,7 +15,8 @@ class CheckSlugInTypeRule implements ValidationRule
      * @return void
      */
     public function __construct(
-        private readonly string $type
+        private readonly string|null $type,
+        private readonly int|null $category_id = null
     )
     {
     }
@@ -27,6 +28,20 @@ class CheckSlugInTypeRule implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
+        if(is_null($this->type)) {
+            $fail(__('category::base.validation.type_required'));
+
+            return;
+        }
+
+        if($this->category_id) {
+            if (Category::query()->where('slug', $value)->where('type', $this->type)->where('id', '!=', $this->category_id)->exists()) {
+                $fail(__('category::base.validation.slug_in_type', ['type' => $this->type]));
+            }
+
+            return;
+        }
+
         if (Category::query()->where('slug', $value)->where('type', $this->type)->exists()) {
             $fail(__('category::base.validation.slug_in_type', ['type' => $this->type]));
         }
