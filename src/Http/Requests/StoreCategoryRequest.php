@@ -55,6 +55,12 @@ class StoreCategoryRequest extends FormRequest
         ];
     }
 
+    /**
+     * Set data for validation
+     *
+     * @param array $data
+     * @return static
+     */
     public function setData(array $data): static
     {
         $this->data = $data;
