@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Facade;
 /**
  * @see \JobMetric\Category\Category
  *
- * @method static \JobMetric\Category\Models\Category store(array $request)
+ * @method static array store(array $request)
  */
 class Category extends Facade
 {
