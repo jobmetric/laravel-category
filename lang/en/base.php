@@ -23,6 +23,7 @@ return [
     'messages' => [
         'created' => 'The category was created successfully.',
         'updated' => 'The category was updated successfully.',
+        'deleted' => 'The category was deleted successfully.',
     ],
 
 ];

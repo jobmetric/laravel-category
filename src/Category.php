@@ -6,6 +6,7 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use JobMetric\Category\Events\Category\CategoryDeleteEvent;
 use JobMetric\Category\Events\Category\CategoryStoreEvent;
 use JobMetric\Category\Events\Category\CategoryUpdateEvent;
 use JobMetric\Category\Http\Requests\StoreCategoryRequest;
@@ -34,7 +35,7 @@ class Category
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store the specified category.
      *
      * @param array $data
      * @return array
@@ -98,7 +99,7 @@ class Category
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified category.
      *
      * @param int $category_id
      * @param array $data
@@ -254,6 +255,62 @@ class Category
                 'ok' => true,
                 'message' => trans('category::base.messages.updated'),
                 'data' => $category
+            ];
+        });
+    }
+
+    /**
+     * Delete the specified category.
+     *
+     * @param int $category_id
+     * @param string $type
+     * @return array
+     */
+    public function delete(int $category_id, string $type = 'category'): array
+    {
+        return DB::transaction(function () use ($category_id, $type) {
+            /**
+             * @var CategoryModel $category
+             */
+            $category = CategoryModel::query()->where([
+                'id' => $category_id,
+                'type' => $type
+            ])->first();
+
+            if (!$category) {
+                return [
+                    'ok' => false,
+                    'message' => trans('category::base.validation.errors'),
+                    'errors' => [
+                        trans('category::base.validation.category_not_found')
+                    ]
+                ];
+            }
+
+            CategoryPath::query()->where([
+                'type' => $type,
+                'category_id' => $category_id
+            ])->get()->each(function ($item) {
+                $item->delete();
+            });
+
+            $paths = CategoryPath::query()->where([
+                'type' => $type,
+                'path_id' => $category_id
+            ])->get()->toArray();
+
+            foreach ($paths as $path) {
+                self::delete($path['category_id'], $type);
+            }
+
+            event(new CategoryDeleteEvent($category));
+
+            $category->forgetTranslations();
+            $category->delete();
+
+            return [
+                'ok' => true,
+                'message' => trans('category::base.messages.deleted')
             ];
         });
     }
