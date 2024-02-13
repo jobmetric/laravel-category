@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use JobMetric\Category\Events\Category\CategoryStoreEvent;
+use JobMetric\Category\Events\Category\CategoryUpdateEvent;
 use JobMetric\Category\Http\Requests\StoreCategoryRequest;
 use JobMetric\Category\Http\Requests\UpdateCategoryRequest;
 use JobMetric\Category\Models\Category as CategoryModel;
@@ -247,7 +248,7 @@ class Category
                 }
             }
 
-            // @todo: add event
+            event(new CategoryUpdateEvent($category, $data, $change_parent_id));
 
             return [
                 'ok' => true,
