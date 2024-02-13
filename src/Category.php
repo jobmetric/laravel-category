@@ -6,6 +6,7 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use JobMetric\Category\Events\Category\CategoryStoreEvent;
 use JobMetric\Category\Http\Requests\StoreCategoryRequest;
 use JobMetric\Category\Http\Requests\UpdateCategoryRequest;
 use JobMetric\Category\Models\Category as CategoryModel;
@@ -85,7 +86,7 @@ class Category
                 unset($categoryPath);
             }
 
-            // @todo: add event
+            event(new CategoryStoreEvent($category, $data));
 
             return [
                 'ok' => true,
@@ -125,7 +126,7 @@ class Category
                 'type' => $type
             ])->first();
 
-            if(!$category) {
+            if (!$category) {
                 return [
                     'ok' => false,
                     'message' => trans('category::base.validation.errors'),
@@ -160,13 +161,13 @@ class Category
                 $category->translate($locale, $value);
             }
 
-            if($change_parent_id) {
+            if ($change_parent_id) {
                 $paths = CategoryPath::query()->where([
                     'type' => $type,
                     'path_id' => $category_id,
                 ])->orderBy('level')->get()->toArray();
 
-                if(empty($paths)) {
+                if (empty($paths)) {
                     CategoryPath::query()->where([
                         'type' => $type,
                         'category_id' => $category_id,
@@ -178,7 +179,7 @@ class Category
                     $level = 0;
 
                     $paths = CategoryPath::query()->where([
-                        'type'   => $type,
+                        'type' => $type,
                         'category_id' => $category->parent_id,
                     ])->orderBy('level')->get()->toArray();
 
