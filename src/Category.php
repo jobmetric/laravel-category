@@ -13,6 +13,7 @@ use JobMetric\Category\Http\Requests\StoreCategoryRequest;
 use JobMetric\Category\Http\Requests\UpdateCategoryRequest;
 use JobMetric\Category\Models\Category as CategoryModel;
 use JobMetric\Category\Models\CategoryPath;
+use JobMetric\Translation\Models\Translation;
 use Throwable;
 
 class Category
@@ -313,5 +314,54 @@ class Category
                 'message' => trans('category::base.messages.deleted')
             ];
         });
+    }
+
+    public function getCategoryName(int $category_id, string $locale = 'en', string $type = 'category'): string|array
+    {
+        /**
+         * @var CategoryModel $category
+         */
+        $category = CategoryModel::query()->where([
+            'id' => $category_id,
+            'type' => $type
+        ])->first();
+
+        if (!$category) {
+            return [
+                'ok' => false,
+                'message' => trans('category::base.validation.errors'),
+                'errors' => [
+                    trans('category::base.validation.category_not_found')
+                ]
+            ];
+        }
+
+        $_category = new CategoryModel;
+        $_category_path = new CategoryPath;
+        $_category_translation = new Translation;
+
+        $query = DB::table($_category_path->getTable() . ' as cp');
+
+        $query->selectRaw("string_agg('ct1.name ORDER BY cp.level', '»') as name");
+
+        $query->join($_category->getTable() . ' as c1', 'cp.category_id', '=', 'c1.id');
+        $query->join($_category->getTable() . ' as c2', 'cp.path_id', '=', 'c2.id');
+        $query->join($_category_translation->getTable() . ' as ct1', 'cp.path_id', '=', 'ct1.category_id');
+        $query->join($_category_translation->getTable() . ' as ct2', 'cp.category_id', '=', 'ct2.category_id');
+
+        $query->where([
+            'ct1.language_id' => $locale,
+            'ct2.language_id' => $locale,
+
+            'cp.type' => $type,
+            'c1.type' => $type,
+            'c2.type' => $type,
+        ]);
+
+        echo '<pre dir="ltr">';
+        var_dump(queryToSql($query));
+        echo '</pre>';
+        die;
+        
     }
 }

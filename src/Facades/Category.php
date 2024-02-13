@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static array store(array $data)
  * @method static array update(int $category_id, array $data, string $type = 'category')
  * @method static array delete(int $category_id, string $type = 'category')
+ * @method static string getCategoryName(int $category_id, string $locale = 'en', string $type = 'category')
  */
 class Category extends Facade
 {
