@@ -342,26 +342,41 @@ class Category
 
         $query = DB::table($_category_path->getTable() . ' as cp');
 
-        $query->selectRaw("string_agg('ct1.name ORDER BY cp.level', '»') as name");
+        //$query->selectRaw("string_agg('ct1.name ORDER BY cp.level', '»') as name");
+        $query->selectSub("SELECT GROUP_CONCAT(`" . DB::getTablePrefix() . "ct1` . `value` ORDER BY `" . DB::getTablePrefix() . "cp` . `LEVEL` SEPARATOR '  »  ' )", "name");
 
-        $query->join($_category->getTable() . ' as c1', 'cp.category_id', '=', 'c1.id');
-        $query->join($_category->getTable() . ' as c2', 'cp.path_id', '=', 'c2.id');
-        $query->join($_category_translation->getTable() . ' as ct1', 'cp.path_id', '=', 'ct1.category_id');
-        $query->join($_category_translation->getTable() . ' as ct2', 'cp.category_id', '=', 'ct2.category_id');
+        $query->join($_category->getTable() . ' as c1', function ($q) {
+            $q->on('cp.category_id', '=', 'c1.id');
+            $q->on('c1.type', '=', 'cp.type');
+        });
+        $query->join($_category->getTable() . ' as c2', function ($q) {
+            $q->on('cp.path_id', '=', 'c2.id');
+            $q->on('c2.type', '=', 'cp.type');
+        });
+
+        $query->join($_category_translation->getTable() . ' as ct1', function ($q) use ($_category, $locale) {
+            $q->on('cp.path_id', '=', 'ct1.translatable_id')
+                ->on('ct1.translatable_type', '=', DB::raw("'" . str_replace('\\', '\\\\', get_class($_category)) . "'"))
+                ->on('ct1.locale', '=', DB::raw("'" . $locale . "'"))
+                ->on('ct1.key', '=', DB::raw("'title'"));
+        });
+
+        $query->join($_category_translation->getTable() . ' as ct2', function ($q) use ($_category, $locale) {
+            $q->on('c2.id', '=', 'ct2.translatable_id')
+                ->on('ct2.translatable_type', '=', DB::raw("'" . str_replace('\\', '\\\\', get_class($_category)) . "'"))
+                ->on('ct2.locale', '=', DB::raw("'" . $locale . "'"))
+                ->on('ct2.key', '=', DB::raw("'title'"));
+        });
 
         $query->where([
-            'ct1.language_id' => $locale,
-            'ct2.language_id' => $locale,
-
             'cp.type' => $type,
-            'c1.type' => $type,
-            'c2.type' => $type,
+            'cp.category_id' => $category_id,
         ]);
 
-        echo '<pre dir="ltr">';
-        var_dump(queryToSql($query));
-        echo '</pre>';
-        die;
-        
+        $query->groupBy('cp.category_id');
+
+        $result = $query->first();
+
+        return $result->name;
     }
 }
