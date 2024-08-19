@@ -20,39 +20,11 @@ class CategoryRelationFactory extends Factory
     public function definition(): array
     {
         return [
-            'relatable_type' => null,
-            'relatable_id' => null,
             'category_id' => null,
+            'categorizable_type' => null,
+            'categorizable_id' => null,
             'collection' => null,
         ];
-    }
-
-    /**
-     * set relatable type
-     *
-     * @param string $relatable_type
-     *
-     * @return static
-     */
-    public function setRelatableType(string $relatable_type): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'relatable_type' => $relatable_type,
-        ]);
-    }
-
-    /**
-     * set relatable id
-     *
-     * @param int $relatable_id
-     *
-     * @return static
-     */
-    public function setRelatableId(int $relatable_id): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'relatable_id' => $relatable_id,
-        ]);
     }
 
     /**
@@ -66,6 +38,22 @@ class CategoryRelationFactory extends Factory
     {
         return $this->state(fn(array $attributes) => [
             'category_id' => $category_id,
+        ]);
+    }
+
+    /**
+     * set categorizable
+     *
+     * @param string $categorizable_type
+     * @param int $categorizable_id
+     *
+     * @return static
+     */
+    public function setCategorizable(string $categorizable_type, int $categorizable_id): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'categorizable_type' => $categorizable_type,
+            'categorizable_id' => $categorizable_id,
         ]);
     }
 

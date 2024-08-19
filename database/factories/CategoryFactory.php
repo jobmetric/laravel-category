@@ -20,26 +20,24 @@ class CategoryFactory extends Factory
     public function definition(): array
     {
         return [
-            'slug' => null,
-            'parent_id' => 0,
             'type' => null,
+            'parent_id' => 0,
             'ordering' => 0,
-            'status' => true,
-            'semaphore' => null,
+            'status' => true
         ];
     }
 
     /**
-     * set slug
+     * set type
      *
-     * @param string $slug
+     * @param string $type
      *
      * @return static
      */
-    public function setSlug(string $slug): static
+    public function setType(string $type): static
     {
         return $this->state(fn(array $attributes) => [
-            'slug' => $slug
+            'type' => $type
         ]);
     }
 
@@ -54,20 +52,6 @@ class CategoryFactory extends Factory
     {
         return $this->state(fn(array $attributes) => [
             'parent_id' => $parent_id
-        ]);
-    }
-
-    /**
-     * set type
-     *
-     * @param string $type
-     *
-     * @return static
-     */
-    public function setType(string $type): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'type' => $type
         ]);
     }
 
@@ -96,24 +80,6 @@ class CategoryFactory extends Factory
     {
         return $this->state(fn(array $attributes) => [
             'status' => $status
-        ]);
-    }
-
-    /**
-     * set semaphore
-     *
-     * @param int $user_id
-     * @param string $datetime
-     *
-     * @return static
-     */
-    public function setSemaphore(int $user_id, string $datetime): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'semaphore' => [
-                'user_id' => $user_id,
-                'datetime' => $datetime
-            ]
         ]);
     }
 }
