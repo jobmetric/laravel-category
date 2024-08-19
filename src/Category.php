@@ -6,11 +6,12 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use JobMetric\Category\Events\Category\CategoryDeleteEvent;
-use JobMetric\Category\Events\Category\CategoryStoreEvent;
-use JobMetric\Category\Events\Category\CategoryUpdateEvent;
+use JobMetric\Category\Events\CategoryDeleteEvent;
+use JobMetric\Category\Events\CategoryStoreEvent;
+use JobMetric\Category\Events\CategoryUpdateEvent;
 use JobMetric\Category\Http\Requests\StoreCategoryRequest;
 use JobMetric\Category\Http\Requests\UpdateCategoryRequest;
+use JobMetric\Category\Http\Resources\CategoryResource;
 use JobMetric\Category\Models\Category as CategoryModel;
 use JobMetric\Category\Models\CategoryPath;
 use JobMetric\Translation\Models\Translation;
@@ -44,39 +45,45 @@ class Category
      */
     public function store(array $data): array
     {
-        $validator = Validator::make($data, (new StoreCategoryRequest)->setData($data)->rules());
+        $validator = Validator::make($data, (new StoreCategoryRequest)->setType($data['type'] ?? null)->setParentId($data['parent_id'] ?? null)->rules());
         if ($validator->fails()) {
             $errors = $validator->errors()->all();
 
             return [
                 'ok' => false,
                 'message' => trans('category::base.validation.errors'),
-                'errors' => $errors
+                'errors' => $errors,
+                'status' => 422
             ];
+        } else {
+            $data = $validator->validated();
         }
 
         return DB::transaction(function () use ($data) {
             $category = new CategoryModel;
-            $category->slug = Str::slug($data['slug'] ?? null);
-            $category->parent_id = $data['parent_id'] ?? 0;
-            $category->type = $data['type'] ?? 'category';
-            $category->ordering = $data['ordering'] ?? 0;
-            $category->status = $data['status'] ?? true;
+            $category->type = $data['type'];
+            $category->parent_id = $data['parent_id'];
+            $category->ordering = $data['ordering'];
+            $category->status = $data['status'];
             $category->save();
 
-            foreach ($data['translations'] ?? [] as $locale => $value) {
-                $category->translate($locale, $value);
-            }
+            $category->translate(app()->getLocale(), [
+                'name' => $data['translation']['name'],
+                'description' => $data['translation']['description'] ?? null,
+                'meta_title' => $data['translation']['meta_title'] ?? null,
+                'meta_description' => $data['translation']['meta_description'] ?? null,
+                'meta_keywords' => $data['translation']['meta_keywords'] ?? null,
+            ]);
 
             $level = 0;
 
-            $paths = CategoryPath::query()->where([
-                'category_id' => $category->parent_id,
-                'type' => $category->type
+            $paths = CategoryPath::query()->select('path_id')->where([
+                'category_id' => $category->parent_id
             ])->orderBy('level')->get()->toArray();
 
-            $paths[] = last($paths);
-            $paths[count($paths) - 1]['path_id'] = $category->id;
+            $paths[] = [
+                'path_id' => $category->id
+            ];
 
             foreach ($paths as $path) {
                 $categoryPath = new CategoryPath;
@@ -94,7 +101,8 @@ class Category
             return [
                 'ok' => true,
                 'message' => trans('category::base.messages.created'),
-                'data' => $category
+                'data' => CategoryResource::make($category),
+                'status' => 201
             ];
         });
     }
