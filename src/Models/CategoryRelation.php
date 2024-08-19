@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use JobMetric\Category\Events\CategorizableResourceEvent;
 
 /**
  * JobMetric\Category\Models\CategoryRelation
@@ -74,5 +75,16 @@ class CategoryRelation extends Model
     public function scopeByCollection(Builder $query, string $collection): Builder
     {
         return $query->where('collection', $collection);
+    }
+
+    /**
+     * Get the categorizable resource attribute.
+     */
+    public function getCategorizableResourceAttribute()
+    {
+        $event = new CategorizableResourceEvent($this->categorizable);
+        event($event);
+
+        return $event->resource;
     }
 }

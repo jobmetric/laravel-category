@@ -19,7 +19,8 @@ use JobMetric\Url\HasUrl;
  * @property int parent_id
  * @property int ordering
  * @property int status
- * @property int semaphore
+ *
+ * @method static find(int $int)
  */
 class Category extends Model implements TranslationContract
 {
@@ -54,7 +55,7 @@ class Category extends Model implements TranslationContract
     public function translationAllowFields(): array
     {
         return [
-            'title',
+            'name',
             'description',
             'meta_title',
             'meta_description',
