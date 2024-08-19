@@ -1,16 +1,11 @@
 <?php
 
-namespace JobMetric\Category\Events\Category;
+namespace JobMetric\Category\Events;
 
-use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
 use JobMetric\Category\Models\Category;
 
 class CategoryStoreEvent
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
-
     /**
      * Create a new event instance.
      */
