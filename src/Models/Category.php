@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use JobMetric\Translation\Contracts\TranslationContract;
 use JobMetric\Translation\HasTranslation;
+use JobMetric\Url\HasUrl;
 
 /**
  * JobMetric\Category\Models\Category
@@ -23,7 +24,7 @@ use JobMetric\Translation\HasTranslation;
  */
 class Category extends Model implements TranslationContract
 {
-    use HasFactory, HasTranslation;
+    use HasFactory, HasTranslation, HasUrl;
 
     protected $fillable = [
         'slug',
