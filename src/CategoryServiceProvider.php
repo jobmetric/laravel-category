@@ -2,6 +2,7 @@
 
 namespace JobMetric\Category;
 
+use JobMetric\Category\Events\CategoryTypeEvent;
 use JobMetric\PackageCore\Exceptions\MigrationFolderNotFoundException;
 use JobMetric\PackageCore\Exceptions\RegisterClassTypeNotFoundException;
 use JobMetric\PackageCore\PackageCore;
@@ -23,5 +24,20 @@ class CategoryServiceProvider extends PackageCoreServiceProvider
             ->hasMigration()
             ->hasTranslation()
             ->registerClass('Category', Category::class);
+    }
+
+    /**
+     * After register package
+     *
+     * @return void
+     */
+    public function afterRegisterPackage(): void
+    {
+        $this->app->singleton('categoryType', function () {
+            $event = new CategoryTypeEvent;
+            event($event);
+
+            return $event->categoryType;
+        });
     }
 }
