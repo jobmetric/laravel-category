@@ -21,7 +21,7 @@ return new class extends Migration {
              * For example, the type field of the product category is "product".
              */
 
-            $table->unsignedBigInteger('parent_id')->default(0)->index();
+            $table->unsignedBigInteger('parent_id')->nullable()->index();
             /**
              * The parent_id field is used to store the parent category ID.
              * If the parent_id field is 0, it means that the category is a top-level category.
