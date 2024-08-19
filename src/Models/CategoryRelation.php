@@ -21,9 +21,9 @@ class CategoryRelation extends Model
     use HasFactory;
 
     protected $fillable = [
-        'relatable_type',
-        'relatable_id',
         'category_id',
+        'categorizable_type',
+        'categorizable_id',
         'collection'
     ];
 
@@ -33,25 +33,15 @@ class CategoryRelation extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'relatable_type' => 'string',
-        'relatable_id' => 'integer',
         'category_id' => 'integer',
+        'categorizable_type' => 'string',
+        'categorizable_id' => 'integer',
         'collection' => 'string'
     ];
 
     public function getTable()
     {
         return config('category.tables.category_relation', parent::getTable());
-    }
-
-    /**
-     * Get the relatable model that owns the category.
-     *
-     * @return MorphTo
-     */
-    public function relatable(): MorphTo
-    {
-        return $this->morphTo();
     }
 
     /**
@@ -62,6 +52,16 @@ class CategoryRelation extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Get the categorizable model that owns the category.
+     *
+     * @return MorphTo
+     */
+    public function categorizable(): MorphTo
+    {
+        return $this->morphTo();
     }
 
     /**

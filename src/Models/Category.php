@@ -15,9 +15,8 @@ use JobMetric\Url\HasUrl;
  * JobMetric\Category\Models\Category
  *
  * @property int id
- * @property int slug
- * @property int parent_id
  * @property int type
+ * @property int parent_id
  * @property int ordering
  * @property int status
  * @property int semaphore
@@ -27,12 +26,10 @@ class Category extends Model implements TranslationContract
     use HasFactory, HasTranslation, HasUrl;
 
     protected $fillable = [
-        'slug',
         'parent_id',
         'type',
         'ordering',
-        'status',
-        'semaphore'
+        'status'
     ];
 
     /**
@@ -41,12 +38,10 @@ class Category extends Model implements TranslationContract
      * @var array<string, string>
      */
     protected $casts = [
-        'slug' => 'string',
-        'parent_id' => 'integer',
         'type' => 'string',
+        'parent_id' => 'integer',
         'ordering' => 'integer',
         'status' => 'boolean',
-        'semaphore' => 'json',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
@@ -60,24 +55,11 @@ class Category extends Model implements TranslationContract
     {
         return [
             'title',
-            'body',
+            'description',
             'meta_title',
             'meta_description',
             'meta_keywords',
         ];
-    }
-
-    /**
-     * Scope a query to only include categories of a given slug.
-     *
-     * @param Builder $query
-     * @param string $slug
-     *
-     * @return Builder
-     */
-    public function scopeOfSlug(Builder $query, string $slug): Builder
-    {
-        return $query->where('slug', $slug);
     }
 
     /**
