@@ -15,7 +15,11 @@ return new class extends Migration {
         Schema::create(config('category.tables.category'), function (Blueprint $table) {
             $table->id();
 
-            $table->string('slug')->nullable()->index();
+            $table->string('type')->index();
+            /**
+             * The type field is used to distinguish different types of categories.
+             * For example, the type field of the product category is "product".
+             */
 
             $table->unsignedBigInteger('parent_id')->default(0)->index();
             /**
@@ -23,15 +27,9 @@ return new class extends Migration {
              * If the parent_id field is 0, it means that the category is a top-level category.
              */
 
-            $table->string('type')->index();
-            /**
-             * The type field is used to distinguish different types of categories.
-             * For example, the type field of the product category is "product".
-             */
-
             $table->integer('ordering')->default(0);
             /**
-             * The display order of all categories of the same level can be considered with this field.
+             * The display ordering all categories of the same level can be considered with this field.
              */
 
             $table->boolean('status')->default(true)->index();
@@ -39,17 +37,8 @@ return new class extends Migration {
              * If the category is not active, it will not be displayed in the category list.
              */
 
-            $table->json('semaphore')->nullable();
-            /**
-             * This field is used to prevent multiple users from editing the same category at the same time.
-             */
-
             $table->timestamps();
-
-            $table->unique(['slug', 'type'], 'CATEGORY_SLUG_TYPE_UNIQUE');
         });
-
-        cache()->forget('category');
     }
 
     /**
@@ -60,7 +49,5 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::dropIfExists(config('category.tables.category'));
-
-        cache()->forget('category');
     }
 };

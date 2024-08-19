@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use JobMetric\Category\Models\Category;
 
 return new class extends Migration {
     /**
@@ -14,7 +13,10 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create(config('category.tables.category_relation'), function (Blueprint $table) {
-            $table->morphs('relatable');
+            $table->foreignId('category_id')->index()
+                ->references('id')->on(config('category.tables.category'))->cascadeOnDelete()->cascadeOnUpdate();
+
+            $table->morphs('categorizable');
             /**
              * relatable to:
              *
@@ -23,10 +25,7 @@ return new class extends Migration {
              * ...
              */
 
-            $table->foreignId('category_id')->index()
-                ->references('id')->on((new Category)->getTable())->cascadeOnDelete()->cascadeOnUpdate();
-
-            $table->string('collection', 100)->nullable();
+            $table->string('collection')->nullable();
             /**
              * for another collection file
              *
@@ -34,9 +33,9 @@ return new class extends Migration {
              */
 
             $table->unique([
-                'relatable_type',
-                'relatable_id',
                 'category_id',
+                'categorizable_type',
+                'categorizable_id',
                 'collection'
             ], 'CATEGORY_RELATION_UNIQUE');
         });
