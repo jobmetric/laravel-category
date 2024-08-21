@@ -95,9 +95,18 @@ class StoreCategoryRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
+        $type = $this->type ?? $this->input('type');
+        $categoryTypes = getCategoryType();
+        $hierarchical = $categoryTypes[$type]['hierarchical'];
+
+        if ($hierarchical) {
+            $this->merge([
+                'parent_id' => null,
+            ]);
+        }
+
         $this->merge([
-            'parent_id' => null,
-            'ordering' => 0,
+            'ordering' => $this->ordering ?? 0,
             'status' => $this->status ?? true,
         ]);
     }
