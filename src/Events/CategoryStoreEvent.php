@@ -11,7 +11,8 @@ class CategoryStoreEvent
      */
     public function __construct(
         public readonly Category $category,
-        public readonly array    $data
+        public readonly array    $data,
+        public readonly bool     $hierarchical,
     )
     {
     }
