@@ -16,14 +16,11 @@ if (!function_exists('getCategoryType')) {
             return $categoryTypes->keys()->toArray();
         }
 
-        if ($mode === 'value') {
-            return $categoryTypes->values()->map(function ($value) {
-                return trans($value);
-            })->toArray();
-        }
-
         return $categoryTypes->map(function ($value) {
-            return trans($value);
+            return [
+                'trans_key' => trans($value['trans_key']),
+                'hierarchical' => $value['hierarchical'],
+            ];
         })->toArray();
     }
 }
