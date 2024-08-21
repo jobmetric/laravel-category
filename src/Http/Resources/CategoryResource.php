@@ -29,10 +29,14 @@ class CategoryResource extends JsonResource
     {
         global $translationLocale;
 
+        $categoryTypes = getCategoryType();
+        $hierarchical = $categoryTypes[$this->type]['hierarchical'];
+
         return [
             'id' => $this->id,
             'type' => $this->type,
-            'parent_id' => $this->parent_id,
+            'hierarchical' => $hierarchical,
+            'parent_id' => $this->mergeWhen($hierarchical, $this->parent_id),
             'ordering' => $this->ordering,
             'status' => $this->status,
             'created_at' => $this->created_at,
