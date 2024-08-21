@@ -17,7 +17,7 @@ class CategoryTest extends BaseCategory
     public function test_store()
     {
         // store category
-        $category = $this->create_category();
+        $category = $this->create_category_product();
 
         $this->assertIsArray($category);
         $this->assertTrue($category['ok']);
@@ -48,7 +48,7 @@ class CategoryTest extends BaseCategory
         ]);
 
         // store duplicate name
-        $categoryDuplicate = $this->create_category();
+        $categoryDuplicate = $this->create_category_product();
 
         $this->assertIsArray($categoryDuplicate);
         $this->assertFalse($categoryDuplicate['ok']);
@@ -95,6 +95,58 @@ class CategoryTest extends BaseCategory
         $this->assertFalse($categoryDuplicate['ok']);
         $this->assertEquals($categoryDuplicate['message'], trans('category::base.validation.errors'));
         $this->assertEquals(422, $categoryDuplicate['status']);
+
+        // store product tag category
+        $categoryProductTag = $this->create_category_product_tag();
+
+        $this->assertIsArray($categoryProductTag);
+        $this->assertTrue($categoryProductTag['ok']);
+        $this->assertEquals($categoryProductTag['message'], trans('category::base.messages.created'));
+        $this->assertInstanceOf(CategoryResource::class, $categoryProductTag['data']);
+        $this->assertEquals(201, $categoryProductTag['status']);
+
+        $this->assertDatabaseMissing('category_paths', [
+            'type' => 'product_tag',
+            'category_id' => $categoryProductTag['data']->id,
+            'path_id' => $categoryProductTag['data']->id,
+            'level' => 0,
+        ]);
+
+        // duplicate product tag category
+        $categoryDuplicate = $this->create_category_product_tag();
+
+        $this->assertIsArray($categoryDuplicate);
+        $this->assertFalse($categoryDuplicate['ok']);
+        $this->assertEquals($categoryDuplicate['message'], trans('category::base.validation.errors'));
+        $this->assertEquals(422, $categoryDuplicate['status']);
+
+        // store product tag category with parent category
+        $parentCategory = Category::store([
+            'type' => 'product_tag',
+            'parent_id' => $categoryProductTag['data']->id,
+            'ordering' => 1,
+            'status' => true,
+            'translation' => [
+                'name' => 'category name',
+                'description' => 'category description',
+                'meta_title' => 'category meta title',
+                'meta_description' => 'category meta description',
+                'meta_keywords' => 'category meta keywords',
+            ],
+        ]);
+
+        $this->assertIsArray($parentCategory);
+        $this->assertTrue($parentCategory['ok']);
+        $this->assertEquals($parentCategory['message'], trans('category::base.messages.created'));
+        $this->assertInstanceOf(CategoryResource::class, $parentCategory['data']);
+        $this->assertEquals(201, $parentCategory['status']);
+
+        $this->assertDatabaseHas('categories', [
+            'type' => 'product_tag',
+            'parent_id' => null,
+            'ordering' => 1,
+            'status' => true,
+        ]);
     }
 
     /**

@@ -60,9 +60,12 @@ class Category
         }
 
         return DB::transaction(function () use ($data) {
+            $categoryTypes = getCategoryType();
+            $hierarchical = $categoryTypes[$data['type']]['hierarchical'];
+
             $category = new CategoryModel;
             $category->type = $data['type'];
-            $category->parent_id = $data['parent_id'];
+            $category->parent_id = $hierarchical ? $data['parent_id'] : null;
             $category->ordering = $data['ordering'];
             $category->status = $data['status'];
             $category->save();
@@ -75,28 +78,30 @@ class Category
                 'meta_keywords' => $data['translation']['meta_keywords'] ?? null,
             ]);
 
-            $level = 0;
+            if ($hierarchical) {
+                $level = 0;
 
-            $paths = CategoryPath::query()->select('path_id')->where([
-                'category_id' => $category->parent_id
-            ])->orderBy('level')->get()->toArray();
+                $paths = CategoryPath::query()->select('path_id')->where([
+                    'category_id' => $category->parent_id
+                ])->orderBy('level')->get()->toArray();
 
-            $paths[] = [
-                'path_id' => $category->id
-            ];
+                $paths[] = [
+                    'path_id' => $category->id
+                ];
 
-            foreach ($paths as $path) {
-                $categoryPath = new CategoryPath;
-                $categoryPath->type = $category->type;
-                $categoryPath->category_id = $category->id;
-                $categoryPath->path_id = $path['path_id'];
-                $categoryPath->level = $level++;
-                $categoryPath->save();
+                foreach ($paths as $path) {
+                    $categoryPath = new CategoryPath;
+                    $categoryPath->type = $category->type;
+                    $categoryPath->category_id = $category->id;
+                    $categoryPath->path_id = $path['path_id'];
+                    $categoryPath->level = $level++;
+                    $categoryPath->save();
 
-                unset($categoryPath);
+                    unset($categoryPath);
+                }
             }
 
-            event(new CategoryStoreEvent($category, $data));
+            event(new CategoryStoreEvent($category, $data, $hierarchical));
 
             return [
                 'ok' => true,
