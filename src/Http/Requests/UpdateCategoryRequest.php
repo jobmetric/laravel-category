@@ -4,8 +4,10 @@ namespace JobMetric\Category\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use JobMetric\Category\Models\Category;
 use JobMetric\Category\Rules\CategoryExistRule;
 use JobMetric\Category\Rules\CheckSlugInTypeRule;
+use JobMetric\Translation\Rules\TranslationFieldExistRule;
 
 class UpdateCategoryRequest extends FormRequest
 {
@@ -28,40 +30,53 @@ class UpdateCategoryRequest extends FormRequest
      */
     public function rules(): array
     {
-        if(is_null($this->category_id)) {
-            $category_id = $this->route()->parameter('category')->id;
-        } else {
-            $category_id = $this->category_id;
-        }
-
         if(empty($this->data)) {
             $type = $this->input('type');
         } else {
             $type = $this->type ?? null;
         }
 
-        return [
-            'slug' => [
-                'string',
-                'nullable',
-                'sometimes',
-                new CheckSlugInTypeRule($type, $category_id)
-            ],
+        if(is_null($this->category_id)) {
+            $category_id = $this->route()->parameter('category')->id;
+        } else {
+            $category_id = $this->category_id;
+        }
+
+        if (is_null($this->parent_id)) {
+            $parent_id = $this->input('parent_id');
+        } else {
+            $parent_id = $this->parent_id;
+        }
+
+        $categoryTypes = getCategoryType();
+        $hierarchical = $categoryTypes[$type]['hierarchical'];
+
+        $rules = [
             'parent_id' => [
+                'nullable',
                 'integer',
                 'sometimes',
                 new CategoryExistRule($type)
             ],
-            'ordering' => 'integer|sometimes',
+            'ordering' => 'numeric|sometimes',
             'status' => 'boolean|sometimes',
 
-            'translations' => 'array|sometimes',
-            'translations.*.title' => 'string|required',
-            'translations.*.body' => 'string|nullable',
-            'translations.*.meta_title' => 'string|nullable',
-            'translations.*.meta_description' => 'string|nullable',
-            'translations.*.meta_keywords' => 'string|nullable',
+            'translation' => 'array|sometimes',
+            'translation.name' => [
+                'string',
+                new TranslationFieldExistRule(Category::class, 'name', object_id: $category_id, parent_id: $parent_id),
+            ],
+            'translation.description' => 'string|nullable|sometimes',
+            'translation.meta_title' => 'string|nullable|sometimes',
+            'translation.meta_description' => 'string|nullable|sometimes',
+            'translation.meta_keywords' => 'string|nullable|sometimes',
         ];
+
+        if (!$hierarchical) {
+            unset($rules['parent_id']);
+        }
+
+        return $rules;
     }
 
     /**
@@ -101,5 +116,23 @@ class UpdateCategoryRequest extends FormRequest
         $this->data = $data;
 
         return $this;
+    }
+
+    /**
+     * Prepare the data for validation.
+     *
+     * @return void
+     */
+    protected function prepareForValidation(): void
+    {
+        $type = $this->type ?? $this->input('type');
+        $categoryTypes = getCategoryType();
+        $hierarchical = $categoryTypes[$type]['hierarchical'];
+
+        if (!$hierarchical) {
+            $this->merge([
+                'parent_id' => null,
+            ]);
+        }
     }
 }

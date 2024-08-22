@@ -40,26 +40,35 @@ class StoreCategoryRequest extends FormRequest
             $parent_id = $this->parent_id;
         }
 
-        return [
+        $categoryTypes = getCategoryType();
+        $hierarchical = $categoryTypes[$type]['hierarchical'];
+
+        $rules = [
             'type' => 'required|string|in:' . implode(',', getCategoryType('key')),
             'parent_id' => [
                 'nullable',
                 'integer',
                 new CategoryExistRule($type)
             ],
-            'ordering' => 'numeric|nullable',
-            'status' => 'boolean|nullable',
+            'ordering' => 'numeric|sometimes',
+            'status' => 'boolean|sometimes',
 
             'translation' => 'array',
             'translation.name' => [
                 'string',
                 new TranslationFieldExistRule(Category::class, 'name', parent_id: $parent_id),
             ],
-            'translation.description' => 'string|nullable',
-            'translation.meta_title' => 'string|nullable',
-            'translation.meta_description' => 'string|nullable',
-            'translation.meta_keywords' => 'string|nullable',
+            'translation.description' => 'string|nullable|sometimes',
+            'translation.meta_title' => 'string|nullable|sometimes',
+            'translation.meta_description' => 'string|nullable|sometimes',
+            'translation.meta_keywords' => 'string|nullable|sometimes',
         ];
+
+        if(!$hierarchical) {
+            unset($rules['parent_id']);
+        }
+
+        return $rules;
     }
 
     /**
@@ -99,7 +108,7 @@ class StoreCategoryRequest extends FormRequest
         $categoryTypes = getCategoryType();
         $hierarchical = $categoryTypes[$type]['hierarchical'];
 
-        if ($hierarchical) {
+        if (!$hierarchical) {
             $this->merge([
                 'parent_id' => null,
             ]);

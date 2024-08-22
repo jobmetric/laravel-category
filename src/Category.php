@@ -9,6 +9,8 @@ use Illuminate\Support\Str;
 use JobMetric\Category\Events\CategoryDeleteEvent;
 use JobMetric\Category\Events\CategoryStoreEvent;
 use JobMetric\Category\Events\CategoryUpdateEvent;
+use JobMetric\Category\Exceptions\CannotMakeParentSubsetOwnChild;
+use JobMetric\Category\Exceptions\CategoryNotFoundException;
 use JobMetric\Category\Http\Requests\StoreCategoryRequest;
 use JobMetric\Category\Http\Requests\UpdateCategoryRequest;
 use JobMetric\Category\Http\Resources\CategoryResource;
@@ -65,7 +67,7 @@ class Category
 
             $category = new CategoryModel;
             $category->type = $data['type'];
-            $category->parent_id = $hierarchical ? $data['parent_id'] : null;
+            $category->parent_id = $data['parent_id'] ?? null;
             $category->ordering = $data['ordering'];
             $category->status = $data['status'];
             $category->save();
@@ -117,75 +119,101 @@ class Category
      *
      * @param int $category_id
      * @param array $data
-     * @param string $type
+     *
      * @return array
+     * @throws Throwable
      */
-    public function update(int $category_id, array $data, string $type = 'category'): array
+    public function update(int $category_id, array $data): array
     {
-        $validator = Validator::make($data, (new UpdateCategoryRequest)->setType($type)->setCategoryId($category_id)->setData($data)->rules());
+        /**
+         * @var CategoryModel $category
+         */
+        $category = CategoryModel::find($category_id);
+
+        if (!$category) {
+            throw new CategoryNotFoundException($category_id);
+        }
+
+        $validator = Validator::make($data, (new UpdateCategoryRequest)->setType($category->type)->setCategoryId($category_id)->setData($data)->rules());
         if ($validator->fails()) {
             $errors = $validator->errors()->all();
 
             return [
                 'ok' => false,
                 'message' => trans('category::base.validation.errors'),
-                'errors' => $errors
+                'errors' => $errors,
+                'status' => 422
             ];
+        } else {
+            $data = $validator->validated();
         }
 
-        return DB::transaction(function () use ($category_id, $data, $type) {
-            /**
-             * @var CategoryModel $category
-             */
-            $category = CategoryModel::query()->where([
-                'id' => $category_id,
-                'type' => $type
-            ])->first();
-
-            if (!$category) {
-                return [
-                    'ok' => false,
-                    'message' => trans('category::base.validation.errors'),
-                    'errors' => [
-                        trans('category::base.validation.category_not_found')
-                    ]
-                ];
-            }
-
-            if (isset($data['slug'])) {
-                $category->slug = Str::slug($data['slug']);
-            }
-
-            if (isset($data['ordering'])) {
-                $category->ordering = $data['ordering'];
-            }
-
-            if (isset($data['status'])) {
-                $category->status = $data['status'];
-            }
+        return DB::transaction(function () use ($category_id, $data, $category) {
+            $categoryTypes = getCategoryType();
+            $hierarchical = $categoryTypes[$category->type]['hierarchical'];
 
             $change_parent_id = false;
-            if (isset($data['parent_id']) && $category->parent_id != $data['parent_id']) {
+            if (array_key_exists('parent_id', $data) && $category->parent_id != $data['parent_id'] && $hierarchical) {
+                // If the parent_id is changed, the path of the category must be updated.
+
+                // You cannot make a parent a subset of its own child.
+                if (CategoryPath::query()->where([
+                    'type' => $category->type,
+                    'category_id' => $data['parent_id'],
+                    'path_id' => $category_id
+                ])->exists()) {
+                    throw new CannotMakeParentSubsetOwnChild;
+                }
+
                 $category->parent_id = $data['parent_id'];
 
                 $change_parent_id = true;
             }
 
+            if (array_key_exists('ordering', $data)) {
+                $category->ordering = $data['ordering'];
+            }
+
+            if (array_key_exists('status', $data)) {
+                $category->status = $data['status'];
+            }
+
             $category->save();
 
-            foreach ($data['translations'] ?? [] as $locale => $value) {
-                $category->translate($locale, $value);
+            if (array_key_exists('translation', $data)) {
+                $trnas = [];
+                if (array_key_exists('name', $data['translation'])) {
+                    $trnas['name'] = $data['translation']['name'];
+                }
+
+                if (array_key_exists('description', $data['translation'])) {
+                    $trnas['description'] = $data['translation']['description'];
+                }
+
+                if (array_key_exists('meta_title', $data['translation'])) {
+                    $trnas['meta_title'] = $data['translation']['meta_title'];
+                }
+
+                if (array_key_exists('meta_description', $data['translation'])) {
+                    $trnas['meta_description'] = $data['translation']['meta_description'];
+                }
+
+                if (array_key_exists('meta_keywords', $data['translation'])) {
+                    $trnas['meta_keywords'] = $data['translation']['meta_keywords'];
+                }
+
+                $category->translate(app()->getLocale(), $trnas);
             }
 
             if ($change_parent_id) {
                 $paths = CategoryPath::query()->where([
-                    'type' => $type,
+                    'type' => $category->type,
                     'path_id' => $category_id,
                 ])->orderBy('level')->get()->toArray();
 
                 if (empty($paths)) {
                     CategoryPath::query()->where([
-                        'type' => $type,
+                        'type' => $category->type,
                         'category_id' => $category_id,
                     ])->get()->each(function ($item) {
                         $item->delete();
@@ -195,13 +223,13 @@ class Category
                     $level = 0;
 
                     $paths = CategoryPath::query()->where([
-                        'type' => $type,
+                        'type' => $category->type,
                         'category_id' => $category->parent_id,
                     ])->orderBy('level')->get()->toArray();
 
                     foreach ($paths as $path) {
                         $categoryPath = new CategoryPath;
-                        $categoryPath->type = $type;
+                        $categoryPath->type = $category->type;
                         $categoryPath->category_id = $category_id;
                         $categoryPath->path_id = $path['path_id'];
                         $categoryPath->level = $level++;
@@ -211,7 +239,7 @@ class Category
                     }
 
                     $categoryPath = new CategoryPath;
-                    $categoryPath->type = $type;
+                    $categoryPath->type = $category->type;
                     $categoryPath->category_id = $category_id;
                     $categoryPath->path_id = $category_id;
                     $categoryPath->level = $level;
@@ -220,7 +248,7 @@ class Category
                     foreach ($paths as $path) {
                         // Delete the path below the current one
                         CategoryPath::query()->where([
-                            'type' => $type,
+                            'type' => $category->type,
                             'category_id' => $path['category_id']
                         ])->where('level', '<', $path['level'])->get()->each(function ($item) {
                             $item->delete();
@@ -230,7 +258,7 @@ class Category
 
                         // Get the nodes new parents
                         $nodes = CategoryPath::query()->where([
-                            'type' => $type,
+                            'type' => $category->type,
                             'category_id' => $category->parent_id
                         ])->orderBy('level')->get()->toArray();
 
@@ -240,7 +268,7 @@ class Category
 
                         // Get what's left of the nodes current path
                         $left_nodes = CategoryPath::query()->where([
-                            'type' => $type,
+                            'type' => $category->type,
                             'category_id' => $path['category_id']
                         ])->orderBy('level')->get()->toArray();
 
@@ -252,7 +280,7 @@ class Category
                         $level = 0;
                         foreach ($item_paths as $item_path) {
                             CategoryPath::query()->updateOrInsert([
-                                'type' => $type,
+                                'type' => $category->type,
                                 'category_id' => $path['category_id'],
                                 'path_id' => $item_path,
                             ], [

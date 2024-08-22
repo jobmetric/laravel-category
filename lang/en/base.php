@@ -26,4 +26,8 @@ return [
         'deleted' => 'The category was deleted successfully.',
     ],
 
+    'exceptions' => [
+        'category_not_found' => 'The category with number :number was not found.',
+    ],
+
 ];
