@@ -477,6 +477,233 @@ class CategoryTest extends BaseCategory
     /**
      * @throws Throwable
      */
+    public function test_delete()
+    {
+        // category not found
+        try {
+            $category = Category::delete(1000);
+
+            $this->assertIsArray($category);
+        } catch (Throwable $e) {
+            $this->assertInstanceOf(CategoryNotFoundException::class, $e);
+        }
+
+        /**
+         * store category use sample map
+         *
+         * 1  - A
+         * 2  - |__ B
+         * 3  - |__ |__ C
+         * 4  - |__ |__ |__ D
+         * 5  - |__ E
+         */
+        $categoryA = Category::store([
+            'type' => 'product',
+            'parent_id' => null,
+            'translation' => [
+                'name' => 'A'
+            ],
+        ]);
+
+        // check database category path
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryA['data']->id,
+            'path_id' => $categoryA['data']->id,
+            'level' => 0,
+        ]);
+
+        $categoryB = Category::store([
+            'type' => 'product',
+            'parent_id' => $categoryA['data']->id,
+            'translation' => [
+                'name' => 'B'
+            ],
+        ]);
+
+        // check database category path
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryB['data']->id,
+            'path_id' => $categoryA['data']->id,
+            'level' => 0,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryB['data']->id,
+            'path_id' => $categoryB['data']->id,
+            'level' => 1,
+        ]);
+
+        $categoryC = Category::store([
+            'type' => 'product',
+            'parent_id' => $categoryB['data']->id,
+            'translation' => [
+                'name' => 'C'
+            ],
+        ]);
+
+        // check database category path
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryC['data']->id,
+            'path_id' => $categoryA['data']->id,
+            'level' => 0,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryC['data']->id,
+            'path_id' => $categoryB['data']->id,
+            'level' => 1,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryC['data']->id,
+            'path_id' => $categoryC['data']->id,
+            'level' => 2,
+        ]);
+
+        $categoryD = Category::store([
+            'type' => 'product',
+            'parent_id' => $categoryC['data']->id,
+            'translation' => [
+                'name' => 'D'
+            ],
+        ]);
+
+        // check database category path
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryD['data']->id,
+            'path_id' => $categoryA['data']->id,
+            'level' => 0,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryD['data']->id,
+            'path_id' => $categoryB['data']->id,
+            'level' => 1,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryD['data']->id,
+            'path_id' => $categoryC['data']->id,
+            'level' => 2,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryD['data']->id,
+            'path_id' => $categoryD['data']->id,
+            'level' => 3,
+        ]);
+
+        $categoryE = Category::store([
+            'type' => 'product',
+            'parent_id' => $categoryA['data']->id,
+            'translation' => [
+                'name' => 'E'
+            ],
+        ]);
+
+        // check database category path
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryE['data']->id,
+            'path_id' => $categoryA['data']->id,
+            'level' => 0,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryE['data']->id,
+            'path_id' => $categoryE['data']->id,
+            'level' => 1,
+        ]);
+
+        /**
+         * delete category E use sample map
+         *
+         * 1  - A
+         * 2  - |__ B
+         * 3  - |__ |__ C
+         * 4  - |__ |__ |__ D
+         * 5  - |__ E -> delete
+         */
+        $categoryDelete = Category::delete($categoryE['data']->id);
+
+        $this->assertIsArray($categoryDelete);
+        $this->assertTrue($categoryDelete['ok']);
+        $this->assertEquals($categoryDelete['message'], trans('category::base.messages.deleted'));
+        $this->assertInstanceOf(CategoryResource::class, $categoryDelete['data']);
+        $this->assertEquals(200, $categoryDelete['status']);
+
+        // check database category path for E
+        $this->assertDatabaseMissing('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryE['data']->id,
+            'path_id' => $categoryA['data']->id,
+            'level' => 0,
+        ]);
+        $this->assertDatabaseMissing('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryE['data']->id,
+            'path_id' => $categoryE['data']->id,
+            'level' => 1,
+        ]);
+
+        /**
+         * attach product to D use sample map
+         *
+         * 1  - A
+         * 2  - |__ B
+         * 3  - |__ |__ C
+         * 4  - |__ |__ |__ D -> attach product
+         */
+
+        /**
+         * delete category C use sample map
+         *
+         * 1  - A
+         * 2  - |__ B
+         * 3  - |__ |__ C -> delete
+         * 4  - |__ |__ |__ D -> attach product
+         */
+
+        /**
+         * detach product D use sample map
+         *
+         * 1  - A
+         * 2  - |__ B
+         * 3  - |__ |__ C
+         * 4  - |__ |__ |__ D -> detach product
+         */
+
+        /**
+         * delete category C use sample map
+         *
+         * 1  - A
+         * 2  - |__ B
+         * 3  - |__ |__ C -> delete
+         * 4  - |__ |__ |__ D
+         */
+
+        /**
+         * delete category C for not found error use sample map
+         *
+         * 1  - A
+         * 2  - |__ B
+         */
+
+        /**
+         * delete category A use sample map
+         *
+         * 1  - A -> delete
+         * 2  - |__ B
+         */
+    }
+
+    /**
+     * @throws Throwable
+     */
     public function test_get()
     {
         // store a category
@@ -503,53 +730,6 @@ class CategoryTest extends BaseCategory
             $this->assertIsArray($category);
         } catch (Throwable $e) {
             $this->assertInstanceOf(CategoryNotFoundException::class, $e);
-        }
-    }
-
-    /**
-     * @throws Throwable
-     */
-    public function test_delete()
-    {
-        // store category
-        $categoryStore = $this->create_category();
-
-        // delete the category
-        $category = Category::delete($categoryStore['data']->id);
-
-        $this->assertIsArray($category);
-        $this->assertTrue($category['ok']);
-        $this->assertEquals($category['message'], trans('category::base.messages.deleted'));
-        $this->assertEquals(200, $category['status']);
-
-        $this->assertSoftDeleted('categorys', [
-            'id' => $categoryStore['data']->id,
-        ]);
-
-        // delete the category again
-        try {
-            $category = Category::delete($categoryStore['data']->id);
-
-            $this->assertIsArray($category);
-        } catch (Throwable $e) {
-            $this->assertInstanceOf(CategoryNotFoundException::class, $e);
-        }
-
-        // attach the category to the product
-        $product = $this->create_product();
-
-        // Store category
-        $categoryStore = $this->create_category();
-
-        $product->attachCategory($categoryStore['data']->id, 'product_category');
-
-        // delete the category
-        try {
-            $category = Category::delete($categoryStore['data']->id);
-
-            $this->assertIsArray($category);
-        } catch (Throwable $e) {
-            $this->assertInstanceOf(CategoryTypeUsedInException::class, $e);
         }
     }
 

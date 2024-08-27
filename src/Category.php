@@ -3,19 +3,22 @@
 namespace JobMetric\Category;
 
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use JobMetric\Category\Events\CategoryDeleteEvent;
 use JobMetric\Category\Events\CategoryStoreEvent;
 use JobMetric\Category\Events\CategoryUpdateEvent;
 use JobMetric\Category\Exceptions\CannotMakeParentSubsetOwnChild;
 use JobMetric\Category\Exceptions\CategoryNotFoundException;
+use JobMetric\Category\Exceptions\CategoryUsedException;
 use JobMetric\Category\Http\Requests\StoreCategoryRequest;
 use JobMetric\Category\Http\Requests\UpdateCategoryRequest;
+use JobMetric\Category\Http\Resources\CategoryRelationResource;
 use JobMetric\Category\Http\Resources\CategoryResource;
 use JobMetric\Category\Models\Category as CategoryModel;
 use JobMetric\Category\Models\CategoryPath;
+use JobMetric\Category\Models\CategoryRelation;
 use JobMetric\Translation\Models\Translation;
 use Throwable;
 
@@ -269,54 +272,72 @@ class Category
      * Delete the specified category.
      *
      * @param int $category_id
-     * @param string $type
+     *
      * @return array
+     * @throws Throwable
      */
-    public function delete(int $category_id, string $type = 'category'): array
+    public function delete(int $category_id): array
     {
-        return DB::transaction(function () use ($category_id, $type) {
-            /**
-             * @var CategoryModel $category
-             */
-            $category = CategoryModel::query()->where([
-                'id' => $category_id,
-                'type' => $type
-            ])->first();
+        /**
+         * @var CategoryModel $category
+         */
+        $category = CategoryModel::find($category_id);
 
-            if (!$category) {
-                return [
-                    'ok' => false,
-                    'message' => trans('category::base.validation.errors'),
-                    'errors' => [
-                        trans('category::base.validation.category_not_found')
-                    ]
-                ];
-            }
+        if (!$category) {
+            throw new CategoryNotFoundException($category_id);
+        }
 
-            CategoryPath::query()->where([
-                'type' => $type,
-                'category_id' => $category_id
-            ])->get()->each(function ($item) {
-                $item->delete();
-            });
+        $data = CategoryResource::make($category);
 
-            $paths = CategoryPath::query()->where([
-                'type' => $type,
-                'path_id' => $category_id
-            ])->get()->toArray();
+        return DB::transaction(function () use ($category_id, $category, $data) {
+            $categoryTypes = getCategoryType();
+            $hierarchical = $categoryTypes[$category->type]['hierarchical'];
 
-            foreach ($paths as $path) {
-                self::delete($path['category_id'], $type);
+            if ($hierarchical) {
+                $category_ids = CategoryPath::query()->where([
+                    'type' => $category->type,
+                    'path_id' => $category_id
+                ])->pluck('category_id')->toArray();
+
+                // @todo: change number to name for exception message
+                $flag_number = false;
+                foreach ($category_ids as $item) {
+                    if ($this->hasUsed($item)) {
+                        $flag_number = $item;
+                        break;
+                    }
+                }
+
+                if ($flag_number) {
+                    throw new CategoryUsedException($flag_number);
+                }
+
+                CategoryPath::query()->where('type', $category->type)->whereIn('category_id', $category_ids)->delete();
+
+                CategoryModel::query()->whereIn('id', $category_ids)->get()->each(function ($item) {
+                    /**
+                     * @var CategoryModel $item
+                     */
+                    $item->forgetTranslations();
+
+                    $item->delete();
+                });
+            } else {
+                if ($this->hasUsed($category_id)) {
+                    throw new CategoryUsedException($category_id);
+                }
+
+                $category->forgetTranslations();
+                $category->delete();
             }
 
             event(new CategoryDeleteEvent($category));
 
-            $category->forgetTranslations();
-            $category->delete();
-
             return [
                 'ok' => true,
-                'message' => trans('category::base.messages.deleted')
+                'message' => trans('category::base.messages.deleted'),
+                'data' => $data,
+                'status' => 200
             ];
         });
     }
@@ -383,5 +404,55 @@ class Category
         $result = $query->first();
 
         return $result->name;
+    }
+
+    /**
+     * Used In category
+     *
+     * @param int $category_id
+     *
+     * @return AnonymousResourceCollection
+     * @throws Throwable
+     */
+    public function usedIn(int $category_id): AnonymousResourceCollection
+    {
+        /**
+         * @var CategoryModel $category
+         */
+        $category = CategoryModel::find($category_id);
+
+        if (!$category) {
+            throw new CategoryNotFoundException($category_id);
+        }
+
+        $category_relations = CategoryRelation::query()->where([
+            'category_id' => $category_id
+        ])->get();
+
+        return CategoryRelationResource::collection($category_relations);
+    }
+
+    /**
+     * Has Used category
+     *
+     * @param int $category_id
+     *
+     * @return bool
+     * @throws Throwable
+     */
+    public function hasUsed(int $category_id): bool
+    {
+        /**
+         * @var CategoryModel $category
+         */
+        $category = CategoryModel::find($category_id);
+
+        if (!$category) {
+            throw new CategoryNotFoundException($category_id);
+        }
+
+        return CategoryRelation::query()->where([
+            'category_id' => $category_id
+        ])->exists();
     }
 }
