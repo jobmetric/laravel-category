@@ -2,6 +2,7 @@
 
 namespace JobMetric\Category\Tests;
 
+use JobMetric\Category\Exceptions\CannotMakeParentSubsetOwnChild;
 use JobMetric\Category\Exceptions\CategoryNotFoundException;
 use JobMetric\Category\Exceptions\CategoryTypeUsedInException;
 use JobMetric\Category\Facades\Category;
@@ -173,41 +174,304 @@ class CategoryTest extends BaseCategory
             $this->assertInstanceOf(CategoryNotFoundException::class, $e);
         }
 
-        // store a category
-        $categoryStore = $this->create_category();
-
-        // update with another name
-        $category = Category::update($categoryStore['data']->id, [
-            'status' => true,
+        /**
+         * store category use sample map
+         *
+         * 1  - A
+         * 2  - |__ B
+         * 3  - |__ |__ C
+         * 4  - |__ |__ |__ D
+         * 5  - |__ E
+         */
+        $categoryA = Category::store([
+            'type' => 'product',
+            'parent_id' => null,
             'translation' => [
-                'name' => 'category name 2',
-                'description' => 'category description',
-                'meta_title' => 'category meta title',
-                'meta_description' => 'category meta description',
-                'meta_keywords' => 'category meta keywords',
+                'name' => 'A'
             ],
         ]);
 
-        $this->assertIsArray($category);
-        $this->assertTrue($category['ok']);
-        $this->assertEquals($category['message'], trans('category::base.messages.updated'));
-        $this->assertInstanceOf(CategoryResource::class, $category['data']);
-        $this->assertEquals(200, $category['status']);
-
-        $this->assertDatabaseHas('categorys', [
-            'id' => $category['data']->id,
+        // check database category path
+        $this->assertDatabaseHas('category_paths', [
             'type' => 'product',
-            'ordering' => 1,
-            'status' => true,
+            'category_id' => $categoryA['data']->id,
+            'path_id' => $categoryA['data']->id,
+            'level' => 0,
         ]);
 
-        $this->assertDatabaseHas('translations', [
-            'translatable_type' => 'JobMetric\Category\Models\Category',
-            'translatable_id' => $category['data']->id,
-            'locale' => app()->getLocale(),
-            'key' => 'name',
-            'value' => 'category name 2',
+        $categoryB = Category::store([
+            'type' => 'product',
+            'parent_id' => $categoryA['data']->id,
+            'translation' => [
+                'name' => 'B'
+            ],
         ]);
+
+        // check database category path
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryB['data']->id,
+            'path_id' => $categoryA['data']->id,
+            'level' => 0,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryB['data']->id,
+            'path_id' => $categoryB['data']->id,
+            'level' => 1,
+        ]);
+
+        $categoryC = Category::store([
+            'type' => 'product',
+            'parent_id' => $categoryB['data']->id,
+            'translation' => [
+                'name' => 'C'
+            ],
+        ]);
+
+        // check database category path
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryC['data']->id,
+            'path_id' => $categoryA['data']->id,
+            'level' => 0,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryC['data']->id,
+            'path_id' => $categoryB['data']->id,
+            'level' => 1,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryC['data']->id,
+            'path_id' => $categoryC['data']->id,
+            'level' => 2,
+        ]);
+
+        $categoryD = Category::store([
+            'type' => 'product',
+            'parent_id' => $categoryC['data']->id,
+            'translation' => [
+                'name' => 'D'
+            ],
+        ]);
+
+        // check database category path
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryD['data']->id,
+            'path_id' => $categoryA['data']->id,
+            'level' => 0,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryD['data']->id,
+            'path_id' => $categoryB['data']->id,
+            'level' => 1,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryD['data']->id,
+            'path_id' => $categoryC['data']->id,
+            'level' => 2,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryD['data']->id,
+            'path_id' => $categoryD['data']->id,
+            'level' => 3,
+        ]);
+
+        $categoryE = Category::store([
+            'type' => 'product',
+            'parent_id' => $categoryA['data']->id,
+            'translation' => [
+                'name' => 'E'
+            ],
+        ]);
+
+        // check database category path
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryE['data']->id,
+            'path_id' => $categoryA['data']->id,
+            'level' => 0,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryE['data']->id,
+            'path_id' => $categoryE['data']->id,
+            'level' => 1,
+        ]);
+
+        /**
+         * update category use sample map (move C to E)
+         *
+         * 1  - A
+         * 2  - |__ B
+         * 5  - |__ E
+         * 3  - |__ |__ C
+         * 4  - |__ |__ |__ D
+         */
+        $categoryUpdate = Category::update($categoryC['data']->id, [
+            'parent_id' => $categoryE['data']->id
+        ]);
+
+        $this->assertIsArray($categoryUpdate);
+        $this->assertTrue($categoryUpdate['ok']);
+        $this->assertEquals($categoryUpdate['message'], trans('category::base.messages.updated'));
+        $this->assertInstanceOf(CategoryResource::class, $categoryUpdate['data']);
+        $this->assertEquals(200, $categoryUpdate['status']);
+
+        // check database category path for C
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryC['data']->id,
+            'path_id' => $categoryA['data']->id,
+            'level' => 0,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryC['data']->id,
+            'path_id' => $categoryE['data']->id,
+            'level' => 1,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryC['data']->id,
+            'path_id' => $categoryC['data']->id,
+            'level' => 2,
+        ]);
+
+        // check database category path for D
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryD['data']->id,
+            'path_id' => $categoryA['data']->id,
+            'level' => 0,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryD['data']->id,
+            'path_id' => $categoryE['data']->id,
+            'level' => 1,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryD['data']->id,
+            'path_id' => $categoryC['data']->id,
+            'level' => 2,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryD['data']->id,
+            'path_id' => $categoryD['data']->id,
+            'level' => 3,
+        ]);
+
+        /**
+         * update category use sample map (move B to E)
+         *
+         * 1  - A
+         * 5  - |__ E
+         * 3  - |__ |__ C
+         * 4  - |__ |__ |__ D
+         * 2  - |__ |__ B
+         */
+        $categoryUpdate = Category::update($categoryB['data']->id, [
+            'parent_id' => $categoryE['data']->id
+        ]);
+
+        $this->assertIsArray($categoryUpdate);
+        $this->assertTrue($categoryUpdate['ok']);
+        $this->assertEquals($categoryUpdate['message'], trans('category::base.messages.updated'));
+        $this->assertInstanceOf(CategoryResource::class, $categoryUpdate['data']);
+        $this->assertEquals(200, $categoryUpdate['status']);
+
+        // check database category path for B
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryB['data']->id,
+            'path_id' => $categoryA['data']->id,
+            'level' => 0,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryB['data']->id,
+            'path_id' => $categoryE['data']->id,
+            'level' => 1,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryB['data']->id,
+            'path_id' => $categoryB['data']->id,
+            'level' => 2,
+        ]);
+
+        /**
+         * update category use sample map (move C to A)
+         *
+         * 1  - A
+         * 5  - |__ E
+         * 2  - |__ |__ B
+         * 3  - |__ C
+         * 4  - |__ |__ D
+         */
+        $categoryUpdate = Category::update($categoryC['data']->id, [
+            'parent_id' => $categoryA['data']->id
+        ]);
+
+        $this->assertIsArray($categoryUpdate);
+        $this->assertTrue($categoryUpdate['ok']);
+        $this->assertEquals($categoryUpdate['message'], trans('category::base.messages.updated'));
+        $this->assertInstanceOf(CategoryResource::class, $categoryUpdate['data']);
+        $this->assertEquals(200, $categoryUpdate['status']);
+
+        // check database category path for C
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryC['data']->id,
+            'path_id' => $categoryA['data']->id,
+            'level' => 0,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryC['data']->id,
+            'path_id' => $categoryC['data']->id,
+            'level' => 1,
+        ]);
+
+        // check database category path for D
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryD['data']->id,
+            'path_id' => $categoryA['data']->id,
+            'level' => 0,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryD['data']->id,
+            'path_id' => $categoryC['data']->id,
+            'level' => 1,
+        ]);
+        $this->assertDatabaseHas('category_paths', [
+            'type' => 'product',
+            'category_id' => $categoryD['data']->id,
+            'path_id' => $categoryD['data']->id,
+            'level' => 2,
+        ]);
+
+        // Entering an illegitimate relationship from A to B
+        try {
+            $categoryUpdate = Category::update($categoryA['data']->id, [
+                'parent_id' => $categoryB['data']->id
+            ]);
+
+            $this->assertIsArray($categoryUpdate);
+        } catch (Throwable $e) {
+            $this->assertInstanceOf(CannotMakeParentSubsetOwnChild::class, $e);
+        }
     }
 
     /**

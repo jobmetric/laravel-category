@@ -68,8 +68,8 @@ class Category
             $category = new CategoryModel;
             $category->type = $data['type'];
             $category->parent_id = $data['parent_id'] ?? null;
-            $category->ordering = $data['ordering'];
-            $category->status = $data['status'];
+            $category->ordering = $data['ordering'] ?? 0;
+            $category->status = $data['status'] ?? true;
             $category->save();
 
             $category->translate(app()->getLocale(), [
@@ -209,84 +209,47 @@ class Category
                 $paths = CategoryPath::query()->where([
                     'type' => $category->type,
                     'path_id' => $category_id,
-                ])->orderBy('level')->get()->toArray();
+                ])->get()->toArray();
 
-                if (empty($paths)) {
+                foreach ($paths as $path) {
+                    // Delete the path below the current one
                     CategoryPath::query()->where([
                         'type' => $category->type,
-                        'category_id' => $category_id,
-                    ])->get()->each(function ($item) {
-                        $item->delete();
-                    });
+                        'category_id' => $path['category_id']
+                    ])->where('level', '<', $path['level'])->delete();
 
-                    // Fix for records with no paths
-                    $level = 0;
+                    $item_paths = [];
 
-                    $paths = CategoryPath::query()->where([
+                    // Get the nodes new parents
+                    $nodes = CategoryPath::query()->where([
                         'type' => $category->type,
-                        'category_id' => $category->parent_id,
+                        'category_id' => $category->parent_id
                     ])->orderBy('level')->get()->toArray();
 
-                    foreach ($paths as $path) {
-                        $categoryPath = new CategoryPath;
-                        $categoryPath->type = $category->type;
-                        $categoryPath->category_id = $category_id;
-                        $categoryPath->path_id = $path['path_id'];
-                        $categoryPath->level = $level++;
-                        $categoryPath->save();
-
-                        unset($categoryPath);
+                    foreach ($nodes as $node) {
+                        $item_paths[] = $node['path_id'];
                     }
 
-                    $categoryPath = new CategoryPath;
-                    $categoryPath->type = $category->type;
-                    $categoryPath->category_id = $category_id;
-                    $categoryPath->path_id = $category_id;
-                    $categoryPath->level = $level;
-                    $categoryPath->save();
-                } else {
-                    foreach ($paths as $path) {
-                        // Delete the path below the current one
-                        CategoryPath::query()->where([
+                    // Get what's left of the nodes current path
+                    $left_nodes = CategoryPath::query()->where([
+                        'type' => $category->type,
+                        'category_id' => $path['category_id']
+                    ])->orderBy('level')->get()->toArray();
+
+                    foreach ($left_nodes as $left_node) {
+                        $item_paths[] = $left_node['path_id'];
+                    }
+
+                    // Combine the paths with a new level
+                    $level = 0;
+                    foreach ($item_paths as $item_path) {
+                        CategoryPath::query()->updateOrInsert([
                             'type' => $category->type,
-                            'category_id' => $path['category_id']
-                        ])->where('level', '<', $path['level'])->get()->each(function ($item) {
-                            $item->delete();
-                        });
-
-                        $item_paths = [];
-
-                        // Get the nodes new parents
-                        $nodes = CategoryPath::query()->where([
-                            'type' => $category->type,
-                            'category_id' => $category->parent_id
-                        ])->orderBy('level')->get()->toArray();
-
-                        foreach ($nodes as $node) {
-                            $item_paths[] = $node['path_id'];
-                        }
-
-                        // Get what's left of the nodes current path
-                        $left_nodes = CategoryPath::query()->where([
-                            'type' => $category->type,
-                            'category_id' => $path['category_id']
-                        ])->orderBy('level')->get()->toArray();
-
-                        foreach ($left_nodes as $left_node) {
-                            $item_paths[] = $left_node['path_id'];
-                        }
-
-                        // Combine the paths with a new level
-                        $level = 0;
-                        foreach ($item_paths as $item_path) {
-                            CategoryPath::query()->updateOrInsert([
-                                'type' => $category->type,
-                                'category_id' => $path['category_id'],
-                                'path_id' => $item_path,
-                            ], [
-                                'level' => $level++
-                            ]);
-                        }
+                            'category_id' => $path['category_id'],
+                            'path_id' => $item_path,
+                        ], [
+                            'level' => $level++
+                        ]);
                     }
                 }
             }
@@ -296,7 +259,8 @@ class Category
             return [
                 'ok' => true,
                 'message' => trans('category::base.messages.updated'),
-                'data' => $category
+                'data' => CategoryResource::make($category),
+                'status' => 200
             ];
         });
     }
