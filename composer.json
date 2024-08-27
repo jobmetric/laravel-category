@@ -8,7 +8,8 @@
         "jobmetric",
         "package",
         "category",
-        "taxonomy"
+        "taxonomy",
+        "tag"
     ],
     "homepage": "https://doc.jobmetric.net/package/laravel-category",
     "authors": [
@@ -23,7 +24,8 @@
         "php": ">=8.0.1",
         "laravel/framework": ">=9.19",
         "jobmetric/laravel-package-core": "^1.2",
-        "jobmetric/laravel-translation": "^2.8"
+        "jobmetric/laravel-translation": "^2.8",
+        "jobmetric/domi": "^1.5"
     },
     "autoload": {
         "files": [

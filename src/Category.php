@@ -342,68 +342,58 @@ class Category
         });
     }
 
-    public function getCategoryName(int $category_id, string $locale = 'en', string $type = 'category'): string|array
+    /**
+     * Get Name the specified category.
+     *
+     * @param int $category_id
+     * @param bool $concat
+     * @param string|null $locale
+     *
+     * @return string
+     * @throws Throwable
+     */
+    public function getName(int $category_id, bool $concat = true, string $locale = null): string
     {
         /**
          * @var CategoryModel $category
          */
-        $category = CategoryModel::query()->where([
-            'id' => $category_id,
-            'type' => $type
-        ])->first();
+        $category = CategoryModel::find($category_id);
 
         if (!$category) {
-            return [
-                'ok' => false,
-                'message' => trans('category::base.validation.errors'),
-                'errors' => [
-                    trans('category::base.validation.category_not_found')
-                ]
-            ];
+            throw new CategoryNotFoundException($category_id);
         }
 
-        $_category = new CategoryModel;
-        $_category_path = new CategoryPath;
-        $_category_translation = new Translation;
+        $locale = $locale ?? app()->getLocale();
 
-        $query = DB::table($_category_path->getTable() . ' as cp');
+        $categoryTypes = getCategoryType();
+        $hierarchical = $categoryTypes[$category->type]['hierarchical'];
 
-        //$query->selectRaw("string_agg('ct1.name ORDER BY cp.level', '»') as name");
-        $query->selectSub("SELECT GROUP_CONCAT(`" . DB::getTablePrefix() . "ct1` . `value` ORDER BY `" . DB::getTablePrefix() . "cp` . `LEVEL` SEPARATOR '  »  ' )", "name");
+        if ($hierarchical && $concat) {
+            $names = [];
+            $paths = CategoryPath::query()->select('path_id')->where([
+                'category_id' => $category_id
+            ])->orderBy('level')->get()->toArray();
 
-        $query->join($_category->getTable() . ' as c1', function ($q) {
-            $q->on('cp.category_id', '=', 'c1.id');
-            $q->on('c1.type', '=', 'cp.type');
-        });
-        $query->join($_category->getTable() . ' as c2', function ($q) {
-            $q->on('cp.path_id', '=', 'c2.id');
-            $q->on('c2.type', '=', 'cp.type');
-        });
+            foreach ($paths as $path) {
+                $names[] = Translation::query()->where([
+                    'translatable_id' => $path['path_id'],
+                    'translatable_type' => CategoryModel::class,
+                    'locale' => $locale,
+                    'key' => 'name'
+                ])->value('value');
+            }
 
-        $query->join($_category_translation->getTable() . ' as ct1', function ($q) use ($_category, $locale) {
-            $q->on('cp.path_id', '=', 'ct1.translatable_id')
-                ->on('ct1.translatable_type', '=', DB::raw("'" . str_replace('\\', '\\\\', get_class($_category)) . "'"))
-                ->on('ct1.locale', '=', DB::raw("'" . $locale . "'"))
-                ->on('ct1.key', '=', DB::raw("'title'"));
-        });
+            $char = config('category.arrow_icon.' . trans('domi::base.direction'));
 
-        $query->join($_category_translation->getTable() . ' as ct2', function ($q) use ($_category, $locale) {
-            $q->on('c2.id', '=', 'ct2.translatable_id')
-                ->on('ct2.translatable_type', '=', DB::raw("'" . str_replace('\\', '\\\\', get_class($_category)) . "'"))
-                ->on('ct2.locale', '=', DB::raw("'" . $locale . "'"))
-                ->on('ct2.key', '=', DB::raw("'title'"));
-        });
-
-        $query->where([
-            'cp.type' => $type,
-            'cp.category_id' => $category_id,
-        ]);
-
-        $query->groupBy('cp.category_id');
-
-        $result = $query->first();
-
-        return $result->name;
+            return implode($char, $names);
+        } else {
+            return Translation::query()->where([
+                'translatable_id' => $category_id,
+                'translatable_type' => CategoryModel::class,
+                'locale' => $locale,
+                'key' => 'name'
+            ])->value('value');
+        }
     }
 
     /**

@@ -704,33 +704,68 @@ class CategoryTest extends BaseCategory
     /**
      * @throws Throwable
      */
-    public function test_get()
+    public function test_get_name()
     {
-        // store a category
-        $categoryStore = $this->create_category();
-
-        // get the category
-        $category = Category::get($categoryStore['data']->id);
-
-        $this->assertIsArray($category);
-        $this->assertTrue($category['ok']);
-        $this->assertEquals($category['message'], trans('category::base.messages.found'));
-        $this->assertInstanceOf(CategoryResource::class, $category['data']);
-        $this->assertEquals(200, $category['status']);
-
-        $this->assertEquals($category['data']->id, $categoryStore['data']->id);
-        $this->assertEquals('product', $category['data']->type);
-        $this->assertEquals(1, $category['data']->ordering);
-        $this->assertTrue($category['data']->status);
-
-        // get the category with a wrong id
+        // category not found
         try {
-            $category = Category::get(1000);
+            $category = Category::delete(1000);
 
             $this->assertIsArray($category);
         } catch (Throwable $e) {
             $this->assertInstanceOf(CategoryNotFoundException::class, $e);
         }
+
+        /**
+         * store category - use sample map
+         *
+         * 1  - A
+         * 2  - |__ B
+         * 3  - |__ |__ C
+         * 4  - |__ |__ |__ D
+         */
+        $categoryA = Category::store([
+            'type' => 'product',
+            'parent_id' => null,
+            'translation' => [
+                'name' => 'A'
+            ],
+        ]);
+
+        $categoryB = Category::store([
+            'type' => 'product',
+            'parent_id' => $categoryA['data']->id,
+            'translation' => [
+                'name' => 'B'
+            ],
+        ]);
+
+        $categoryC = Category::store([
+            'type' => 'product',
+            'parent_id' => $categoryB['data']->id,
+            'translation' => [
+                'name' => 'C'
+            ],
+        ]);
+
+        $categoryD = Category::store([
+            'type' => 'product',
+            'parent_id' => $categoryC['data']->id,
+            'translation' => [
+                'name' => 'D'
+            ],
+        ]);
+
+        // get name of category D full path
+        $categoryName = Category::getName($categoryD['data']->id);
+
+        $this->assertIsString($categoryName);
+        $this->assertEquals('A ► B ► C ► D', $categoryName);
+
+        // get name of category D single name
+        $categoryName = Category::getName($categoryD['data']->id, false);
+
+        $this->assertIsString($categoryName);
+        $this->assertEquals('D', $categoryName);
     }
 
     /**

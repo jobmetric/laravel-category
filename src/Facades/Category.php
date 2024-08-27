@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Facade;
  * @see \JobMetric\Category\Category
  *
  * @method static array store(array $data)
- * @method static array update(int $category_id, array $data, string $type = 'category')
- * @method static array delete(int $category_id, string $type = 'category')
- * @method static string getCategoryName(int $category_id, string $locale = 'en', string $type = 'category')
+ * @method static array update(int $category_id, array $data)
+ * @method static array delete(int $category_id)
+ * @method static string getName(int $category_id, bool $concat = true, string $locale = null)
  */
 class Category extends Facade
 {
@@ -21,6 +21,6 @@ class Category extends Facade
      */
     protected static function getFacadeAccessor(): string
     {
-        return 'Category';
+        return \JobMetric\Category\Category::class;
     }
 }

@@ -31,4 +31,17 @@ return [
         'category_relation' => 'category_relations'
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Arrow Icon
+    |--------------------------------------------------------------------------
+    |
+    | Arrow icon for show category tree
+    */
+
+    "arrow_icon" => [
+        'rtl' => env('CATEGORY_ARROW_ICON_RTL', ' ◄ '),
+        'ltr' => env('CATEGORY_ARROW_ICON_LTR', ' ► '),
+    ],
+
 ];
