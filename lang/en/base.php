@@ -28,6 +28,8 @@ return [
 
     'exceptions' => [
         'category_not_found' => 'The category with number :number was not found.',
+        'category_used' => 'The category with number :number is used in other places.',
+        'cannot_make_parent_subset_own_child' => 'Cannot make parent subset own child.',
     ],
 
 ];
