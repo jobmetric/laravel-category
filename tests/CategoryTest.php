@@ -175,7 +175,7 @@ class CategoryTest extends BaseCategory
         }
 
         /**
-         * store category use sample map
+         * store category - use sample map
          *
          * 1  - A
          * 2  - |__ B
@@ -306,7 +306,7 @@ class CategoryTest extends BaseCategory
         ]);
 
         /**
-         * update category use sample map (move C to E)
+         * update category move C to E - use sample map
          *
          * 1  - A
          * 2  - |__ B
@@ -371,7 +371,7 @@ class CategoryTest extends BaseCategory
         ]);
 
         /**
-         * update category use sample map (move B to E)
+         * update category move B to E - use sample map
          *
          * 1  - A
          * 5  - |__ E
@@ -410,7 +410,7 @@ class CategoryTest extends BaseCategory
         ]);
 
         /**
-         * update category use sample map (move C to A)
+         * update category move C to A - use sample map
          *
          * 1  - A
          * 5  - |__ E
@@ -489,7 +489,7 @@ class CategoryTest extends BaseCategory
         }
 
         /**
-         * store category use sample map
+         * store category - use sample map
          *
          * 1  - A
          * 2  - |__ B
@@ -620,7 +620,7 @@ class CategoryTest extends BaseCategory
         ]);
 
         /**
-         * delete category E use sample map
+         * delete category E - use sample map
          *
          * 1  - A
          * 2  - |__ B
@@ -651,7 +651,7 @@ class CategoryTest extends BaseCategory
         ]);
 
         /**
-         * attach product to D use sample map
+         * attach product to D - use sample map
          *
          * 1  - A
          * 2  - |__ B
@@ -660,7 +660,7 @@ class CategoryTest extends BaseCategory
          */
 
         /**
-         * delete category C use sample map
+         * delete category C for error used exception - use sample map
          *
          * 1  - A
          * 2  - |__ B
@@ -669,7 +669,7 @@ class CategoryTest extends BaseCategory
          */
 
         /**
-         * detach product D use sample map
+         * detach product D - use sample map
          *
          * 1  - A
          * 2  - |__ B
@@ -678,7 +678,7 @@ class CategoryTest extends BaseCategory
          */
 
         /**
-         * delete category C use sample map
+         * delete category C - use sample map
          *
          * 1  - A
          * 2  - |__ B
@@ -687,14 +687,14 @@ class CategoryTest extends BaseCategory
          */
 
         /**
-         * delete category C for not found error use sample map
+         * delete category C for not found error - use sample map
          *
          * 1  - A
          * 2  - |__ B
          */
 
         /**
-         * delete category A use sample map
+         * delete category A - use sample map
          *
          * 1  - A -> delete
          * 2  - |__ B
