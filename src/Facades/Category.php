@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static array update(int $category_id, array $data)
  * @method static array delete(int $category_id)
  * @method static string getName(int $category_id, bool $concat = true, string $locale = null)
+ * @method static \Illuminate\Http\Resources\Json\AnonymousResourceCollection usedIn(int $category_id)
+ * @method static bool hasUsed(int $category_id)
  */
 class Category extends Facade
 {
