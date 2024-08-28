@@ -7,10 +7,10 @@ use Throwable;
 
 class CategoryUsedException extends Exception
 {
-    public function __construct(int $number, int $code = 404, ?Throwable $previous = null)
+    public function __construct(string $name, int $code = 404, ?Throwable $previous = null)
     {
         parent::__construct(trans('category::base.exceptions.category_used', [
-            'number' => $number,
+            'name' => $name,
         ]), $code, $previous);
     }
 }

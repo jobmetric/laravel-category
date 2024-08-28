@@ -50,7 +50,7 @@ class BaseCategory extends BaseTestCase
     public function create_category_product(): array
     {
         return Category::store([
-            'type' => 'product',
+            'type' => 'product_category',
             'parent_id' => null,
             'ordering' => 1,
             'status' => true,

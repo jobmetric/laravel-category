@@ -3,7 +3,6 @@
 namespace JobMetric\Category;
 
 use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use JobMetric\Category\Events\CategoryDeleteEvent;
@@ -299,17 +298,16 @@ class Category
                     'path_id' => $category_id
                 ])->pluck('category_id')->toArray();
 
-                // @todo: change number to name for exception message
-                $flag_number = false;
+                $flag_name = false;
                 foreach ($category_ids as $item) {
                     if ($this->hasUsed($item)) {
-                        $flag_number = $item;
+                        $flag_name = $this->getName($item);
                         break;
                     }
                 }
 
-                if ($flag_number) {
-                    throw new CategoryUsedException($flag_number);
+                if ($flag_name) {
+                    throw new CategoryUsedException($flag_name);
                 }
 
                 CategoryPath::query()->where('type', $category->type)->whereIn('category_id', $category_ids)->delete();
@@ -319,12 +317,11 @@ class Category
                      * @var CategoryModel $item
                      */
                     $item->forgetTranslations();
-
                     $item->delete();
                 });
             } else {
                 if ($this->hasUsed($category_id)) {
-                    throw new CategoryUsedException($category_id);
+                    throw new CategoryUsedException($this->getName($category_id));
                 }
 
                 $category->forgetTranslations();
@@ -401,10 +398,10 @@ class Category
      *
      * @param int $category_id
      *
-     * @return AnonymousResourceCollection
+     * @return array
      * @throws Throwable
      */
-    public function usedIn(int $category_id): AnonymousResourceCollection
+    public function usedIn(int $category_id): array
     {
         /**
          * @var CategoryModel $category
@@ -419,7 +416,14 @@ class Category
             'category_id' => $category_id
         ])->get();
 
-        return CategoryRelationResource::collection($category_relations);
+        return [
+            'ok' => true,
+            'message' => trans('category::base.messages.used_in', [
+                'count' => $category_relations->count()
+            ]),
+            'data' => CategoryRelationResource::collection($category_relations),
+            'status' => 200
+        ];
     }
 
     /**

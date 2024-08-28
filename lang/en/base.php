@@ -26,12 +26,13 @@ return [
         'deleted' => 'The category was deleted successfully.',
         'attached' => 'The category was attached successfully.',
         'multi_attached' => 'The categories were attached successfully.',
+        'used_in' => 'The category used in ":count" places.',
     ],
 
     'exceptions' => [
         'category_not_found' => 'The category with number :number was not found.',
         'category_is_disable' => 'The category with number :number is disabled.',
-        'category_used' => 'The category with number :number is used in other places.',
+        'category_used' => 'The category ":name" is used in other places.',
         'cannot_make_parent_subset_own_child' => 'Cannot make parent subset own child.',
         'model_category_contract_not_found' => 'Model ":model" not implements "JobMetric\Category\Contracts\CategoryContract" interface!',
         'category_collection_not_in_category_allow_types' => 'The category collection :collection not in category allow types.',
