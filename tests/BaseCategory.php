@@ -3,6 +3,7 @@
 namespace JobMetric\Category\Tests;
 
 use App\Models\Product;
+use Illuminate\Database\Eloquent\Model;
 use JobMetric\Category\Facades\Category;
 use JobMetric\Category\Models\Category as CategoryModels;
 use Tests\BaseDatabaseTestCase as BaseTestCase;
@@ -22,25 +23,23 @@ class BaseCategory extends BaseTestCase
     /**
      * create a fake category
      *
-     * @return CategoryModels
+     * @param string $type
+     * @param string $name
+     * @param bool $status
+     *
+     * @return Model
      */
-    public function create_category_for_has(): CategoryModels
+    public function create_category_for_has(string $type, string $name, bool $status = true): Model
     {
-        Category::store([
-            'type' => 'product',
-            'parent_id' => null,
-            'ordering' => 1,
-            'status' => true,
+        $category = Category::store([
+            'type' => $type,
+            'status' => $status,
             'translation' => [
-                'name' => 'category name',
-                'description' => 'category description',
-                'meta_title' => 'category meta title',
-                'meta_description' => 'category meta description',
-                'meta_keywords' => 'category meta keywords',
+                'name' => $name,
             ],
         ]);
 
-        return CategoryModels::find(1);
+        return CategoryModels::find($category['data']->id);
     }
 
     /**
