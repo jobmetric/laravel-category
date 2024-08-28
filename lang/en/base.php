@@ -24,12 +24,18 @@ return [
         'created' => 'The category was created successfully.',
         'updated' => 'The category was updated successfully.',
         'deleted' => 'The category was deleted successfully.',
+        'attached' => 'The category was attached successfully.',
+        'multi_attached' => 'The categories were attached successfully.',
     ],
 
     'exceptions' => [
         'category_not_found' => 'The category with number :number was not found.',
+        'category_is_disable' => 'The category with number :number is disabled.',
         'category_used' => 'The category with number :number is used in other places.',
         'cannot_make_parent_subset_own_child' => 'Cannot make parent subset own child.',
+        'model_category_contract_not_found' => 'Model ":model" not implements "JobMetric\Category\Contracts\CategoryContract" interface!',
+        'category_collection_not_in_category_allow_types' => 'The category collection :collection not in category allow types.',
+        'invalid_category_type_in_collection' => 'The type of collection entered is ":collection", and the ":collection" also accepts ":collectionType" category type, but the category type you have given is ":baseType" and it is not acceptable.',
     ],
 
 ];
