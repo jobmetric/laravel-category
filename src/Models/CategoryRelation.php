@@ -4,9 +4,9 @@ namespace JobMetric\Category\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use JobMetric\Category\Events\CategorizableResourceEvent;
 
 /**
@@ -16,10 +16,16 @@ use JobMetric\Category\Events\CategorizableResourceEvent;
  * @property int relatable_id
  * @property int category_id
  * @property int collection
+ *
+ * @property Category category
+ * @property mixed categorizable
+ * @property mixed categorizable_resource
  */
-class CategoryRelation extends Model
+class CategoryRelation extends Pivot
 {
     use HasFactory;
+
+    const UPDATED_AT = null;
 
     protected $fillable = [
         'category_id',
