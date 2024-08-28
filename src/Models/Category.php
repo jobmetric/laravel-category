@@ -63,6 +63,11 @@ class Category extends Model implements TranslationContract
         ];
     }
 
+    public function categoryRelations(): HasMany
+    {
+        return $this->hasMany(CategoryRelation::class, 'category_id', 'id');
+    }
+
     /**
      * Scope a query to only include categories of a given type.
      *
