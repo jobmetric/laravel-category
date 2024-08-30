@@ -10,6 +10,7 @@ use JobMetric\Category\Exceptions\InvalidCategoryTypeInCollectionException;
 use JobMetric\Category\Exceptions\ModelCategoryContractNotFoundException;
 use JobMetric\Category\Http\Resources\CategoryResource;
 use JobMetric\Category\Models\Category;
+use JobMetric\Category\Models\CategoryRelation;
 use Throwable;
 
 /**
@@ -90,10 +91,22 @@ trait HasCategory
             }
         }
 
-        if (!$multiple) {
-            $this->categories()->wherePivot('collection', $collection)->detach();
+        if ($multiple) {
+            CategoryRelation::query()->updateOrInsert([
+                'category_id' => $category_id,
+                'categorizable_id' => $this->id,
+                'categorizable_type' => get_class($this),
+                'collection' => $collection
+            ]);
+        } else {
+            CategoryRelation::query()->updateOrInsert([
+                'categorizable_id' => $this->id,
+                'categorizable_type' => get_class($this),
+                'collection' => $collection
+            ], [
+                'category_id' => $category_id
+            ]);
         }
-        $this->categories()->attach($category_id, ['collection' => $collection]);
 
         $category->load([
             'translations',
