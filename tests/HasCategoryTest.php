@@ -42,7 +42,7 @@ class HasCategoryTest extends BaseCategory
         $category_product_tag_3 = $this->create_category_for_has('product_tag', 'product tag 3', false);
 
         // attach normally single collection
-        $attach_1 = $product->attachCategory($category_product_1->id, 'product');
+        $attach_1 = $product->attachCategory($category_product_1->id, 'category');
 
         $this->assertIsArray($attach_1);
         $this->assertTrue($attach_1['ok']);
@@ -54,10 +54,10 @@ class HasCategoryTest extends BaseCategory
             'category_id' => $category_product_1->id,
             'categorizable_id' => $product->id,
             'categorizable_type' => Product::class,
-            'collection' => 'product'
+            'collection' => 'category'
         ]);
 
-        $attach_2 = $product->attachCategory($category_product_2->id, 'product');
+        $attach_2 = $product->attachCategory($category_product_2->id, 'category');
 
         $this->assertIsArray($attach_2);
         $this->assertTrue($attach_2['ok']);
@@ -69,14 +69,14 @@ class HasCategoryTest extends BaseCategory
             'category_id' => $category_product_1->id,
             'categorizable_id' => $product->id,
             'categorizable_type' => Product::class,
-            'collection' => 'product'
+            'collection' => 'category'
         ]);
 
         $this->assertDatabaseHas(config('category.tables.category_relation'), [
             'category_id' => $category_product_2->id,
             'categorizable_id' => $product->id,
             'categorizable_type' => Product::class,
-            'collection' => 'product'
+            'collection' => 'category'
         ]);
 
         // attach normally multiple collection
@@ -199,7 +199,7 @@ class HasCategoryTest extends BaseCategory
         $category_product = $this->create_category_for_has('product_category', 'product');
 
         // attach category
-        $product->attachCategory($category_product->id, 'product');
+        $product->attachCategory($category_product->id, 'category');
 
         $detach = $product->detachCategory($category_product->id);
 
@@ -209,7 +209,7 @@ class HasCategoryTest extends BaseCategory
             'category_id' => $category_product->id,
             'categorizable_id' => $product->id,
             'categorizable_type' => Product::class,
-            'collection' => 'product'
+            'collection' => 'category'
         ]);
     }
 
@@ -219,6 +219,6 @@ class HasCategoryTest extends BaseCategory
     public function test_get_category_by_collection(): void
     {
         $product = new Product();
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\MorphToMany::class, $product->getCategoryByCollection('product'));
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\MorphToMany::class, $product->getCategoryByCollection('category'));
     }
 }

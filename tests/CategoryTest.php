@@ -660,7 +660,7 @@ class CategoryTest extends BaseCategory
          */
         $product = $this->create_product();
 
-        $product->attachCategory($categoryD['data']->id, 'product');
+        $product->attachCategory($categoryD['data']->id, 'category');
 
         /**
          * delete category C for error used exception - use sample map
@@ -849,7 +849,7 @@ class CategoryTest extends BaseCategory
         $category_store = $this->create_category_product();
 
         // Attach the category to the product
-        $product->attachCategory($category_store['data']->id, 'product');
+        $product->attachCategory($category_store['data']->id, 'category');
 
         // Get the category used in the product
         $used_in = Category::usedIn($category_store['data']->id);
@@ -885,7 +885,7 @@ class CategoryTest extends BaseCategory
         $categoryStore = $this->create_category_product();
 
         // Attach the category to the product
-        $product->attachCategory($categoryStore['data']->id, 'product');
+        $product->attachCategory($categoryStore['data']->id, 'category');
 
         // check has used in
         $usedIn = Category::hasUsed($categoryStore['data']->id);
