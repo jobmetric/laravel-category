@@ -9,6 +9,7 @@ use JobMetric\Category\Models\CategoryRelation;
 /**
  * @property mixed id
  * @property mixed type
+ * @property mixed name
  * @property mixed parent_id
  * @property mixed ordering
  * @property mixed status
@@ -36,6 +37,7 @@ class CategoryResource extends JsonResource
             'id' => $this->id,
             'type' => $this->type,
             'hierarchical' => $hierarchical,
+            'name' => $this->whenHas('name', $this->name),
             'parent_id' => $this->mergeWhen($hierarchical, $this->parent_id),
             'ordering' => $this->ordering,
             'status' => $this->status,
