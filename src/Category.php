@@ -3,6 +3,8 @@
 namespace JobMetric\Category;
 
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use JobMetric\Category\Events\CategoryDeleteEvent;
@@ -10,6 +12,7 @@ use JobMetric\Category\Events\CategoryStoreEvent;
 use JobMetric\Category\Events\CategoryUpdateEvent;
 use JobMetric\Category\Exceptions\CannotMakeParentSubsetOwnChild;
 use JobMetric\Category\Exceptions\CategoryNotFoundException;
+use JobMetric\Category\Exceptions\CategoryTypeNotMatchException;
 use JobMetric\Category\Exceptions\CategoryUsedException;
 use JobMetric\Category\Http\Requests\StoreCategoryRequest;
 use JobMetric\Category\Http\Requests\UpdateCategoryRequest;
@@ -18,7 +21,10 @@ use JobMetric\Category\Http\Resources\CategoryResource;
 use JobMetric\Category\Models\Category as CategoryModel;
 use JobMetric\Category\Models\CategoryPath;
 use JobMetric\Category\Models\CategoryRelation;
+use JobMetric\Media\Models\Media;
 use JobMetric\Translation\Models\Translation;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 use Throwable;
 
 class Category
@@ -38,6 +44,153 @@ class Category
     public function __construct(Application $app)
     {
         $this->app = $app;
+    }
+
+    /**
+     * Get the specified category.
+     *
+     * @param string $type
+     * @param array $filter
+     * @param array $with
+     *
+     * @return QueryBuilder
+     * @throws Throwable
+     */
+    private function query(string $type, array $filter = [], array $with = []): QueryBuilder
+    {
+        $categoryTypes = getCategoryType();
+
+        if (!array_key_exists($type, $categoryTypes)) {
+            throw new CategoryTypeNotMatchException($type);
+        }
+
+        $hierarchical = $categoryTypes[$type]['hierarchical'];
+
+        if ($hierarchical) {
+
+        } else {
+            $fields = [
+                'id',
+                'type',
+                'name',
+                'ordering',
+                'status',
+                'created_at',
+                'updated_at'
+            ];
+
+            $query = QueryBuilder::for(CategoryModel::class);
+
+            $query->select(['*']);
+            $query->where('type', $type);
+
+            $translation_name = Translation::query()
+                ->select('value')
+                ->whereColumn('translatable_id', config('category.tables.category') . '.id')
+                ->where('translatable_type', CategoryModel::class)
+                ->where('locale', app()->getLocale())
+                ->where('key', 'name')
+                ->getQuery();
+
+            $query->selectSub($translation_name, 'name');
+
+            $allowed_filters = [
+                AllowedFilter::callback('user_id', function (Builder $q, $value) {
+                    $q->whereJsonContains('info', ['user_id' => (int)$value]);
+                }),
+            ];
+
+            $query->allowedFields($fields)
+                ->allowedSorts($fields)
+                ->allowedFilters(array_merge($fields, $allowed_filters))
+                ->defaultSort([
+                    'type',
+                    '-ordering',
+                    '-created_at'
+                ])
+                ->where($filter);
+
+            if (!empty($with)) {
+                $query->with($with);
+            }
+
+            return $query;
+        }
+
+        $fields = [
+            'id',
+            'type',
+            'parent_id',
+            'ordering',
+            'status',
+            'created_at',
+            'updated_at'
+        ];
+
+        $query = QueryBuilder::for(Media::class);
+
+        $query->where('type', $type);
+
+        $allowed_filters = [
+            AllowedFilter::callback('user_id', function (Builder $q, $value) {
+                $q->whereJsonContains('info', ['user_id' => (int)$value]);
+            }),
+        ];
+
+        if (isset($filter['user_id'])) {
+            unset($filter['user_id']);
+        }
+
+        $query->allowedFields($fields)
+            ->allowedSorts($fields)
+            ->allowedFilters(array_merge($fields, $allowed_filters))
+            ->defaultSort([
+                'type',
+                '-created_at',
+                'name'
+            ])
+            ->where($filter);
+
+        if (!empty($with)) {
+            $query->with($with);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Paginate the specified categories.
+     *
+     * @param string $type
+     * @param array $filter
+     * @param int $page_limit
+     * @param array $with
+     *
+     * @return AnonymousResourceCollection
+     * @throws Throwable
+     */
+    public function paginate(string $type, array $filter = [], int $page_limit = 15, array $with = []): AnonymousResourceCollection
+    {
+        return CategoryResource::collection(
+            $this->query($type, $filter, $with)->paginate($page_limit)
+        );
+    }
+
+    /**
+     * Get all categories.
+     *
+     * @param string $type
+     * @param array $filter
+     * @param array $with
+     *
+     * @return AnonymousResourceCollection
+     * @throws Throwable
+     */
+    public function all(string $type, array $filter = [], array $with = []): AnonymousResourceCollection
+    {
+        return CategoryResource::collection(
+            $this->query($type, $filter, $with)->get()
+        );
     }
 
     /**
