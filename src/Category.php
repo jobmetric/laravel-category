@@ -67,7 +67,65 @@ class Category
         $hierarchical = $categoryTypes[$type]['hierarchical'];
 
         if ($hierarchical) {
+            $category_table = config('category.tables.category');
+            $category_path_table = config('category.tables.category_path');
+            $translation_table = config('translation.tables.translation');
 
+            $fields = [
+                'id',
+                'type',
+                'parent_id',
+                'ordering',
+                'status',
+                'created_at',
+                'updated_at'
+            ];
+
+            $query = QueryBuilder::for(CategoryPath::class)
+                ->from($category_path_table . ' as cp')
+                ->select(['c.*']);
+
+            $category_name = Translation::query()
+                ->select('value')
+                ->whereColumn('translatable_id', 'c.id')
+                ->where('translatable_type', CategoryModel::class)
+                ->where('locale', app()->getLocale())
+                ->where('key', 'name')
+                ->getQuery();
+
+            $query->selectSub($category_name, 'name');
+
+            $query->selectSub("GROUP_CONCAT( `t`.`value` ORDER BY `cp`.`level` SEPARATOR '  »  ' )", "name_multiple");
+
+            $query->join($category_table . ' as c', 'cp.category_id', '=', 'c.id');
+
+            $query->join($translation_table. ' as t', function ($join) use ($category_table) {
+                $join->on('t.translatable_id', '=', 'cp.path_id')
+                    ->where('t.translatable_type', '=', CategoryModel::class)
+                    ->where('t.locale', '=', app()->getLocale())
+                    ->where('t.key', '=', 'name');
+            });
+
+            $query->where([
+                'cp.type' => $type,
+                'c.type' => $type,
+            ]);
+
+            $query->groupBy('cp.category_id');
+
+            $query->allowedFields($fields)
+                ->allowedSorts($fields)
+                ->allowedFilters($fields)
+                ->defaultSort([
+                    '-created_at'
+                ])
+                ->where($filter);
+
+            if (!empty($with)) {
+                $query->with($with);
+            }
+
+            return $query;
         } else {
             $fields = [
                 'id',
@@ -94,15 +152,9 @@ class Category
 
             $query->selectSub($translation_name, 'name');
 
-            $allowed_filters = [
-                AllowedFilter::callback('user_id', function (Builder $q, $value) {
-                    $q->whereJsonContains('info', ['user_id' => (int)$value]);
-                }),
-            ];
-
             $query->allowedFields($fields)
                 ->allowedSorts($fields)
-                ->allowedFilters(array_merge($fields, $allowed_filters))
+                ->allowedFilters($fields)
                 ->defaultSort([
                     'type',
                     '-ordering',
@@ -116,46 +168,6 @@ class Category
 
             return $query;
         }
-
-        $fields = [
-            'id',
-            'type',
-            'parent_id',
-            'ordering',
-            'status',
-            'created_at',
-            'updated_at'
-        ];
-
-        $query = QueryBuilder::for(Media::class);
-
-        $query->where('type', $type);
-
-        $allowed_filters = [
-            AllowedFilter::callback('user_id', function (Builder $q, $value) {
-                $q->whereJsonContains('info', ['user_id' => (int)$value]);
-            }),
-        ];
-
-        if (isset($filter['user_id'])) {
-            unset($filter['user_id']);
-        }
-
-        $query->allowedFields($fields)
-            ->allowedSorts($fields)
-            ->allowedFilters(array_merge($fields, $allowed_filters))
-            ->defaultSort([
-                'type',
-                '-created_at',
-                'name'
-            ])
-            ->where($filter);
-
-        if (!empty($with)) {
-            $query->with($with);
-        }
-
-        return $query;
     }
 
     /**
