@@ -23,9 +23,18 @@
     "require": {
         "php": ">=8.0.1",
         "laravel/framework": ">=9.19",
-        "jobmetric/laravel-package-core": "^1.2",
-        "jobmetric/laravel-translation": "^2.8",
-        "jobmetric/domi": "^1.5"
+        "jobmetric/laravel-package-core": "^1.12",
+        "jobmetric/laravel-translation": "^2.6",
+        "jobmetric/laravel-metadata": "^2.2",
+        "jobmetric/laravel-comment": "^1.1",
+        "jobmetric/laravel-membership": "^1.2",
+        "jobmetric/laravel-like": "^1.4",
+        "jobmetric/laravel-star": "^1.1",
+        "jobmetric/laravel-layout": "^1.1",
+        "jobmetric/laravel-url": "^1.0",
+        "jobmetric/media": "^1.0",
+        "jobmetric/domi": "^1.6",
+        "spatie/laravel-query-builder": "^5.7"
     },
     "autoload": {
         "files": [
