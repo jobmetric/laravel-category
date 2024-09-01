@@ -13,8 +13,6 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create(config('category.tables.category_path'), function (Blueprint $table) {
-            $table->id();
-
             $table->string('type')->index();
             /**
              * The type field is used to distinguish different types of categories.
