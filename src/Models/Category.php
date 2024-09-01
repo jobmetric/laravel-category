@@ -5,8 +5,23 @@ namespace JobMetric\Category\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use JobMetric\Category\Events\CategoryAllowMemberCollectionEvent;
+use JobMetric\Category\Events\CategoryMediaAllowCollectionEvent;
+use JobMetric\Comment\Contracts\CommentContract;
+use JobMetric\Comment\HasComment;
+use JobMetric\Layout\Contracts\LayoutContract;
+use JobMetric\Layout\HasLayout;
+use JobMetric\Like\HasLike;
+use JobMetric\Media\Contracts\MediaContract;
+use JobMetric\Media\HasFile;
+use JobMetric\Membership\Contracts\MemberContract;
+use JobMetric\Membership\HasMember;
+use JobMetric\Metadata\Contracts\MetaContract;
+use JobMetric\Metadata\HasMeta;
+use JobMetric\Metadata\Metaable;
+use JobMetric\PackageCore\Models\HasBooleanStatus;
+use JobMetric\Star\HasStar;
 use JobMetric\Translation\Contracts\TranslationContract;
 use JobMetric\Translation\HasTranslation;
 use JobMetric\Url\HasUrl;
@@ -22,9 +37,20 @@ use JobMetric\Url\HasUrl;
  *
  * @method static find(int $int)
  */
-class Category extends Model implements TranslationContract
+class Category extends Model implements TranslationContract, MetaContract, MediaContract, CommentContract, MemberContract, LayoutContract
 {
-    use HasFactory, HasTranslation, HasUrl;
+    use HasFactory,
+        HasBooleanStatus,
+        HasTranslation,
+        HasMeta,
+        Metaable,
+        HasFile,
+        HasComment,
+        HasMember,
+        HasLike,
+        HasStar,
+        HasLayout,
+        HasUrl;
 
     protected $fillable = [
         'parent_id',
@@ -63,9 +89,94 @@ class Category extends Model implements TranslationContract
         ];
     }
 
+    /**
+     * media allow collections.
+     *
+     * @return array
+     */
+    public function mediaAllowCollections(): array
+    {
+        $event = new CategoryMediaAllowCollectionEvent([
+            'base' => [
+                'media_collection' => 'public',
+                'size' => [
+                    'default' => [
+                        'w' => config('category.default_image_size.width'),
+                        'h' => config('category.default_image_size.height'),
+                    ]
+                ]
+            ],
+        ]);
+
+        event($event);
+
+        return $event->mediaAllowCollection;
+    }
+
+    /**
+     * Check if a comment for a specific model needs to be approved.
+     *
+     * @return bool
+     */
+    public function needsCommentApproval(): bool
+    {
+        return true;
+    }
+
+    /**
+     * allow the member collection.
+     *
+     * @return array
+     */
+    public function allowMemberCollection(): array
+    {
+        $event = new CategoryAllowMemberCollectionEvent([
+            'owner' => 'single',
+        ]);
+
+        event($event);
+
+        return $event->allowMemberCollection;
+    }
+
+    /**
+     * Layout page type.
+     *
+     * @return string
+     */
+    public function layoutPageType(): string
+    {
+        return 'category';
+    }
+
+    /**
+     * Layout collection field.
+     *
+     * @return string|null
+     */
+    public function layoutCollectionField(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * Get the category relations.
+     *
+     * @return HasMany
+     */
     public function categoryRelations(): HasMany
     {
         return $this->hasMany(CategoryRelation::class, 'category_id', 'id');
+    }
+
+    /**
+     * Get the paths of the category.
+     *
+     * @return HasMany
+     */
+    public function paths(): HasMany
+    {
+        return $this->hasMany(CategoryPath::class, 'category_id');
     }
 
     /**
@@ -79,35 +190,5 @@ class Category extends Model implements TranslationContract
     public function scopeOfType(Builder $query, string $type): Builder
     {
         return $query->where('type', $type);
-    }
-
-    /**
-     * Get the parent category.
-     *
-     * @return HasMany
-     */
-    public function children(): HasMany
-    {
-        return $this->hasMany(Category::class, 'parent_id', 'id');
-    }
-
-    /**
-     * Get the parent category.
-     *
-     * @return BelongsTo
-     */
-    public function parent(): BelongsTo
-    {
-        return $this->belongsTo(Category::class, 'parent_id');
-    }
-
-    /**
-     * Get the paths of the category.
-     *
-     * @return HasMany
-     */
-    public function paths(): HasMany
-    {
-        return $this->hasMany(CategoryPath::class, 'category_id');
     }
 }
