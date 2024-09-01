@@ -4,7 +4,9 @@ namespace JobMetric\Category\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use JobMetric\Category\Models\CategoryPath;
 use JobMetric\Category\Models\CategoryRelation;
+use JobMetric\Translation\Models\Translation;
 
 /**
  * @property mixed id
@@ -16,8 +18,9 @@ use JobMetric\Category\Models\CategoryRelation;
  * @property mixed created_at
  * @property mixed updated_at
  *
- * @property mixed translations
+ * @property Translation[] translations
  * @property CategoryRelation[] categoryRelations
+ * @property CategoryPath[] paths
  */
 class CategoryResource extends JsonResource
 {
@@ -49,6 +52,10 @@ class CategoryResource extends JsonResource
 
             'categoryRelations' => $this->whenLoaded('categoryRelations', function () {
                 return CategoryRelationResource::collection($this->categoryRelations);
+            }),
+
+            'paths' => $this->whenLoaded('paths', function () {
+                return CategoryPathResource::collection($this->paths);
             }),
         ];
     }
