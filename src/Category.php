@@ -66,39 +66,46 @@ class Category
 
         $hierarchical = $categoryTypes[$type]['hierarchical'];
 
+        $fields = [
+            'id',
+            'name',
+            'ordering',
+            'status',
+            'created_at',
+            'updated_at'
+        ];
+
         if ($hierarchical) {
+            $fields[] = 'parent_id';
+
             $category_table = config('category.tables.category');
             $category_path_table = config('category.tables.category_path');
             $translation_table = config('translation.tables.translation');
 
-            $fields = [
-                'id',
-                'type',
-                'parent_id',
-                'ordering',
-                'status',
-                'created_at',
-                'updated_at'
-            ];
-
-            $query = QueryBuilder::for(CategoryPath::class)
+            // Get the path of the category
+            $query = CategoryPath::query()
                 ->from($category_path_table . ' as cp')
                 ->select(['c.*']);
 
+            // Get the name of the category
             $category_name = Translation::query()
                 ->select('value')
                 ->whereColumn('translatable_id', 'c.id')
-                ->where('translatable_type', CategoryModel::class)
-                ->where('locale', app()->getLocale())
-                ->where('key', 'name')
+                ->where([
+                    'translatable_type' => CategoryModel::class,
+                    'locale' => app()->getLocale(),
+                    'key' => 'name'
+                ])
                 ->getQuery();
-
             $query->selectSub($category_name, 'name');
 
+            // Get the full name with parent category
             $query->selectSub("GROUP_CONCAT( `t`.`value` ORDER BY `cp`.`level` SEPARATOR '  »  ' )", "name_multiple");
 
+            // Join the category table for select all fields
             $query->join($category_table . ' as c', 'cp.category_id', '=', 'c.id');
 
+            // Join the translation table for select the name of the category
             $query->join($translation_table. ' as t', function ($join) use ($category_table) {
                 $join->on('t.translatable_id', '=', 'cp.path_id')
                     ->where('t.translatable_type', '=', CategoryModel::class)
@@ -106,61 +113,61 @@ class Category
                     ->where('t.key', '=', 'name');
             });
 
+            // Where the type of the category is equal to the specified type
             $query->where([
                 'cp.type' => $type,
                 'c.type' => $type,
             ]);
 
+            // Group by the category id for get the unique category
             $query->groupBy('cp.category_id');
 
-            $query->allowedFields($fields)
+            $queryBuilder = QueryBuilder::for(CategoryModel::class)
+                ->fromSub($query, config('category.tables.category'))
+                ->allowedFields($fields)
                 ->allowedSorts($fields)
                 ->allowedFilters($fields)
                 ->defaultSort([
-                    '-created_at'
+                    'name'
                 ])
                 ->where($filter);
+
+            $query->with('translations');
 
             if (!empty($with)) {
-                $query->with($with);
+                $queryBuilder->with($with);
             }
 
-            return $query;
+            return $queryBuilder;
         } else {
-            $fields = [
-                'id',
-                'type',
-                'name',
-                'ordering',
-                'status',
-                'created_at',
-                'updated_at'
-            ];
+            // Get the path of the category
+            $query = QueryBuilder::for(CategoryModel::class)
+                ->select(['*']);
 
-            $query = QueryBuilder::for(CategoryModel::class);
-
-            $query->select(['*']);
-            $query->where('type', $type);
-
-            $translation_name = Translation::query()
+            // Get the name of the category
+            $category_name = Translation::query()
                 ->select('value')
                 ->whereColumn('translatable_id', config('category.tables.category') . '.id')
-                ->where('translatable_type', CategoryModel::class)
-                ->where('locale', app()->getLocale())
-                ->where('key', 'name')
+                ->where([
+                    'translatable_type' => CategoryModel::class,
+                    'locale' => app()->getLocale(),
+                    'key' => 'name'
+                ])
                 ->getQuery();
+            $query->selectSub($category_name, 'name');
 
-            $query->selectSub($translation_name, 'name');
+            // Where the type of the category is equal to the specified type
+            $query->where('type', $type);
 
             $query->allowedFields($fields)
                 ->allowedSorts($fields)
                 ->allowedFilters($fields)
                 ->defaultSort([
-                    'type',
-                    '-ordering',
-                    '-created_at'
+                    'name'
                 ])
                 ->where($filter);
+
+            $query->with('translations');
 
             if (!empty($with)) {
                 $query->with($with);
