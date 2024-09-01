@@ -3,24 +3,22 @@
 namespace JobMetric\Category\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
  * JobMetric\Category\Models\CategoryPath
  *
- * @property int id
  * @property int type
  * @property int category_id
  * @property int path_id
  * @property int level
  */
-class CategoryPath extends Model
+class CategoryPath extends Pivot
 {
     use HasFactory;
 
-    const CREATED_AT = null;
-    const UPDATED_AT = null;
+    public $timestamps = false;
 
     protected $fillable = [
         'type',
