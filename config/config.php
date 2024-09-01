@@ -44,4 +44,17 @@ return [
         'ltr' => env('CATEGORY_ARROW_ICON_LTR', ' ► '),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Default Image Size
+    |--------------------------------------------------------------------------
+    |
+    | Default image size for media
+    */
+
+    "default_image_size" => [
+        'width' => env('CATEGORY_DEFAULT_IMAGE_SIZE_WIDTH', 100),
+        'height' => env('CATEGORY_DEFAULT_IMAGE_SIZE_HEIGHT', 100),
+    ],
+
 ];
