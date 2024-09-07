@@ -190,16 +190,6 @@ class Category extends Model implements TranslationContract, MetaContract, Media
     }
 
     /**
-     * Get the child count of the category.
-     *
-     * @return int
-     */
-    public function getChildrenCountAttribute(): int
-    {
-        return $this->children()->count();
-    }
-
-    /**
      * Scope a query to only include categories of a given type.
      *
      * @param Builder $query

@@ -22,7 +22,7 @@ use JobMetric\Translation\Models\Translation;
  * @property Translation[] translations
  * @property CategoryRelation[] categoryRelations
  * @property CategoryPath[] paths
- * @property int children_count
+ * @property Category[] children
  */
 class CategoryResource extends JsonResource
 {
@@ -61,7 +61,7 @@ class CategoryResource extends JsonResource
             }),
 
             'children_count' => $this->whenLoaded('children', function () {
-                return $this->children_count;
+                return count($this->children);
             }),
         ];
     }

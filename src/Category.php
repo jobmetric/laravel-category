@@ -132,7 +132,7 @@ class Category
                 ])
                 ->where($filter);
 
-            $query->with('translations');
+            $queryBuilder->with('translations');
 
             if (!empty($with)) {
                 $queryBuilder->with($with);
