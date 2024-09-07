@@ -4,6 +4,7 @@ namespace JobMetric\Category\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use JobMetric\Category\Models\Category;
 use JobMetric\Category\Models\CategoryPath;
 use JobMetric\Category\Models\CategoryRelation;
 use JobMetric\Translation\Models\Translation;
@@ -21,6 +22,7 @@ use JobMetric\Translation\Models\Translation;
  * @property Translation[] translations
  * @property CategoryRelation[] categoryRelations
  * @property CategoryPath[] paths
+ * @property int children_count
  */
 class CategoryResource extends JsonResource
 {
@@ -56,6 +58,10 @@ class CategoryResource extends JsonResource
 
             'paths' => $this->whenLoaded('paths', function () {
                 return CategoryPathResource::collection($this->paths);
+            }),
+
+            'children_count' => $this->whenLoaded('children', function () {
+                return $this->children_count;
             }),
         ];
     }
