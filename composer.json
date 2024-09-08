@@ -25,7 +25,7 @@
         "laravel/framework": ">=9.19",
         "jobmetric/laravel-package-core": "^1.12",
         "jobmetric/laravel-translation": "^2.6",
-        "jobmetric/laravel-metadata": "^2.2",
+        "jobmetric/laravel-metadata": "^2.3",
         "jobmetric/laravel-comment": "^1.1",
         "jobmetric/laravel-membership": "^1.2",
         "jobmetric/laravel-like": "^1.4",

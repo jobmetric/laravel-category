@@ -20,6 +20,7 @@ if (!function_exists('getCategoryType')) {
             return [
                 'trans_key' => trans($value['trans_key']),
                 'hierarchical' => $value['hierarchical'],
+                'metadata' => $value['metadata'],
             ];
         })->toArray();
     }

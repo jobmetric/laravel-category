@@ -19,7 +19,7 @@ use JobMetric\Membership\Contracts\MemberContract;
 use JobMetric\Membership\HasMember;
 use JobMetric\Metadata\Contracts\MetaContract;
 use JobMetric\Metadata\HasMeta;
-use JobMetric\Metadata\Metaable;
+use JobMetric\Metadata\MetaableWithType;
 use JobMetric\PackageCore\Models\HasBooleanStatus;
 use JobMetric\Star\HasStar;
 use JobMetric\Translation\Contracts\TranslationContract;
@@ -43,7 +43,7 @@ class Category extends Model implements TranslationContract, MetaContract, Media
         HasBooleanStatus,
         HasTranslation,
         HasMeta,
-        Metaable,
+        MetaableWithType,
         HasFile,
         HasComment,
         HasMember,
@@ -72,6 +72,22 @@ class Category extends Model implements TranslationContract, MetaContract, Media
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::retrieved(function (Category $category) {
+            $getCategoryTypes = getCategoryType();
+
+            foreach ($getCategoryTypes as $type => $getCategoryType) {
+                $category->setMeta($type, $getCategoryType['metadata']);
+            }
+        });
+    }
 
     public function getTable()
     {

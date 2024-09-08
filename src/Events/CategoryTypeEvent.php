@@ -14,19 +14,23 @@ class CategoryTypeEvent
     /**
      * Add a type.
      *
-     * @param string $type
-     * @param string|null $trans_key
-     * @param bool $hierarchical
+     * @param array $params
      *
      * @return static
      */
-    public function AddType(string $type, string $trans_key = null, bool $hierarchical = true): static
+    public function addType(array $params): static
     {
+        $type = $params['type'];
+        $trans_key = $params['trans_key'] ?? null;
+        $hierarchical = $params['hierarchical'] ?? true;
+        $metadata = $params['metadata'] ?? [];
+
         if (!array_key_exists($type, $this->categoryType)) {
             $this->categoryType = array_merge($this->categoryType, [
                 $type => [
                     'trans_key' => $trans_key,
                     'hierarchical' => $hierarchical,
+                    'metadata' => $metadata,
                 ],
             ]);
         }
