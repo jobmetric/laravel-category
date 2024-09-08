@@ -3,7 +3,6 @@
 namespace JobMetric\Category;
 
 use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -21,9 +20,7 @@ use JobMetric\Category\Http\Resources\CategoryResource;
 use JobMetric\Category\Models\Category as CategoryModel;
 use JobMetric\Category\Models\CategoryPath;
 use JobMetric\Category\Models\CategoryRelation;
-use JobMetric\Media\Models\Media;
 use JobMetric\Translation\Models\Translation;
-use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 use Throwable;
 
@@ -106,7 +103,7 @@ class Category
             $query->join($category_table . ' as c', 'cp.category_id', '=', 'c.id');
 
             // Join the translation table for select the name of the category
-            $query->join($translation_table. ' as t', function ($join) use ($category_table) {
+            $query->join($translation_table . ' as t', function ($join) use ($category_table) {
                 $join->on('t.translatable_id', '=', 'cp.path_id')
                     ->where('t.translatable_type', '=', CategoryModel::class)
                     ->where('t.locale', '=', app()->getLocale())
@@ -137,11 +134,9 @@ class Category
             if (!empty($with)) {
                 $queryBuilder->with($with);
             }
-
-            return $queryBuilder;
         } else {
             // Get the path of the category
-            $query = QueryBuilder::for(CategoryModel::class)
+            $queryBuilder = QueryBuilder::for(CategoryModel::class)
                 ->select(['*']);
 
             // Get the name of the category
@@ -154,12 +149,12 @@ class Category
                     'key' => 'name'
                 ])
                 ->getQuery();
-            $query->selectSub($category_name, 'name');
+            $queryBuilder->selectSub($category_name, 'name');
 
             // Where the type of the category is equal to the specified type
-            $query->where('type', $type);
+            $queryBuilder->where('type', $type);
 
-            $query->allowedFields($fields)
+            $queryBuilder->allowedFields($fields)
                 ->allowedSorts($fields)
                 ->allowedFilters($fields)
                 ->defaultSort([
@@ -167,14 +162,14 @@ class Category
                 ])
                 ->where($filter);
 
-            $query->with('translations');
+            $queryBuilder->with('translations');
 
             if (!empty($with)) {
-                $query->with($with);
+                $queryBuilder->with($with);
             }
-
-            return $query;
         }
+
+        return $queryBuilder;
     }
 
     /**
