@@ -128,12 +128,6 @@ class Category
                     'name'
                 ])
                 ->where($filter);
-
-            $queryBuilder->with('translations');
-
-            if (!empty($with)) {
-                $queryBuilder->with($with);
-            }
         } else {
             // Get the path of the category
             $queryBuilder = QueryBuilder::for(CategoryModel::class)
@@ -162,11 +156,12 @@ class Category
                 ])
                 ->where($filter);
 
-            $queryBuilder->with('translations');
+        }
 
-            if (!empty($with)) {
-                $queryBuilder->with($with);
-            }
+        $queryBuilder->with('translations');
+
+        if (!empty($with)) {
+            $queryBuilder->with($with);
         }
 
         return $queryBuilder;
@@ -248,6 +243,10 @@ class Category
                 'meta_description' => $data['translation']['meta_description'] ?? null,
                 'meta_keywords' => $data['translation']['meta_keywords'] ?? null,
             ]);
+
+            foreach ($data['metadata'] ?? [] as $metadata_key => $metadata_value) {
+                $category->storeMetadata($metadata_key, $metadata_value);
+            }
 
             if ($hierarchical) {
                 $level = 0;
