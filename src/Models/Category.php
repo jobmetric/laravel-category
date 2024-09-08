@@ -81,12 +81,21 @@ class Category extends Model implements TranslationContract, MetaContract, Media
         parent::boot();
 
         static::retrieved(function (Category $category) {
-            $getCategoryTypes = getCategoryType();
-
-            foreach ($getCategoryTypes as $type => $getCategoryType) {
-                $category->setMeta($type, $getCategoryType['metadata']);
-            }
+            $category->initializeMetadata();
         });
+
+        static::creating(function (Category $category) {
+            $category->initializeMetadata();
+        });
+    }
+
+    public function initializeMetadata(): void
+    {
+        $getCategoryTypes = getCategoryType();
+
+        foreach ($getCategoryTypes as $type => $getCategoryType) {
+            $this->setMeta($type, $getCategoryType['metadata']);
+        }
     }
 
     public function getTable()

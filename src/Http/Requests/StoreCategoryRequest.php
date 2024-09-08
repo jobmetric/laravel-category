@@ -64,7 +64,16 @@ class StoreCategoryRequest extends FormRequest
             'translation.meta_keywords' => 'string|nullable|sometimes',
         ];
 
-        if(!$hierarchical) {
+        $getCategoryTypes = getCategoryType();
+
+        if (isset($getCategoryTypes[$type]['metadata'])) {
+            $rules['metadata'] = 'array|sometimes';
+            foreach ($getCategoryTypes[$type]['metadata'] as $key => $value) {
+                $rules['metadata.' . $key] = $value['validation'] ?? 'string|nullable|sometimes';
+            }
+        }
+
+        if (!$hierarchical) {
             unset($rules['parent_id']);
         }
 
