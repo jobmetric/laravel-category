@@ -957,7 +957,66 @@ class CategoryTest extends BaseCategory
      */
     public function test_pagination()
     {
-        $this->assertTrue(true);
+        /**
+         * store product category - use sample map
+         *
+         * 1  - A
+         * 2  - |__ B
+         * 3  - |__ |__ C
+         * 4  - |__ |__ |__ D
+         * 5  - |__ E
+         */
+        $categoryA = Category::store([
+            'type' => 'product_category',
+            'parent_id' => null,
+            'translation' => [
+                'name' => 'A'
+            ],
+        ]);
+
+        $categoryB = Category::store([
+            'type' => 'product_category',
+            'parent_id' => $categoryA['data']->id,
+            'translation' => [
+                'name' => 'B'
+            ],
+        ]);
+
+        $categoryC = Category::store([
+            'type' => 'product_category',
+            'parent_id' => $categoryB['data']->id,
+            'translation' => [
+                'name' => 'C'
+            ],
+        ]);
+
+        Category::store([
+            'type' => 'product_category',
+            'parent_id' => $categoryC['data']->id,
+            'translation' => [
+                'name' => 'D'
+            ],
+        ]);
+
+        Category::store([
+            'type' => 'product_category',
+            'parent_id' => $categoryA['data']->id,
+            'translation' => [
+                'name' => 'E'
+            ],
+        ]);
+
+        $paginateProductCategories = Category::paginate('product_category');
+
+        $paginateProductCategories->each(function ($paginateProductCategory) {
+            $this->assertInstanceOf(CategoryResource::class, $paginateProductCategory);
+        });
+
+        $this->assertIsInt($paginateProductCategories->total());
+        $this->assertIsInt($paginateProductCategories->perPage());
+        $this->assertIsInt($paginateProductCategories->currentPage());
+        $this->assertIsInt($paginateProductCategories->lastPage());
+        $this->assertIsArray($paginateProductCategories->items());
     }
 
     /**
