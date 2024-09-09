@@ -56,7 +56,7 @@ class StoreCategoryRequest extends FormRequest
             'translation' => 'array',
             'translation.name' => [
                 'string',
-                new TranslationFieldExistRule(Category::class, 'name', parent_id: $parent_id),
+                new TranslationFieldExistRule(Category::class, 'name', parent_id: $parent_id, parent_where: ['type' => $type]),
             ],
             'translation.description' => 'string|nullable|sometimes',
             'translation.meta_title' => 'string|nullable|sometimes',
