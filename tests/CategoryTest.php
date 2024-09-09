@@ -827,7 +827,129 @@ class CategoryTest extends BaseCategory
      */
     public function test_all()
     {
-        $this->assertTrue(true);
+        /**
+         * store product category - use sample map
+         *
+         * 1  - A
+         * 2  - |__ B
+         * 3  - |__ |__ C
+         * 4  - |__ |__ |__ D
+         * 5  - |__ E
+         */
+        $categoryA = Category::store([
+            'type' => 'product_category',
+            'parent_id' => null,
+            'translation' => [
+                'name' => 'A'
+            ],
+        ]);
+
+        $categoryB = Category::store([
+            'type' => 'product_category',
+            'parent_id' => $categoryA['data']->id,
+            'translation' => [
+                'name' => 'B'
+            ],
+        ]);
+
+        $categoryC = Category::store([
+            'type' => 'product_category',
+            'parent_id' => $categoryB['data']->id,
+            'translation' => [
+                'name' => 'C'
+            ],
+        ]);
+
+        Category::store([
+            'type' => 'product_category',
+            'parent_id' => $categoryC['data']->id,
+            'translation' => [
+                'name' => 'D'
+            ],
+        ]);
+
+        Category::store([
+            'type' => 'product_category',
+            'parent_id' => $categoryA['data']->id,
+            'translation' => [
+                'name' => 'E'
+            ],
+        ]);
+
+        $productCategories = Category::all('product_category');
+
+        $this->assertCount(5, $productCategories);
+
+        $productCategories->each(function ($productCategory) {
+            $this->assertInstanceOf(CategoryResource::class, $productCategory);
+        });
+
+        $char = config('category.arrow_icon.' . trans('domi::base.direction'));
+
+        $this->assertEquals('A', $productCategories[0]->name);
+        $this->assertArrayHasKey('name_multiple', $productCategories[0]);
+        $this->assertEquals('A', $productCategories[0]->name_multiple);
+
+        $this->assertEquals('B', $productCategories[1]->name);
+        $this->assertArrayHasKey('name_multiple', $productCategories[1]);
+        $this->assertEquals('A' . $char . 'B', $productCategories[1]->name_multiple);
+
+        $this->assertEquals('C', $productCategories[2]->name);
+        $this->assertArrayHasKey('name_multiple', $productCategories[2]);
+        $this->assertEquals('A' . $char . 'B' . $char . 'C', $productCategories[2]->name_multiple);
+
+        $this->assertEquals('D', $productCategories[3]->name);
+        $this->assertArrayHasKey('name_multiple', $productCategories[3]);
+        $this->assertEquals('A' . $char . 'B' . $char . 'C' . $char . 'D', $productCategories[3]->name_multiple);
+
+        $this->assertEquals('E', $productCategories[4]->name);
+        $this->assertArrayHasKey('name_multiple', $productCategories[4]);
+        $this->assertEquals('A' . $char . 'E', $productCategories[4]->name_multiple);
+
+        /**
+         * store product tag - use sample map
+         *
+         * 1  - A
+         * 2  - B
+         * 3  - C
+         */
+        Category::store([
+            'type' => 'product_tag',
+            'translation' => [
+                'name' => 'A'
+            ],
+        ]);
+
+        Category::store([
+            'type' => 'product_tag',
+            'translation' => [
+                'name' => 'B'
+            ],
+        ]);
+
+        Category::store([
+            'type' => 'product_tag',
+            'translation' => [
+                'name' => 'C'
+            ],
+        ]);
+
+        $productTags = Category::all('product_tag');
+
+        $this->assertCount(3, $productTags);
+
+        $productTags->each(function ($productTag) {
+            $this->assertInstanceOf(CategoryResource::class, $productTag);
+        });
+
+        $this->assertEquals('A', $productTags[0]->name);
+        $this->assertArrayNotHasKey('name_multiple', $productTags[0]);
+
+        $this->assertEquals('B', $productTags[1]->name);
+        $this->assertArrayNotHasKey('name_multiple', $productTags[1]);
+
+        $this->assertEquals('C', $productTags[2]->name);
+        $this->assertArrayNotHasKey('name_multiple', $productTags[2]);
     }
 
     /**
