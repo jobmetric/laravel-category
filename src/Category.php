@@ -90,7 +90,8 @@ class Category
             $query->selectSub($category_name, 'name');
 
             // Get the full name with parent category
-            $query->selectSub("GROUP_CONCAT( `t`.`value` ORDER BY `cp`.`level` SEPARATOR '  »  ' )", "name_multiple");
+            $char = config('category.arrow_icon.' . trans('domi::base.direction'));
+            $query->selectSub("GROUP_CONCAT( `t`.`value` ORDER BY `cp`.`level` SEPARATOR '" . $char . "' )", "name_multiple");
 
             // Join the category table for select all fields
             $query->join($category_table . ' as c', 'cp.category_id', '=', 'c.id');
