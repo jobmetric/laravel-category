@@ -11,7 +11,6 @@ use JobMetric\Category\Events\CategoryStoreEvent;
 use JobMetric\Category\Events\CategoryUpdateEvent;
 use JobMetric\Category\Exceptions\CannotMakeParentSubsetOwnChild;
 use JobMetric\Category\Exceptions\CategoryNotFoundException;
-use JobMetric\Category\Exceptions\CategoryTypeNotMatchException;
 use JobMetric\Category\Exceptions\CategoryUsedException;
 use JobMetric\Category\Http\Requests\StoreCategoryRequest;
 use JobMetric\Category\Http\Requests\UpdateCategoryRequest;
@@ -55,13 +54,7 @@ class Category
      */
     private function query(string $type, array $filter = [], array $with = []): QueryBuilder
     {
-        $categoryTypes = getCategoryType();
-
-        if (!array_key_exists($type, $categoryTypes)) {
-            throw new CategoryTypeNotMatchException($type);
-        }
-
-        $hierarchical = $categoryTypes[$type]['hierarchical'];
+        checkTypeInCategoryTypes($type);
 
         $fields = [
             'id',
@@ -72,7 +65,7 @@ class Category
             'updated_at'
         ];
 
-        if ($hierarchical) {
+        if (getCategoryTypeArg($type, 'hierarchical')) {
             $fields[] = 'parent_id';
 
             $category_table = config('category.tables.category');
@@ -226,8 +219,7 @@ class Category
         }
 
         return DB::transaction(function () use ($data) {
-            $categoryTypes = getCategoryType();
-            $hierarchical = $categoryTypes[$data['type']]['hierarchical'];
+            $hierarchical = getCategoryTypeArg($data['type'], 'hierarchical');
 
             $category = new CategoryModel;
             $category->type = $data['type'];
@@ -317,8 +309,7 @@ class Category
         }
 
         return DB::transaction(function () use ($category_id, $data, $category) {
-            $categoryTypes = getCategoryType();
-            $hierarchical = $categoryTypes[$category->type]['hierarchical'];
+            $hierarchical = getCategoryTypeArg($category->type, 'hierarchical');
 
             $change_parent_id = false;
             if (array_key_exists('parent_id', $data) && $category->parent_id != $data['parent_id'] && $hierarchical) {
@@ -455,10 +446,7 @@ class Category
         $data = CategoryResource::make($category);
 
         return DB::transaction(function () use ($category_id, $category, $data) {
-            $categoryTypes = getCategoryType();
-            $hierarchical = $categoryTypes[$category->type]['hierarchical'];
-
-            if ($hierarchical) {
+            if (getCategoryTypeArg($category->type, 'hierarchical')) {
                 $category_ids = CategoryPath::query()->where([
                     'type' => $category->type,
                     'path_id' => $category_id
@@ -528,10 +516,7 @@ class Category
 
         $locale = $locale ?? app()->getLocale();
 
-        $categoryTypes = getCategoryType();
-        $hierarchical = $categoryTypes[$category->type]['hierarchical'];
-
-        if ($hierarchical && $concat) {
+        if (getCategoryTypeArg($category->type, 'hierarchical') && $concat) {
             $names = [];
             $paths = CategoryPath::query()->select('path_id')->where([
                 'category_id' => $category_id
