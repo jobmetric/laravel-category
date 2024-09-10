@@ -23,7 +23,7 @@ class CategoryTypeEvent
         $type = $params['type'];
         $label = $params['args']['label'] ?? null;
         $description = $params['args']['description'] ?? null;
-        $hierarchical = $params['args']['hierarchical'] ?? true;
+        $hierarchical = $params['args']['hierarchical'] ?? false;
         $translation = $params['args']['translation'] ?? [];
         $metadata = $params['args']['metadata'] ?? [];
 
