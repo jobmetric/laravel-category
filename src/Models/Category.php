@@ -24,6 +24,7 @@ use JobMetric\PackageCore\Models\HasBooleanStatus;
 use JobMetric\Star\HasStar;
 use JobMetric\Translation\Contracts\TranslationContract;
 use JobMetric\Translation\HasTranslation;
+use JobMetric\Translation\TranslatableWithType;
 use JobMetric\Url\HasUrl;
 
 /**
@@ -42,6 +43,7 @@ class Category extends Model implements TranslationContract, MetaContract, Media
     use HasFactory,
         HasBooleanStatus,
         HasTranslation,
+        TranslatableWithType,
         HasMeta,
         MetaableWithType,
         HasFile,
@@ -81,37 +83,30 @@ class Category extends Model implements TranslationContract, MetaContract, Media
         parent::boot();
 
         static::retrieved(function (Category $category) {
-            $category->initializeMetadata();
+            $category->init();
         });
 
         static::creating(function (Category $category) {
-            $category->initializeMetadata();
+            $category->init();
         });
     }
 
-    public function initializeMetadata(): void
+    public function init(): void
     {
-        $getCategoryTypes = getCategoryType();
+        $categoryTypes = getCategoryType();
 
-        foreach ($getCategoryTypes as $type => $getCategoryType) {
-            $this->setMeta($type, $getCategoryType['metadata']);
+        foreach ($categoryTypes as $type => $categoryType) {
+            // Set the translation for the category type.
+            $this->setTrans($type, $categoryType['translation']);
+
+            // Set the metadata for the category type.
+            $this->setMeta($type, $categoryType['metadata']);
         }
     }
 
     public function getTable()
     {
         return config('category.tables.category', parent::getTable());
-    }
-
-    public function translationAllowFields(): array
-    {
-        return [
-            'name',
-            'description',
-            'meta_title',
-            'meta_description',
-            'meta_keywords',
-        ];
     }
 
     /**

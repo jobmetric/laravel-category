@@ -48,9 +48,6 @@ class UpdateCategoryRequest extends FormRequest
             $parent_id = $this->parent_id;
         }
 
-        $categoryTypes = getCategoryType();
-        $hierarchical = $categoryTypes[$type]['hierarchical'];
-
         $rules = [
             'parent_id' => [
                 'nullable',
@@ -64,15 +61,24 @@ class UpdateCategoryRequest extends FormRequest
             'translation' => 'array|sometimes',
             'translation.name' => [
                 'string',
-                new TranslationFieldExistRule(Category::class, 'name', object_id: $category_id, parent_id: $parent_id),
+                new TranslationFieldExistRule(Category::class, 'name', object_id: $category_id, parent_id: $parent_id, parent_where: ['type' => $type]),
             ],
-            'translation.description' => 'string|nullable|sometimes',
-            'translation.meta_title' => 'string|nullable|sometimes',
-            'translation.meta_description' => 'string|nullable|sometimes',
-            'translation.meta_keywords' => 'string|nullable|sometimes',
         ];
 
-        if (!$hierarchical) {
+        $categoryTypes = getCategoryType();
+
+        foreach ($categoryTypes[$type]['translation'] ?? [] as $translation_key => $translation_value) {
+            $rules['translation.' . $translation_key] = $translation_value['validation'] ?? 'string|nullable|sometimes';
+        }
+
+        if (isset($categoryTypes[$type]['metadata'])) {
+            $rules['metadata'] = 'array|sometimes';
+            foreach ($categoryTypes[$type]['metadata'] as $metadata_key => $metadata_value) {
+                $rules['metadata.' . $metadata_key] = $metadata_value['validation'] ?? 'string|nullable|sometimes';
+            }
+        }
+
+        if (!getCategoryTypeArg($type, 'hierarchical')) {
             unset($rules['parent_id']);
         }
 
@@ -126,10 +132,8 @@ class UpdateCategoryRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $type = $this->type ?? $this->input('type');
-        $categoryTypes = getCategoryType();
-        $hierarchical = $categoryTypes[$type]['hierarchical'];
 
-        if (!$hierarchical) {
+        if (!getCategoryTypeArg($type, 'hierarchical')) {
             $this->merge([
                 'parent_id' => null,
             ]);

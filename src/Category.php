@@ -229,13 +229,11 @@ class Category
             $category->status = $data['status'] ?? true;
             $category->save();
 
-            $category->translate(app()->getLocale(), [
-                'name' => $data['translation']['name'],
-                'description' => $data['translation']['description'] ?? null,
-                'meta_title' => $data['translation']['meta_title'] ?? null,
-                'meta_description' => $data['translation']['meta_description'] ?? null,
-                'meta_keywords' => $data['translation']['meta_keywords'] ?? null,
-            ]);
+            foreach ($data['translation'] as $translation_key => $translation_value) {
+                $category->translate(app()->getLocale(), [
+                    $translation_key => $translation_value
+                ]);
+            }
 
             foreach ($data['metadata'] ?? [] as $metadata_key => $metadata_value) {
                 $category->storeMetadata($metadata_key, $metadata_value);
@@ -341,28 +339,17 @@ class Category
             $category->save();
 
             if (array_key_exists('translation', $data)) {
-                $trnas = [];
-                if (array_key_exists('name', $data['translation'])) {
-                    $trnas['name'] = $data['translation']['name'];
+                foreach ($data['translation'] ?? [] as $translation_key => $translation_value) {
+                    $category->translate(app()->getLocale(), [
+                        $translation_key => $translation_value
+                    ]);
                 }
+            }
 
-                if (array_key_exists('description', $data['translation'])) {
-                    $trnas['description'] = $data['translation']['description'];
+            if (array_key_exists('metadata', $data)) {
+                foreach ($data['metadata'] ?? [] as $metadata_key => $metadata_value) {
+                    $category->storeMetadata($metadata_key, $metadata_value);
                 }
-
-                if (array_key_exists('meta_title', $data['translation'])) {
-                    $trnas['meta_title'] = $data['translation']['meta_title'];
-                }
-
-                if (array_key_exists('meta_description', $data['translation'])) {
-                    $trnas['meta_description'] = $data['translation']['meta_description'];
-                }
-
-                if (array_key_exists('meta_keywords', $data['translation'])) {
-                    $trnas['meta_keywords'] = $data['translation']['meta_keywords'];
-                }
-
-                $category->translate(app()->getLocale(), $trnas);
             }
 
             if ($change_parent_id) {

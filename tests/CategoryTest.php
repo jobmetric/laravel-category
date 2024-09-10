@@ -472,6 +472,73 @@ class CategoryTest extends BaseCategory
         } catch (Throwable $e) {
             $this->assertInstanceOf(CannotMakeParentSubsetOwnChild::class, $e);
         }
+
+        // Test Full translation
+        $categoryUpdate = Category::update($categoryA['data']->id, [
+            'translation' => [
+                'name' => 'category name updated',
+                'description' => 'category description updated',
+                'meta_title' => 'category meta title updated',
+                'meta_description' => 'category meta description updated',
+                'meta_keywords' => 'category meta keywords updated',
+            ],
+        ]);
+
+        $this->assertIsArray($categoryUpdate);
+        $this->assertTrue($categoryUpdate['ok']);
+        $this->assertEquals($categoryUpdate['message'], trans('category::base.messages.updated'));
+        $this->assertInstanceOf(CategoryResource::class, $categoryUpdate['data']);
+
+        $this->assertDatabaseHas('translations', [
+            'translatable_type' => 'JobMetric\Category\Models\Category',
+            'translatable_id' => $categoryA['data']->id,
+            'locale' => app()->getLocale(),
+            'key' => 'name',
+            'value' => 'category name updated',
+        ]);
+
+        $this->assertDatabaseHas('translations', [
+            'translatable_type' => 'JobMetric\Category\Models\Category',
+            'translatable_id' => $categoryA['data']->id,
+            'locale' => app()->getLocale(),
+            'key' => 'description',
+            'value' => 'category description updated',
+        ]);
+
+        // Store product tag category
+        $categoryProductTag = $this->create_category_product_tag();
+
+        // Update product tag category
+        $categoryProductTagUpdate = Category::update($categoryProductTag['data']->id, [
+            'translation' => [
+                'name' => 'category name updated',
+                'description' => 'category description updated',
+                'meta_title' => 'category meta title updated',
+                'meta_description' => 'category meta description updated',
+                'meta_keywords' => 'category meta keywords updated',
+            ],
+        ]);
+
+        $this->assertIsArray($categoryProductTagUpdate);
+        $this->assertTrue($categoryProductTagUpdate['ok']);
+        $this->assertEquals($categoryProductTagUpdate['message'], trans('category::base.messages.updated'));
+        $this->assertInstanceOf(CategoryResource::class, $categoryProductTagUpdate['data']);
+
+        $this->assertDatabaseHas('translations', [
+            'translatable_type' => 'JobMetric\Category\Models\Category',
+            'translatable_id' => $categoryProductTag['data']->id,
+            'locale' => app()->getLocale(),
+            'key' => 'name',
+            'value' => 'category name updated',
+        ]);
+
+        $this->assertDatabaseMissing('translations', [
+            'translatable_type' => 'JobMetric\Category\Models\Category',
+            'translatable_id' => $categoryProductTag['data']->id,
+            'locale' => app()->getLocale(),
+            'key' => 'description',
+            'value' => 'category description updated',
+        ]);
     }
 
     /**

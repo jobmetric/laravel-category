@@ -24,6 +24,7 @@ class CategoryTypeEvent
         $label = $params['args']['label'] ?? null;
         $description = $params['args']['description'] ?? null;
         $hierarchical = $params['args']['hierarchical'] ?? true;
+        $translation = $params['args']['translation'] ?? [];
         $metadata = $params['args']['metadata'] ?? [];
 
         if (!array_key_exists($type, $this->categoryType)) {
@@ -32,6 +33,7 @@ class CategoryTypeEvent
                     'label' => $label,
                     'description' => $description,
                     'hierarchical' => $hierarchical,
+                    'translation' => $translation,
                     'metadata' => $metadata,
                 ],
             ]);
