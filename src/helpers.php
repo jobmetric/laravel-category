@@ -39,6 +39,7 @@ if (!function_exists('getCategoryTypeArg')) {
             'label' => $categoryTypes[$type]['label'] ?? null,
             'description' => $categoryTypes[$type]['description'] ?? null,
             'hierarchical' => $categoryTypes[$type]['hierarchical'] ?? false,
+            'translation' => $categoryTypes[$type]['translation'] ?? [],
             'metadata' => $categoryTypes[$type]['metadata'] ?? [],
             default => null,
         };
