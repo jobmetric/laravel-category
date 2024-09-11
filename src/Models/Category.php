@@ -15,6 +15,7 @@ use JobMetric\Layout\HasLayout;
 use JobMetric\Like\HasLike;
 use JobMetric\Media\Contracts\MediaContract;
 use JobMetric\Media\HasFile;
+use JobMetric\Media\MediaableWithType;
 use JobMetric\Membership\Contracts\MemberContract;
 use JobMetric\Membership\HasMember;
 use JobMetric\Metadata\Contracts\MetaContract;
@@ -47,6 +48,7 @@ class Category extends Model implements TranslationContract, MetaContract, Media
         HasMeta,
         MetaableWithType,
         HasFile,
+        MediaableWithType,
         HasComment,
         HasMember,
         HasLike,
@@ -101,36 +103,15 @@ class Category extends Model implements TranslationContract, MetaContract, Media
 
             // Set the metadata for the category type.
             $this->setMeta($type, $categoryType['metadata']);
+
+            // Set the media collection for the category type.
+            $this->setMediaCollection($type, $categoryType['media']);
         }
     }
 
     public function getTable()
     {
         return config('category.tables.category', parent::getTable());
-    }
-
-    /**
-     * media allow collections.
-     *
-     * @return array
-     */
-    public function mediaAllowCollections(): array
-    {
-        $event = new CategoryMediaAllowCollectionEvent([
-            'base' => [
-                'media_collection' => 'public',
-                'size' => [
-                    'default' => [
-                        'w' => config('category.default_image_size.width'),
-                        'h' => config('category.default_image_size.height'),
-                    ]
-                ]
-            ],
-        ]);
-
-        event($event);
-
-        return $event->mediaAllowCollection;
     }
 
     /**

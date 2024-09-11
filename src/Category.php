@@ -239,6 +239,17 @@ class Category
                 $category->storeMetadata($metadata_key, $metadata_value);
             }
 
+            $mediaAllowCollections = $category->mediaAllowCollections();
+            foreach ($data['media'] ?? [] as $media_key => $media_value) {
+                if ($mediaAllowCollections[$media_key]['multiple'] ?? false) {
+                    foreach ($media_value as $media_item) {
+                        $category->attachMedia($media_item, $media_key);
+                    }
+                } else {
+                    $category->attachMedia($media_value, $media_key);
+                }
+            }
+
             if ($hierarchical) {
                 $level = 0;
 
@@ -349,6 +360,18 @@ class Category
             if (array_key_exists('metadata', $data)) {
                 foreach ($data['metadata'] ?? [] as $metadata_key => $metadata_value) {
                     $category->storeMetadata($metadata_key, $metadata_value);
+                }
+            }
+
+            // @todo: detach all media relations for update
+            $mediaAllowCollections = $category->mediaAllowCollections();
+            foreach ($data['media'] ?? [] as $media_key => $media_value) {
+                if ($mediaAllowCollections[$media_key]['multiple'] ?? false) {
+                    foreach ($media_value as $media_item) {
+                        $category->attachMedia($media_item, $media_key);
+                    }
+                } else {
+                    $category->attachMedia($media_value, $media_key);
                 }
             }
 

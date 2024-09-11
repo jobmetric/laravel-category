@@ -26,6 +26,8 @@ class CategoryTypeEvent
         $hierarchical = $params['args']['hierarchical'] ?? false;
         $translation = $params['args']['translation'] ?? [];
         $metadata = $params['args']['metadata'] ?? [];
+        $has_base_media = $params['args']['has_base_media'] ?? false;
+        $media = $params['args']['media'] ?? [];
 
         if (!array_key_exists($type, $this->categoryType)) {
             $this->categoryType = array_merge($this->categoryType, [
@@ -35,6 +37,8 @@ class CategoryTypeEvent
                     'hierarchical' => $hierarchical,
                     'translation' => $translation,
                     'metadata' => $metadata,
+                    'has_base_media' => $has_base_media,
+                    'media' => $media,
                 ],
             ]);
         }

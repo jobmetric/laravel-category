@@ -6,13 +6,17 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use JobMetric\Category\Models\Category;
 use JobMetric\Category\Rules\CategoryExistRule;
-use JobMetric\Category\Rules\CheckSlugInTypeRule;
-use JobMetric\Translation\Rules\TranslationFieldExistRule;
+use JobMetric\Media\Http\Requests\MediaTypeObjectRequest;
+use JobMetric\Metadata\Http\Requests\MetadataTypeObjectRequest;
+use JobMetric\Translation\Http\Requests\TranslationTypeObjectRequest;
 
 class UpdateCategoryRequest extends FormRequest
 {
+    use TranslationTypeObjectRequest, MetadataTypeObjectRequest, MediaTypeObjectRequest;
+
     public string|null $type = null;
     public int|null $category_id = null;
+    public int|null $parent_id = null;
     public array $data = [];
 
     /**
@@ -30,13 +34,13 @@ class UpdateCategoryRequest extends FormRequest
      */
     public function rules(): array
     {
-        if(empty($this->data)) {
+        if (empty($this->data)) {
             $type = $this->input('type');
         } else {
             $type = $this->type ?? null;
         }
 
-        if(is_null($this->category_id)) {
+        if (is_null($this->category_id)) {
             $category_id = $this->route()->parameter('category')->id;
         } else {
             $category_id = $this->category_id;
@@ -57,26 +61,13 @@ class UpdateCategoryRequest extends FormRequest
             ],
             'ordering' => 'numeric|sometimes',
             'status' => 'boolean|sometimes',
-
-            'translation' => 'array|sometimes',
-            'translation.name' => [
-                'string',
-                new TranslationFieldExistRule(Category::class, 'name', object_id: $category_id, parent_id: $parent_id, parent_where: ['type' => $type]),
-            ],
         ];
 
         $categoryTypes = getCategoryType();
 
-        foreach ($categoryTypes[$type]['translation'] ?? [] as $translation_key => $translation_value) {
-            $rules['translation.' . $translation_key] = $translation_value['validation'] ?? 'string|nullable|sometimes';
-        }
-
-        if (isset($categoryTypes[$type]['metadata'])) {
-            $rules['metadata'] = 'array|sometimes';
-            foreach ($categoryTypes[$type]['metadata'] as $metadata_key => $metadata_value) {
-                $rules['metadata.' . $metadata_key] = $metadata_value['validation'] ?? 'string|nullable|sometimes';
-            }
-        }
+        $this->renderTranslationFiled($rules, $categoryTypes[$type], Category::class, 'name', object_id: $category_id, parent_id: $parent_id, parent_where: ['type' => $type]);
+        $this->renderMetadataFiled($rules, $categoryTypes[$type]);
+        $this->renderMediaFiled($rules, $categoryTypes[$type]);
 
         if (!getCategoryTypeArg($type, 'hierarchical')) {
             unset($rules['parent_id']);
