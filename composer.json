@@ -34,7 +34,7 @@
         "jobmetric/laravel-url": "^1.0",
         "jobmetric/media": "^1.1",
         "jobmetric/domi": "^1.6",
-        "jobmetric/panelio": "^1.4",
+        "jobmetric/panelio": "^1.5",
         "spatie/laravel-query-builder": "^5.7"
     },
     "autoload": {
