@@ -4,6 +4,10 @@ namespace JobMetric\Category\Http\Controllers;
 
 use Illuminate\Http\Request;
 use JobMetric\Category\Facades\Category;
+use JobMetric\Domi\Facades\Domi;
+use JobMetric\Panelio\Facades\Breadcrumb;
+use JobMetric\Panelio\Facades\Button;
+use JobMetric\Panelio\Facades\Panelio;
 
 class CategoryController extends Controller
 {
@@ -12,9 +16,7 @@ class CategoryController extends Controller
      */
     public function index(Request $request, string $panel, string $section, string $type)
     {
-        $include_data = $request->input('include_data');
-
-        if ($include_data) {
+        if (request()->ajax()) {
             $page_limit = $request->input('page_limit', 50);
             $with = $request->input('with', []);
 
@@ -33,9 +35,25 @@ class CategoryController extends Controller
             return $this->responseCollection($category);
         }
 
-        return view('category::list', [
+        DomiTitle(getCategoryTypeArg($type));
+
+        // Add breadcrumb
+        add_breadcrumb_base($panel, $section);
+        Breadcrumb::add(getCategoryTypeArg($type));
+
+        // add button
+        Button::add(route('category.{type}.create', [
+            'panel' => $panel,
+            'section' => $section,
             'type' => $type,
-        ]);
+        ]));
+        Button::status();
+
+        DomiPlugins('datatable');
+
+        $data['type'] = $type;
+
+        return view('category::list', $data);
     }
 
     /**
