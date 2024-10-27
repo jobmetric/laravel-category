@@ -7,6 +7,7 @@ use JobMetric\Category\Facades\Category;
 use JobMetric\Domi\Facades\Domi;
 use JobMetric\Panelio\Facades\Breadcrumb;
 use JobMetric\Panelio\Facades\Button;
+use JobMetric\Panelio\Facades\Datatable;
 use JobMetric\Panelio\Facades\Panelio;
 
 class CategoryController extends Controller
@@ -17,29 +18,19 @@ class CategoryController extends Controller
     public function index(Request $request, string $panel, string $section, string $type)
     {
         if (request()->ajax()) {
-            $page_limit = $request->input('page_limit', 50);
-            $with = $request->input('with', []);
+            $query = Category::query($type);
 
-            if ($request->has('filter.parent_id') && $request->input('filter.parent_id') === 'null') {
-                $request->merge(['filter' => ['parent_id' => null]]);
-            }
-
-            $filter = $request->input('filter', []);
-
-            if ($page_limit == -1) {
-                $category = Category::all($type, $filter, $with);
-            } else {
-                $category = Category::paginate($type, $filter, $page_limit, $with);
-            }
-
-            return $this->responseCollection($category);
+            return Datatable::of($query);
         }
+
+        // Set data category
+        $data['name'] = getCategoryTypeArg($type);
 
         DomiTitle(getCategoryTypeArg($type));
 
         // Add breadcrumb
         add_breadcrumb_base($panel, $section);
-        Breadcrumb::add(getCategoryTypeArg($type));
+        Breadcrumb::add($data['name']);
 
         // add button
         Button::add(route('category.{type}.create', [
@@ -49,7 +40,24 @@ class CategoryController extends Controller
         ]));
         Button::status();
 
-        DomiPlugins('datatable');
+//        DomiScript('assets/vendor/category/js/list.js');
+
+        DomiLocalize('category', [
+            'route' => route('category.{type}.index', [
+                'panel' => $panel,
+                'section' => $section,
+                'type' => $type,
+            ]),
+        ]);
+
+        DomiLocalize('language', [
+            'button' => [
+                'edit' => trans('panelio::base.button.edit'),
+                'delete' => trans('panelio::base.button.delete'),
+            ],
+        ]);
+
+        DomiScript('assets/vendor/category/js/list.js');
 
         $data['type'] = $type;
 
