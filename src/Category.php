@@ -52,7 +52,7 @@ class Category
      * @return QueryBuilder
      * @throws Throwable
      */
-    private function query(string $type, array $filter = [], array $with = []): QueryBuilder
+    public function query(string $type, array $filter = [], array $with = []): QueryBuilder
     {
         checkTypeInCategoryTypes($type);
 

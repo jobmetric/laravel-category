@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Facade;
 /**
  * @see \JobMetric\Category\Category
  *
+ * @method static \Spatie\QueryBuilder\QueryBuilder query(string $type, array $filter = [], array $with = [])
  * @method static \Illuminate\Http\Resources\Json\AnonymousResourceCollection paginate(string $type, array $filter = [], int $page_limit = 15, array $with = [])
  * @method static \Illuminate\Http\Resources\Json\AnonymousResourceCollection all(string $type, array $filter = [], array $with = [])
  * @method static array store(array $data)
