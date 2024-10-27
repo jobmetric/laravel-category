@@ -3,6 +3,7 @@
 namespace JobMetric\Category;
 
 use JobMetric\Category\Events\CategoryTypeEvent;
+use JobMetric\PackageCore\Exceptions\AssetFolderNotFoundException;
 use JobMetric\PackageCore\Exceptions\MigrationFolderNotFoundException;
 use JobMetric\PackageCore\Exceptions\RegisterClassTypeNotFoundException;
 use JobMetric\PackageCore\Exceptions\ViewFolderNotFoundException;
@@ -18,6 +19,7 @@ class CategoryServiceProvider extends PackageCoreServiceProvider
      * @throws MigrationFolderNotFoundException
      * @throws RegisterClassTypeNotFoundException
      * @throws ViewFolderNotFoundException
+     * @throws AssetFolderNotFoundException
      */
     public function configuration(PackageCore $package): void
     {
@@ -27,6 +29,7 @@ class CategoryServiceProvider extends PackageCoreServiceProvider
             ->hasTranslation()
             ->hasRoute()
             ->hasView()
+            ->hasAsset()
             ->registerClass('Category', Category::class);
     }
 
