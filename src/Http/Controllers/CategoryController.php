@@ -4,6 +4,7 @@ namespace JobMetric\Category\Http\Controllers;
 
 use Illuminate\Http\Request;
 use JobMetric\Category\Facades\Category;
+use JobMetric\Category\Models\Category as CategoryModel;
 use JobMetric\Domi\Facades\Domi;
 use JobMetric\Panelio\Facades\Breadcrumb;
 use JobMetric\Panelio\Facades\Button;
@@ -50,13 +51,6 @@ class CategoryController extends Controller
             ]),
         ]);
 
-        DomiLocalize('language', [
-            'button' => [
-                'edit' => trans('panelio::base.button.edit'),
-                'delete' => trans('panelio::base.button.delete'),
-            ],
-        ]);
-
         DomiScript('assets/vendor/category/js/list.js');
 
         $data['type'] = $type;
@@ -75,7 +69,7 @@ class CategoryController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, string $panel, string $section, string $type)
     {
         //
     }
@@ -83,7 +77,7 @@ class CategoryController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $panel, string $section, string $type, CategoryModel $category)
     {
         //
     }
@@ -91,7 +85,7 @@ class CategoryController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(string $panel, string $section, string $type, CategoryModel $category)
     {
         //
     }
@@ -99,7 +93,7 @@ class CategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $panel, string $section, string $type, CategoryModel $category)
     {
         //
     }
@@ -107,7 +101,7 @@ class CategoryController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $panel, string $section, string $type, CategoryModel $category)
     {
         //
     }
