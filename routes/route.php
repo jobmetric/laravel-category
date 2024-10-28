@@ -17,7 +17,7 @@ use JobMetric\Panelio\Facades\Middleware;
 Route::prefix('p/{panel}/{section}')->group(function () {
     Route::prefix('category')->name('category.')->namespace('JobMetric\Category\Http\Controllers')->group(function () {
         Route::middleware(Middleware::getMiddlewares())->group(function () {
-            Route::resource('{type}', CategoryController::class);
+            Route::resource('{type}', CategoryController::class)->parameter('{type}', 'jm_category:id');
         });
     });
 });

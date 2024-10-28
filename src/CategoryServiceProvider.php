@@ -2,6 +2,7 @@
 
 namespace JobMetric\Category;
 
+use Illuminate\Support\Facades\Route;
 use JobMetric\Category\Events\CategoryTypeEvent;
 use JobMetric\PackageCore\Exceptions\AssetFolderNotFoundException;
 use JobMetric\PackageCore\Exceptions\MigrationFolderNotFoundException;
@@ -46,5 +47,10 @@ class CategoryServiceProvider extends PackageCoreServiceProvider
 
             return $event->categoryType;
         });
+
+        // Register model binding
+        Route::model('jm_category', \JobMetric\Category\Models\Category::class);
+        Route::model('jm_category_path', \JobMetric\Category\Models\CategoryPath::class);
+        Route::model('jm_category_relation', \JobMetric\Category\Models\CategoryRelation::class);
     }
 }
