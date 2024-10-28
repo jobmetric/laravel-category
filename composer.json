@@ -23,7 +23,6 @@
     "require": {
         "php": ">=8.0.1",
         "laravel/framework": ">=9.19",
-        "jobmetric/laravel-package-core": "^1.12",
         "jobmetric/laravel-translation": "^2.11",
         "jobmetric/laravel-metadata": "^2.4",
         "jobmetric/laravel-comment": "^1.1",
@@ -34,7 +33,7 @@
         "jobmetric/laravel-url": "^1.0",
         "jobmetric/media": "^1.1",
         "jobmetric/domi": "^1.11",
-        "jobmetric/panelio": "^1.6",
+        "jobmetric/panelio": "^1.7",
         "spatie/laravel-query-builder": "^5.7"
     },
     "autoload": {
