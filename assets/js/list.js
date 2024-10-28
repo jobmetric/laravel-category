@@ -41,7 +41,13 @@ $(document).ready(function(){
             {
                 name: 'status',
                 data: function(e) {
-                    return `<div class="text-center">${e.status}</div>`
+                    let text = null
+                    if (e.status) {
+                        text = `<div class="badge badge-light-success">${localize.language.package_core.status.enable}</div>`
+                    } else {
+                        text = `<div class="badge badge-light-danger">${localize.language.package_core.status.disable}</div>`
+                    }
+                    return `<div class="align-center">${text}</div>`
                 },
                 sortable: true
             },
@@ -49,17 +55,17 @@ $(document).ready(function(){
             {
                 name: 'ordering',
                 data: function(e) {
-                    return `<div class="text-center">${e.ordering}</div>`
+                    return `<div class="align-center">${e.ordering}</div>`
                 },
                 sortable: true
             },
             // action
             {
                 data: function(e) {
-                    return `<div>
-                                <a href="${localize.category.route}/${e.id}/edit" class="btn btn-sm btn-light-info btn-icon">
+                    return `<div class="align-center">
+                                <a href="${localize.category.route}/${e.id}/edit" class="btn btn-sm btn-light-info">
                                     <i class="la la-edit fs-2 position-absolute"></i>
-                                    <span class="ms-9">${localize.language.button.edit}</span>
+                                    <span class="ps-9">${localize.language.panelio.button.edit}</span>
                                 </a>
                            </div>`
                 },
