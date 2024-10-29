@@ -23,7 +23,7 @@ $(document).ready(function(){
             {
                 data: function(e) {
                     return `<div class="form-check form-check-custom form-check-solid">
-                                <input class="form-check-input select-one" name="id[]" type="checkbox" value="${e.id}" id="check-single-${e.id}"/>
+                                <input class="form-check-input check-one" name="ids[]" type="checkbox" value="${e.id}" id="check-single-${e.id}"/>
                                 <label class="form-check-label ms-0" for="check-single-${e.id}"></label>
                             </div>`
                 },
@@ -33,7 +33,7 @@ $(document).ready(function(){
             {
                 name: 'name',
                 data: function(e) {
-                    return `<div>${e.name_multiple}</div>`
+                    return `<div class="align-start">${e.name_multiple}</div>`
                 },
                 sortable: true
             },

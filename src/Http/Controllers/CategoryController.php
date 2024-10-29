@@ -5,11 +5,10 @@ namespace JobMetric\Category\Http\Controllers;
 use Illuminate\Http\Request;
 use JobMetric\Category\Facades\Category;
 use JobMetric\Category\Models\Category as CategoryModel;
-use JobMetric\Domi\Facades\Domi;
 use JobMetric\Panelio\Facades\Breadcrumb;
 use JobMetric\Panelio\Facades\Button;
 use JobMetric\Panelio\Facades\Datatable;
-use JobMetric\Panelio\Facades\Panelio;
+use JobMetric\Panelio\Http\Requests\ActionListRequest;
 
 class CategoryController extends Controller
 {
@@ -54,6 +53,12 @@ class CategoryController extends Controller
         DomiScript('assets/vendor/category/js/list.js');
 
         $data['type'] = $type;
+
+        $data['route'] = route('category.options', [
+            'panel' => $panel,
+            'section' => $section,
+            'type' => $type
+        ]);
 
         return view('category::list', $data);
     }
@@ -104,5 +109,32 @@ class CategoryController extends Controller
     public function destroy(string $panel, string $section, string $type, CategoryModel $category)
     {
         //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function options(ActionListRequest $request, string $panel, string $section, string $type)
+    {
+        $ids = $request->input('ids');
+        $action = $request->input('action');
+
+        $alert = null;
+        switch ($action) {
+            case 'status.enable':
+                foreach ($ids as $id) {
+                    Category::update($id, ['status' => true]);
+                }
+                $alert = trans('panelio::base.message.status.enable', ['count' => count($ids)]);
+                break;
+            case 'status.disable':
+                foreach ($ids as $id) {
+                    Category::update($id, ['status' => false]);
+                }
+                $alert = trans('panelio::base.message.status.disable', ['count' => count($ids)]);
+                break;
+        }
+
+        return back()->with('success', $alert);
     }
 }
