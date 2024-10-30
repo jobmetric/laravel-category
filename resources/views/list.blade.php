@@ -1,7 +1,7 @@
 @extends('panelio::layout.layout')
 
 @section('body')
-    <x-list-view name="{{ $name }}" action="{{ $route }}">
+    <x-list-view name="{{ $name }}" action="{{ $route }}" export-action="{{ $export_action }}" import-action="{{ $import_action }}">
         <x-slot name="filter">
             <div class="col-md-3">
                 <div class="mb-5">

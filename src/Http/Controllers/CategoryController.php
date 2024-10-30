@@ -9,6 +9,8 @@ use JobMetric\Panelio\Facades\Breadcrumb;
 use JobMetric\Panelio\Facades\Button;
 use JobMetric\Panelio\Facades\Datatable;
 use JobMetric\Panelio\Http\Requests\ActionListRequest;
+use JobMetric\Panelio\Http\Requests\ExportActionListRequest;
+use JobMetric\Panelio\Http\Requests\ImportActionListRequest;
 
 class CategoryController extends Controller
 {
@@ -40,8 +42,6 @@ class CategoryController extends Controller
         ]));
         Button::status();
 
-//        DomiScript('assets/vendor/category/js/list.js');
-
         DomiLocalize('category', [
             'route' => route('category.{type}.index', [
                 'panel' => $panel,
@@ -60,13 +60,25 @@ class CategoryController extends Controller
             'type' => $type
         ]);
 
+        $data['import_action'] = route('category.import', [
+            'panel' => $panel,
+            'section' => $section,
+            'type' => $type
+        ]);
+
+        $data['export_action'] = route('category.export', [
+            'panel' => $panel,
+            'section' => $section,
+            'type' => $type
+        ]);
+
         return view('category::list', $data);
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(string $panel, string $section, string $type)
     {
         //
     }
@@ -112,7 +124,7 @@ class CategoryController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Run Actions in list
      */
     public function options(ActionListRequest $request, string $panel, string $section, string $type)
     {
@@ -136,5 +148,28 @@ class CategoryController extends Controller
         }
 
         return back()->with('success', $alert);
+    }
+
+    /**
+     * Import data
+     */
+    public function import(ImportActionListRequest $request, string $panel, string $section, string $type)
+    {
+        //
+    }
+
+    /**
+     * Export data
+     */
+    public function export(ExportActionListRequest $request, string $panel, string $section, string $type)
+    {
+        $export_type = $request->type;
+
+        $filePath = public_path('favicon.ico');
+        $fileName = 'favicon.ico';
+
+        return response()->download($filePath, $fileName, [
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"'
+        ]);
     }
 }
