@@ -5,8 +5,8 @@
         <x-slot name="filter">
             <div class="col-md-3">
                 <div class="mb-5">
-                    <label class="form-label">نام</label>
-                    <input type="text" name="translation[name]" class="form-control filter-list" id="filter-name" placeholder="نام را وارد کنید" value="" autocomplete="off">
+                    <label class="form-label">{{ trans('category::base.list.filters.name.title') }}</label>
+                    <input type="text" name="translation[name]" class="form-control filter-list" id="filter-name" placeholder="{{ trans('category::base.list.filters.name.placeholder') }}" value="" autocomplete="off">
                 </div>
             </div>
         </x-slot>
@@ -19,10 +19,10 @@
                         <label class="form-check-label ms-0" for="check-all"></label>
                     </div>
                 </th>
-                <th width="64%">نام</th>
-                <th width="10%" class="text-center">وضعیت</th>
-                <th width="10%" class="text-center">ترتیب</th>
-                <th width="15%" class="text-center">عملیات</th>
+                <th width="64%" class="text-gray-800">نام</th>
+                <th width="10%" class="text-center text-gray-800">{{ trans('category::base.list.columns.status') }}</th>
+                <th width="10%" class="text-center text-gray-800">{{ trans('category::base.list.columns.ordering') }}</th>
+                <th width="15%" class="text-center text-gray-800">{{ trans('category::base.list.columns.action') }}</th>
             </tr>
         </thead>
     </x-list-view>

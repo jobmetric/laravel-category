@@ -33,7 +33,7 @@ $(document).ready(function(){
             {
                 name: 'name',
                 data: function(e) {
-                    return `<div class="align-start">${e.name_multiple}</div>`
+                    return `<div class="align-start text-gray-800">${e.name_multiple}</div>`
                 },
                 sortable: true
             },
@@ -55,7 +55,7 @@ $(document).ready(function(){
             {
                 name: 'ordering',
                 data: function(e) {
-                    return `<div class="align-center">${e.ordering}</div>`
+                    return `<div class="align-center text-gray-800">${e.ordering}</div>`
                 },
                 sortable: true
             },
