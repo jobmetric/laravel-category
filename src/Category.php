@@ -229,6 +229,10 @@ class Category
             $category->status = $data['status'] ?? true;
             $category->save();
 
+            if (isset($data['slug'])) {
+                $category->dispatchUrl($data['slug'], $data['type']);
+            }
+
             foreach ($data['translation'] as $translation_key => $translation_value) {
                 $category->translate(app()->getLocale(), [
                     $translation_key => $translation_value
