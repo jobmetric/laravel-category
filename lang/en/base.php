@@ -40,24 +40,50 @@ return [
         "category_type_not_match" => "The category type ':type' does not match.",
     ],
 
-    'list' => [
-        'filters' => [
-            'name' => [
-                'title' => 'Name',
-                'placeholder' => 'Enter name.',
+    "list" => [
+        "filters" => [
+            "name" => [
+                "title" => "Name",
+                "placeholder" => "Enter name.",
             ],
-            'status' => [
-                'title' => 'Status',
+            "status" => [
+                "title" => "Status",
             ],
         ],
-        'columns' => [
-            'name' => 'Name',
-            'status' => 'Status',
-            'ordering' => 'Ordering',
-            'action' => 'Action',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
+        "columns" => [
+            "name" => "Name",
+            "status" => "Status",
+            "ordering" => "Ordering",
+            "action" => "Action",
+            "created_at" => "Created At",
+            "updated_at" => "Updated At",
         ],
     ],
+
+    "form" => [
+        "create" => [
+            "title" => "Create :type",
+        ],
+        "edit" => [
+            "title" => "Edit :type with ID :number",
+        ],
+        "media" => [
+            "base" => [
+                "title" => "Original Image",
+            ],
+            "gallery" => [
+                "title" => "More Images",
+            ],
+        ],
+        "fields" => [
+            "parent" => [
+                "title" => "Parent",
+            ],
+            "ordering" => [
+                "title" => "Ordering",
+                "placeholder" => "Enter ordering.",
+            ],
+        ],
+    ]
 
 ];

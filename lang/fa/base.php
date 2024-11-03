@@ -40,24 +40,50 @@ return [
         "category_type_not_match" => "نوع دسته بندی ':type' مطابقت ندارد.",
     ],
 
-    'list' => [
-        'filters' => [
-            'name' => [
-                'title' => 'نام',
-                'placeholder' => 'نام را وارد کنید.',
+    "list" => [
+        "filters" => [
+            "name" => [
+                "title" => "نام",
+                "placeholder" => "نام را وارد کنید.",
             ],
-            'status' => [
-                'title' => 'وضعیت',
+            "status" => [
+                "title" => "وضعیت",
             ],
         ],
-        'columns' => [
-            'name' => 'نام',
-            'status' => 'وضعیت',
-            'ordering' => 'ترتیب',
-            'action' => 'عملیات',
-            'created_at' => 'تاریخ ایجاد',
-            'updated_at' => 'تاریخ به روزرسانی',
+        "columns" => [
+            "name" => "نام",
+            "status" => "وضعیت",
+            "ordering" => "ترتیب",
+            "action" => "عملیات",
+            "created_at" => "تاریخ ایجاد",
+            "updated_at" => "تاریخ به روزرسانی",
         ],
     ],
+
+    "form" => [
+        "create" => [
+            "title" => "ایجاد :type",
+        ],
+        "edit" => [
+            "title" => "ویرایش :type شماره :number",
+        ],
+        "media" => [
+            "base" => [
+                "title" => "عکس اصلی",
+            ],
+            "gallery" => [
+                "title" => "تصاویر بیشتر",
+            ],
+        ],
+        "fields" => [
+            "parent" => [
+                "title" => "والد"
+            ],
+            "ordering" => [
+                "title" => "ترتیب",
+                "placeholder" => "ترتیب را وارد کنید.",
+            ],
+        ],
+    ]
 
 ];
