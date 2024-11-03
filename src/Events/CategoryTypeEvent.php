@@ -26,6 +26,7 @@ class CategoryTypeEvent
         $hierarchical = $params['args']['hierarchical'] ?? false;
         $translation = $params['args']['translation'] ?? [];
         $metadata = $params['args']['metadata'] ?? [];
+        $has_url = $params['args']['has_url'] ?? false;
         $has_base_media = $params['args']['has_base_media'] ?? false;
         $media = $params['args']['media'] ?? [];
 
@@ -37,6 +38,7 @@ class CategoryTypeEvent
                     'hierarchical' => $hierarchical,
                     'translation' => $translation,
                     'metadata' => $metadata,
+                    'has_url' => $has_url,
                     'has_base_media' => $has_base_media,
                     'media' => $media,
                 ],

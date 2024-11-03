@@ -41,6 +41,7 @@ if (!function_exists('getCategoryTypeArg')) {
             'hierarchical' => $categoryTypes[$type]['hierarchical'] ?? false,
             'translation' => $categoryTypes[$type]['translation'] ?? [],
             'metadata' => $categoryTypes[$type]['metadata'] ?? [],
+            'has_url' => $categoryTypes[$type]['has_url'] ?? false,
             'has_base_media' => $categoryTypes[$type]['has_base_media'] ?? false,
             'media' => $categoryTypes[$type]['media'] ?? [],
             default => null,
