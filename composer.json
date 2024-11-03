@@ -23,17 +23,17 @@
     "require": {
         "php": ">=8.0.1",
         "laravel/framework": ">=9.19",
-        "jobmetric/laravel-translation": "^2.11",
+        "jobmetric/laravel-translation": "^2.12",
         "jobmetric/laravel-metadata": "^2.4",
         "jobmetric/laravel-comment": "^1.1",
         "jobmetric/laravel-membership": "^1.2",
         "jobmetric/laravel-like": "^1.4",
         "jobmetric/laravel-star": "^1.1",
         "jobmetric/laravel-layout": "^1.1",
-        "jobmetric/laravel-url": "^1.0",
-        "jobmetric/media": "^1.1",
+        "jobmetric/laravel-url": "^1.3",
+        "jobmetric/media": "^1.10",
         "jobmetric/domi": "^1.11",
-        "jobmetric/panelio": "^1.8",
+        "jobmetric/panelio": "^1.9",
         "spatie/laravel-query-builder": "^5.7"
     },
     "autoload": {
