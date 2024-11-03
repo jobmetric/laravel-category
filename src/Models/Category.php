@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use JobMetric\Category\Events\CategoryAllowMemberCollectionEvent;
-use JobMetric\Category\Events\CategoryMediaAllowCollectionEvent;
 use JobMetric\Comment\Contracts\CommentContract;
 use JobMetric\Comment\HasComment;
 use JobMetric\Layout\Contracts\LayoutContract;
@@ -99,7 +98,11 @@ class Category extends Model implements TranslationContract, MetaContract, Media
 
         foreach ($categoryTypes as $type => $categoryType) {
             // Set the translation for the category type.
-            $this->setTrans($type, $categoryType['translation']);
+            $this->setTrans($type, $categoryType['translation']['fields']);
+
+            if (isset($categoryType['translation']['seo']) && $categoryType['translation']['seo']) {
+                $this->setSeoTransFields($type);
+            }
 
             // Set the metadata for the category type.
             $this->setMeta($type, $categoryType['metadata']);
