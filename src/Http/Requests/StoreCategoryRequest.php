@@ -9,10 +9,11 @@ use JobMetric\Category\Rules\CategoryExistRule;
 use JobMetric\Media\Http\Requests\MediaTypeObjectRequest;
 use JobMetric\Metadata\Http\Requests\MetadataTypeObjectRequest;
 use JobMetric\Translation\Http\Requests\TranslationTypeObjectRequest;
+use JobMetric\Url\Http\Requests\UrlTypeObjectRequest;
 
 class StoreCategoryRequest extends FormRequest
 {
-    use TranslationTypeObjectRequest, MetadataTypeObjectRequest, MediaTypeObjectRequest;
+    use TranslationTypeObjectRequest, MetadataTypeObjectRequest, MediaTypeObjectRequest, UrlTypeObjectRequest;
 
     public string|null $type = null;
     public int|null $parent_id = null;
@@ -60,6 +61,9 @@ class StoreCategoryRequest extends FormRequest
         $this->renderTranslationFiled($rules, $categoryTypes[$type], Category::class, 'name', parent_id: $parent_id, parent_where: ['type' => $type]);
         $this->renderMetadataFiled($rules, $categoryTypes[$type]);
         $this->renderMediaFiled($rules, $categoryTypes[$type]);
+        if($categoryTypes[$type]['has_url']) {
+            $this->renderUrlFiled($rules, Category::class, $type);
+        }
 
         if (!getCategoryTypeArg($type, 'hierarchical')) {
             unset($rules['parent_id']);
@@ -113,5 +117,27 @@ class StoreCategoryRequest extends FormRequest
             'ordering' => $this->ordering ?? 0,
             'status' => $this->status ?? true,
         ]);
+    }
+
+    /**
+     * Get custom attributes for validator errors.
+     *
+     * @return array
+     */
+    public function attributes(): array
+    {
+        /*$type = $this->type ?? $this->input('type');
+
+        return [
+            'type' => __('category::category.type'),
+            'parent_id' => __('category::category.parent_id'),
+            'ordering' => __('category::category.ordering'),
+            'status' => __('category::category.status'),
+            'name' => getCategoryTypeArg($type, 'name'),
+            'description' => getCategoryTypeArg($type, 'description'),
+            'media' => getCategoryTypeArg($type, 'media'),
+            'metadata' => getCategoryTypeArg($type, 'metadata'),
+            'url' => getCategoryTypeArg($type, 'url'),
+        ];*/
     }
 }
