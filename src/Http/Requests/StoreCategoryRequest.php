@@ -131,7 +131,7 @@ class StoreCategoryRequest extends FormRequest
         $params = [
             'parent_id' => trans('category::base.form.fields.parent.title'),
             'ordering' => trans('category::base.form.fields.ordering.title'),
-            'status' => trans('package-core::base.status.label'),
+            'status' => trans('package-core::base.components.boolean_status.label'),
             'translation.name' => trans('translation::base.fields.name.label'),
         ];
 
@@ -157,7 +157,7 @@ class StoreCategoryRequest extends FormRequest
         }
 
         if (isset($categoryTypes['has_url']) && $categoryTypes['has_url']) {
-            $params['slug'] = trans('url::base.fields.slug.title');
+            $params['slug'] = trans('url::base.components.url_slug.title');
         }
 
         if (isset($categoryTypes['has_base_media']) && $categoryTypes['has_base_media']) {
