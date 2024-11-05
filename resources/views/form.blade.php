@@ -202,7 +202,7 @@
                                     $metadata_values[$metadata_key] = old('metadata.' . $metadata_key);
                                 }
                             @endphp
-                            <x-metadata-items :items="$metadata" :values="$metadata_values" />
+                            <x-metadata-card :items="$metadata" :values="$metadata_values" />
                         @endif
                     </div>
                 </div>
