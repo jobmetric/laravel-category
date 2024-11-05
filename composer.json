@@ -30,7 +30,7 @@
         "jobmetric/laravel-like": "^1.4",
         "jobmetric/laravel-star": "^1.1",
         "jobmetric/laravel-layout": "^1.1",
-        "jobmetric/laravel-url": "^1.4",
+        "jobmetric/laravel-url": "^1.5",
         "jobmetric/media": "^1.10",
         "jobmetric/domi": "^1.11",
         "jobmetric/panelio": "^1.9",
