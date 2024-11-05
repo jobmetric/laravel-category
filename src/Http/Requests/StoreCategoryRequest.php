@@ -126,18 +126,50 @@ class StoreCategoryRequest extends FormRequest
      */
     public function attributes(): array
     {
-        /*$type = $this->type ?? $this->input('type');
+        $type = $this->type ?? $this->input('type');
 
-        return [
-            'type' => __('category::category.type'),
-            'parent_id' => __('category::category.parent_id'),
-            'ordering' => __('category::category.ordering'),
-            'status' => __('category::category.status'),
-            'name' => getCategoryTypeArg($type, 'name'),
-            'description' => getCategoryTypeArg($type, 'description'),
-            'media' => getCategoryTypeArg($type, 'media'),
-            'metadata' => getCategoryTypeArg($type, 'metadata'),
-            'url' => getCategoryTypeArg($type, 'url'),
-        ];*/
+        $params = [
+            'parent_id' => trans('category::base.form.fields.parent.title'),
+            'ordering' => trans('category::base.form.fields.ordering.title'),
+            'status' => trans('package-core::base.status.label'),
+            'translation.name' => trans('translation::base.fields.name.label'),
+        ];
+
+        $categoryTypes = getCategoryType(type: $type);
+
+        if (isset($categoryTypes['translation'])) {
+            if (isset($categoryTypes['translation']['fields'])) {
+                foreach ($categoryTypes['translation']['fields'] as $field_key => $field_value) {
+                    $params['translation.' . $field_key] = trans($field_value['label']);
+                }
+            }
+            if (isset($categoryTypes['translation']['seo']) && $categoryTypes['translation']['seo']) {
+                $params['translation.meta_title'] = trans('translation::base.fields.meta_title.label');
+                $params['translation.meta_description'] = trans('translation::base.fields.meta_description.label');
+                $params['translation.meta_keywords'] = trans('translation::base.fields.meta_keywords.label');
+            }
+        }
+
+        if (isset($categoryTypes['metadata'])) {
+            foreach ($categoryTypes['metadata'] as $field_key => $field_value) {
+                $params['metadata.' . $field_key] = trans($field_value['label']);
+            }
+        }
+
+        if (isset($categoryTypes['has_url']) && $categoryTypes['has_url']) {
+            $params['slug'] = trans('url::base.fields.slug.title');
+        }
+
+        if (isset($categoryTypes['has_base_media']) && $categoryTypes['has_base_media']) {
+            $params['media.base'] = trans('category::base.form.media.base.title');
+        }
+
+        if (isset($categoryTypes['media'])) {
+            foreach ($categoryTypes['media'] as $media_collection => $media_item) {
+                $params['media.' . $media_collection] = trans('category::base.form.media.' . $media_collection . '.title');
+            }
+        }
+
+        return $params;
     }
 }
