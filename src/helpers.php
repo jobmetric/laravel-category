@@ -7,15 +7,20 @@ if (!function_exists('getCategoryType')) {
      * Get the category type
      *
      * @param string|null $mode
+     * @param string|null $type
      *
      * @return array
      */
-    function getCategoryType(string $mode = null): array
+    function getCategoryType(string $mode = null, string $type = null): array
     {
         $categoryTypes = collect(app('categoryType'));
 
         if ($mode === 'key') {
             return $categoryTypes->keys()->toArray();
+        }
+
+        if ($type) {
+            return $categoryTypes[$type] ?? [];
         }
 
         return $categoryTypes->toArray();
