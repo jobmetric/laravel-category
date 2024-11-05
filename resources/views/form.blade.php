@@ -196,34 +196,13 @@
                         <!--end::Information-->
 
                         @empty(!$metadata)
-                            <!--begin::Metadata-->
-                            <div class="card card-flush py-4 mb-10">
-                                <div class="card-header">
-                                    <div class="card-title">
-                                        <span class="fs-5 fw-bold">{{ trans('package-core::base.cards.metadata_info') }}</span>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    @foreach($metadata as $metadata_key => $metadata_value)
-                                        <div class="mb-10">
-                                            <label class="form-label d-flex justify-content-between align-items-center">
-                                                <span>{{ $metadata_value['label'] }}</span>
-                                                <div class="text-gray-600 fs-7 d-none d-md-block d-lg-none d-xl-block">{{ $metadata_value['info'] }}</div>
-                                            </label>
-                                            @if($metadata_value['type'] === 'text')
-                                                <input type="text" name="metadata[{{ $metadata_key }}]" class="form-control" placeholder="{{ $metadata_value['placeholder'] }}" value="{{ old('metadata.' . $metadata_key) }}">
-                                            @endif
-                                            @if($metadata_value['type'] === 'number')
-                                                <input type="number" name="metadata[{{ $metadata_key }}]" class="form-control" placeholder="{{ $metadata_value['placeholder'] }}" value="{{ old('metadata.' . $metadata_key) }}">
-                                            @endif
-                                            @error('metadata.' . $metadata_key)
-                                                <div class="form-errors text-danger fs-7 mt-2">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                            <!--end::Metadata-->
+                            @php
+                                $metadata_values = [];
+                                foreach($metadata as $metadata_key => $metadata_value) {
+                                    $metadata_values[$metadata_key] = old('metadata.' . $metadata_key);
+                                }
+                            @endphp
+                            <x-metadata-items :items="$metadata" :values="$metadata_values" />
                         @endif
                     </div>
                 </div>
