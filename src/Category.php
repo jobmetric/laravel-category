@@ -250,7 +250,9 @@ class Category
                         $category->attachMedia($media_item, $media_key);
                     }
                 } else {
-                    $category->attachMedia($media_value, $media_key);
+                    if ($media_value) {
+                        $category->attachMedia($media_value, $media_key);
+                    }
                 }
             }
 
