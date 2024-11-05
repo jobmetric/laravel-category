@@ -51,118 +51,19 @@
             <div class="tab-content">
                 <div class="tab-pane fade show active" id="tab_general">
                     <div class="d-flex flex-column gap-7 gap-lg-10">
-                        <!--begin::General Name-->
-                        <div class="card card-flush py-4">
-                            <div class="card-header">
-                                <div class="card-title">
-                                    <span class="fs-5 fw-bold">{{ trans('package-core::base.cards.general_info') }}</span>
-                                </div>
-                                <div class="card-toolbar">
-                                    <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x fs-6 border-0">
-                                        <li class="nav-item">
-                                            <a class="nav-link active" data-bs-toggle="tab" href="#tab_general_public">{{ trans('package-core::base.tabs.basic_info') }}</a>
-                                        </li>
-                                        @if(isset($translation['seo']) && $translation['seo'])
-                                            <li class="nav-item">
-                                                <a class="nav-link" data-bs-toggle="tab" href="#tab_general_seo">{{ trans('package-core::base.tabs.seo') }}</a>
-                                            </li>
-                                        @endif
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="tab-content">
-                                    <div class="tab-pane fade show active" id="tab_general_public" role="tabpanel">
-                                        @if(isset($translation['fields']['name']))
-                                            <div class="mb-10">
-                                                <label class="form-label d-flex justify-content-between align-items-center">
-                                                    <span class="required">{{ trans($translation['fields']['name']['label']) }}</span>
-                                                    <div class="text-gray-600 fs-7 d-none d-md-block d-lg-none d-xl-block">{{ trans($translation['fields']['name']['info']) }}</div>
-                                                </label>
-                                                <input type="text" name="translation[name]" class="form-control" placeholder="{{ trans($translation['fields']['name']['placeholder']) }}" value="{{ old('translation.name') }}">
-                                                <div class="text-gray-600 fs-7 mt-2 d-md-none d-lg-block d-xl-none">{{ trans($translation['fields']['name']['info']) }}</div>
-                                                @error('translation.name')
-                                                    <div class="form-errors text-danger fs-7 mt-2">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                        @else
-                                            <div class="mb-10">
-                                                <label class="form-label d-flex justify-content-between align-items-center">
-                                                    <span class="required">{{ trans('translation::base.fields.name.label') }}</span>
-                                                    <div class="text-gray-600 fs-7 d-none d-md-block d-lg-none d-xl-block">{{ trans('translation::base.fields.name.info') }}</div>
-                                                </label>
-                                                <input type="text" name="translation[name]" class="form-control" placeholder="{{ trans('translation::base.fields.name.placeholder') }}" value="{{ old('translation.name') }}">
-                                                <div class="text-gray-600 fs-7 mt-2 d-md-none d-lg-block d-xl-none">{{ trans('translation::base.fields.name.info') }}</div>
-                                                @error('translation.name')
-                                                    <div class="form-errors text-danger fs-7 mt-2">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                        @endif
-
-                                        @if(isset($translation['fields']))
-                                            @foreach($translation['fields'] as $field_key => $field_value)
-                                                @if($field_key === 'name') @continue @endif
-                                                <div>
-                                                    <label class="form-label d-flex justify-content-between align-items-center">
-                                                        <span>{{ trans($field_value['label']) }}</span>
-                                                        <div class="text-gray-600 fs-7 d-none d-md-block d-lg-none d-xl-block">{{ trans($field_value['info']) }}</div>
-                                                    </label>
-                                                    @if($field_value['type'] === 'textarea')
-                                                        <textarea name="translation[{{ $field_key }}]" class="form-control" placeholder="{{ trans($field_value['placeholder']) }}">{{ old('translation.' . $field_key) }}</textarea>
-                                                    @endif
-                                                    @if($field_value['type'] === 'text')
-                                                        <input type="text" name="translation[{{ $field_key }}]" class="form-control" placeholder="{{ trans($field_value['placeholder']) }}" value="{{ old('translation.' . $field_key) }}">
-                                                    @endif
-                                                    <div class="text-gray-600 fs-7 mt-2 d-md-none d-lg-block d-xl-none">{{ trans($field_value['info']) }}</div>
-                                                    @error('translation.' . $field_key)
-                                                        <div class="form-errors text-danger fs-7 mt-2">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                            @endforeach
-                                        @endif
-                                    </div>
-
-                                    @if(isset($translation['seo']) && $translation['seo'])
-                                        <div class="tab-pane fade" id="tab_general_seo" role="tabpanel">
-                                            <div class="mb-10">
-                                                <label class="form-label d-flex justify-content-between align-items-center">
-                                                    <span>{{ trans('translation::base.fields.meta_title.label') }}</span>
-                                                    <div class="text-gray-600 fs-7 d-none d-md-block d-lg-none d-xl-block">{{ trans('translation::base.fields.meta_title.info') }}</div>
-                                                </label>
-                                                <input type="text" name="translation[meta_title]" class="form-control" placeholder="{{ trans('translation::base.fields.meta_title.placeholder') }}" value="{{ old('translation.meta_title') }}">
-                                                <div class="text-gray-600 fs-7 mt-2 d-md-none d-lg-block d-xl-none">{{ trans('translation::base.fields.meta_title.info') }}</div>
-                                                @error('translation.meta_title')
-                                                    <div class="form-errors text-danger fs-7 mt-2">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="mb-10">
-                                                <label class="form-label d-flex justify-content-between align-items-center">
-                                                    <span>{{ trans('translation::base.fields.meta_description.label') }}</span>
-                                                    <div class="text-gray-600 fs-7 mt-2 d-none d-md-block d-lg-none d-xl-block">{{ trans('translation::base.fields.meta_description.info') }}</div>
-                                                </label>
-                                                <input type="text" name="translation[meta_description]" class="form-control" placeholder="{{ trans('translation::base.fields.meta_description.placeholder') }}" value="{{ old('translation.meta_description') }}">
-                                                <div class="text-gray-600 fs-7 mt-2 d-md- d-lg-block d-xl-none">{{ trans('translation::base.fields.meta_description.info') }}</div>
-                                                @error('translation.meta_description')
-                                                    <div class="form-errors text-danger fs-7 mt-2">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="mb-0">
-                                                <label class="form-label d-flex justify-content-between align-items-center">
-                                                    <span>{{ trans('translation::base.fields.meta_keywords.label') }}</span>
-                                                    <div class="text-gray-600 fs-7 mt-2 d-none d-md-block d-lg-none d-xl-block">{!! trans('translation::base.fields.meta_keywords.info') !!}</div>
-                                                </label>
-                                                <input type="text" name="translation[meta_keywords]" class="form-control" placeholder="{{ trans('translation::base.fields.meta_keywords.placeholder') }}" value="{{ old('translation.meta_keywords') }}">
-                                                <div class="text-gray-600 fs-7 mt-2 d-md-none d-lg-block d-xl-none">{!! trans('translation::base.fields.meta_keywords.info') !!}</div>
-                                                @error('translation.meta_keywords')
-                                                    <div class="form-errors text-danger fs-7 mt-2">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                        <!--end::General Name-->
+                        @php
+                            $translation_values = [];
+                            $translation_values['name'] = old('translation.name');
+                            foreach($translation['fields'] ?? [] as $translation_key => $translation_value) {
+                                $translation_values[$translation_key] = old('translation.' . $translation_key);
+                            }
+                            if (isset($translation['seo']) && $translation['seo']) {
+                                $translation_values['meta_title'] = old('translation.meta_title');
+                                $translation_values['meta_description'] = old('translation.meta_description');
+                                $translation_values['meta_keywords'] = old('translation.meta_keywords');
+                            }
+                        @endphp
+                        <x-translation-card :items="$translation" :values="$translation_values" />
 
                         <!--begin::Information-->
                         <div class="card card-flush py-4 @empty($metadata) mb-10 @endif">
