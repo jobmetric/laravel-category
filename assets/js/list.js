@@ -43,9 +43,9 @@ $(document).ready(function(){
                 data: function(e) {
                     let text = null
                     if (e.status) {
-                        text = `<div class="badge badge-light-success">${localize.language.package_core.status.enable}</div>`
+                        text = `<div class="badge badge-light-success">${localize.language.package_core.components.boolean_status.enable}</div>`
                     } else {
-                        text = `<div class="badge badge-light-danger">${localize.language.package_core.status.disable}</div>`
+                        text = `<div class="badge badge-light-danger">${localize.language.package_core.components.boolean_status.disable}</div>`
                     }
                     return `<div class="align-center">${text}</div>`
                 },
