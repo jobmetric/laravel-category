@@ -24,22 +24,24 @@
                 <!--end::image-->
             @endif
 
-            <!--begin::Slug-->
-            <div class="card card-flush py-4">
-                <div class="card-header">
-                    <div class="card-title">
-                        <span class="fs-5 fw-bold">{{ trans('url::base.fields.slug.title') }}</span>
+            @if($has_url)
+                <!--begin::Slug-->
+                <div class="card card-flush py-4">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="fs-5 fw-bold">{{ trans('url::base.fields.slug.title') }}</span>
+                        </div>
+                    </div>
+                    <div class="card-body pt-0">
+                        <input type="text" name="slug" class="form-control" placeholder="{{ trans('url::base.fields.slug.placeholder') }}" value="{{ old('slug') }}">
+                        @error('slug')
+                            <div class="form-errors text-danger fs-7 mt-2">{{ $message }}</div>
+                        @enderror
+                        <div class="mt-5 text-gray-600 fs-7">{{ trans('url::base.fields.slug.description') }}</div>
                     </div>
                 </div>
-                <div class="card-body pt-0">
-                    <input type="text" name="slug" class="form-control" placeholder="{{ trans('url::base.fields.slug.placeholder') }}" value="{{ old('slug') }}">
-                    @error('slug')
-                        <div class="form-errors text-danger fs-7 mt-2">{{ $message }}</div>
-                    @enderror
-                    <div class="mt-5 text-gray-600 fs-7">{{ trans('url::base.fields.slug.description') }}</div>
-                </div>
-            </div>
-            <!--end::Slug-->
+                <!--end::Slug-->
+            @endif
 
             <!--begin::Status-->
             <div class="card card-flush py-4">
@@ -196,7 +198,7 @@
                         <!--end::General Name-->
 
                         <!--begin::Information-->
-                        <div class="card card-flush py-4 mb-10">
+                        <div class="card card-flush py-4 @empty($metadata) mb-10 @endif">
                             <div class="card-header">
                                 <div class="card-title">
                                     <span class="fs-5 fw-bold">{{ trans('package-core::base.cards.proprietary_info') }}</span>
@@ -225,6 +227,37 @@
                             </div>
                         </div>
                         <!--end::Information-->
+
+                        @empty(!$metadata)
+                            <!--begin::Metadata-->
+                            <div class="card card-flush py-4 mb-10">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <span class="fs-5 fw-bold">{{ trans('package-core::base.cards.metadata_info') }}</span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    @foreach($metadata as $metadata_key => $metadata_value)
+                                        <div class="mb-10">
+                                            <label class="form-label d-flex justify-content-between align-items-center">
+                                                <span>{{ $metadata_value['label'] }}</span>
+                                                <div class="text-gray-600 fs-7 d-none d-md-block d-lg-none d-xl-block">{{ $metadata_value['info'] }}</div>
+                                            </label>
+                                            @if($metadata_value['type'] === 'text')
+                                                <input type="text" name="metadata[{{ $metadata_key }}]" class="form-control" placeholder="{{ $metadata_value['placeholder'] }}" value="{{ old('metadata.' . $metadata_key) }}">
+                                            @endif
+                                            @if($metadata_value['type'] === 'number')
+                                                <input type="number" name="metadata[{{ $metadata_key }}]" class="form-control" placeholder="{{ $metadata_value['placeholder'] }}" value="{{ old('metadata.' . $metadata_key) }}">
+                                            @endif
+                                            @error('metadata.' . $metadata_key)
+                                                <div class="form-errors text-danger fs-7 mt-2">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                            <!--end::Metadata-->
+                        @endif
                     </div>
                 </div>
                 <div class="tab-pane fade" id="tab_option">

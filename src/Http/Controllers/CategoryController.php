@@ -125,6 +125,7 @@ class CategoryController extends Controller
         $data['hierarchical'] = getCategoryTypeArg($type, 'hierarchical');
         $data['translation'] = getCategoryTypeArg($type, 'translation');
         $data['metadata'] = getCategoryTypeArg($type, 'metadata');
+        $data['has_url'] = getCategoryTypeArg($type, 'has_url');
         $data['has_base_media'] = getCategoryTypeArg($type, 'has_base_media');
         $data['media'] = getCategoryTypeArg($type, 'media');
 
@@ -162,7 +163,12 @@ class CategoryController extends Controller
             }
 
             // btn save
-            return redirect()->to($this->route['create']);
+            return redirect()->route('category.{type}.edit', [
+                'panel' => $panel,
+                'section' => $section,
+                'type' => $type,
+                'jm_category' => $category['data']->id
+            ]);
         }
 
         $this->alert($category['message'], 'danger');
