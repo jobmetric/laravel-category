@@ -41,8 +41,8 @@ if (!function_exists('getCategoryTypeArg')) {
         $categoryTypes = getCategoryType();
 
         return match ($arg) {
-            'label' => $categoryTypes[$type]['label'] ?? null,
-            'description' => $categoryTypes[$type]['description'] ?? null,
+            'label' => isset($categoryTypes[$type]['label']) ? trans($categoryTypes[$type]['label']) : null,
+            'description' => isset($categoryTypes[$type]['description']) ? trans($categoryTypes[$type]['description']) : null,
             'hierarchical' => $categoryTypes[$type]['hierarchical'] ?? false,
             'translation' => $categoryTypes[$type]['translation'] ?? [],
             'metadata' => $categoryTypes[$type]['metadata'] ?? [],
