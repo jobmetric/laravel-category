@@ -26,4 +26,6 @@
             </tr>
         </thead>
     </x-list-view>
+
+    <h6 class="mt-10">{{ $description ?? '' }}</h6>
 @endsection
