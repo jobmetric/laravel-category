@@ -65,7 +65,7 @@ return [
             "title" => "ایجاد :type",
         ],
         "edit" => [
-            "title" => "ویرایش :type شماره :number",
+            "title" => "ویرایش :type :name",
         ],
         "media" => [
             "base" => [

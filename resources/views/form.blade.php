@@ -10,14 +10,14 @@
                 <!--begin::image-->
                 <x-file-manager>
                     @if ($has_base_media)
-                        <x-file-single name="{{ trans('category::base.form.media.base.title') }}" collection="base" mime-types="image" value="{{ old('media.base') }}" />
+                        <x-file-single name="{{ trans('category::base.form.media.base.title') }}" collection="base" mime-types="image" value="{{ old('media.base', isset($media_values['base']) ? implode(',', $media_values['base']) : '') }}" />
                     @endif
 
                     @foreach($media as $media_collection => $media_item)
                         @if($media_item['multiple'])
-                            <x-file-multiple name="{{ trans('category::base.form.media.' . $media_collection . '.title') }}" collection="{{ $media_collection }}" mime-types="{{ implode(',', $media_item['mime_types']) }}" value="{{ implode(',', old('media.' . $media_collection, [])) }}" />
+                            <x-file-multiple name="{{ trans('category::base.form.media.' . $media_collection . '.title') }}" collection="{{ $media_collection }}" mime-types="{{ implode(',', $media_item['mime_types']) }}" value="{{ implode(',', old('media.' . $media_collection, $media_values[$media_collection] ?? [])) }}" />
                         @else
-                            <x-file-single name="{{ trans('category::base.form.media.' . $media_collection . '.title') }}" collection="{{ $media_collection }}" mime-types="{{ implode(',', $media_item['mime_types']) }}" value="{{ old('media.' . $media_collection) }}" />
+                            <x-file-single name="{{ trans('category::base.form.media.' . $media_collection . '.title') }}" collection="{{ $media_collection }}" mime-types="{{ implode(',', $media_item['mime_types']) }}" value="{{ old('media.' . $media_collection, isset($media_values[$media_collection]) ? implode(',', $media_values[$media_collection]) : '') }}" />
                         @endif
                     @endforeach
                 </x-file-manager>
@@ -25,10 +25,10 @@
             @endif
 
             @if($has_url)
-                <x-url-slug value="{{ old('slug') }}" />
+                <x-url-slug value="{{ old('slug', $slug ?? null) }}" />
             @endif
 
-            <x-boolean-status value="{{ old('status') }}" />
+            <x-boolean-status value="{{ old('status', $category->status ?? true) }}" />
         </div>
 
         <div class="d-flex flex-column flex-row-fluid gap-7 gap-lg-10">
@@ -77,8 +77,8 @@
                                     <label class="form-label">{{ trans('category::base.form.fields.parent.title') }}</label>
                                     <select name="parent_id" class="form-select" data-control="select2">
                                         <option value="">{{ trans('package-core::base.select.none') }}</option>
-                                        @foreach($categories as $category)
-                                            <option value="{{ $category->id }}" @if(old('parent_id') == $category->id) selected @endif>{{ $category->name_multiple }}</option>
+                                        @foreach($categories as $category_item)
+                                            <option value="{{ $category_item->id }}" @if(old('parent_id', $category->parent_id ?? null) == $category_item->id) selected @endif>{{ $category_item->name_multiple }}</option>
                                         @endforeach
                                     </select>
                                     @error('parent_id')
@@ -87,7 +87,7 @@
                                 </div>
                                 <div class="mb-0">
                                     <label class="form-label">{{ trans('category::base.form.fields.ordering.title') }}</label>
-                                    <input type="number" name="ordering" class="form-control mb-2" placeholder="{{ trans('category::base.form.fields.ordering.placeholder') }}" value="{{ old('ordering') }}">
+                                    <input type="number" name="ordering" class="form-control mb-2" placeholder="{{ trans('category::base.form.fields.ordering.placeholder') }}" value="{{ old('ordering', $category->ordering ?? null) }}">
                                     @error('ordering')
                                         <div class="form-errors text-danger fs-7 mt-2">{{ $message }}</div>
                                     @enderror
@@ -100,7 +100,7 @@
                             @php
                                 $metadata_values = [];
                                 foreach($metadata as $metadata_key => $metadata_value) {
-                                    $metadata_values[$metadata_key] = old('metadata.' . $metadata_key);
+                                    $metadata_values[$metadata_key] = old('metadata.' . $metadata_key, $meta_values[$metadata_key] ?? null);
                                 }
                             @endphp
                             <x-metadata-card :items="$metadata" :values="$metadata_values" />

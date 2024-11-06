@@ -57,6 +57,7 @@ class CategoryController extends Controller
 
         // Set data category
         $data['name'] = getCategoryTypeArg($type);
+        $data['description'] = getCategoryTypeArg($type, 'description');
 
         DomiTitle(getCategoryTypeArg($type));
 
@@ -121,7 +122,6 @@ class CategoryController extends Controller
         $data['type'] = $type;
         $data['action'] = $this->route['store'];
 
-        $data['description'] = getCategoryTypeArg($type, 'description');
         $data['hierarchical'] = getCategoryTypeArg($type, 'hierarchical');
         $data['translation'] = getCategoryTypeArg($type, 'translation');
         $data['metadata'] = getCategoryTypeArg($type, 'metadata');
@@ -154,11 +154,11 @@ class CategoryController extends Controller
         if ($category['ok']) {
             $this->alert($category['message']);
 
-            if($form_data['save'] == 'save.new') {
+            if ($form_data['save'] == 'save.new') {
                 return back();
             }
 
-            if($form_data['save'] == 'save.close') {
+            if ($form_data['save'] == 'save.close') {
                 return redirect()->to($this->route['index']);
             }
 
@@ -181,7 +181,52 @@ class CategoryController extends Controller
      */
     public function edit(string $panel, string $section, string $type, CategoryModel $category)
     {
-        //
+        $category->load(['files', 'metas', 'translations']);
+
+        // Set data category
+        $data['name'] = getCategoryTypeArg($type);
+
+        DomiTitle(trans('category::base.form.edit.title', [
+            'type' => $data['name'],
+            'name' => $category->id
+        ]));
+
+        // Add breadcrumb
+        add_breadcrumb_base($panel, $section);
+        Breadcrumb::add($data['name'], $this->route['index']);
+        Breadcrumb::add(trans('category::base.form.edit.title', [
+            'type' => $data['name'],
+            'name' => $category->id
+        ]));
+
+        // add button
+        Button::save();
+        Button::saveNew();
+        Button::saveClose();
+        Button::cancel($this->route['index']);
+
+        DomiScript('assets/vendor/category/js/form.js');
+
+        $data['type'] = $type;
+        $data['action'] = $this->route['store'];
+
+        $data['hierarchical'] = getCategoryTypeArg($type, 'hierarchical');
+        $data['translation'] = getCategoryTypeArg($type, 'translation');
+        $data['metadata'] = getCategoryTypeArg($type, 'metadata');
+        $data['has_url'] = getCategoryTypeArg($type, 'has_url');
+        $data['has_base_media'] = getCategoryTypeArg($type, 'has_base_media');
+        $data['media'] = getCategoryTypeArg($type, 'media');
+
+        $data['categories'] = Category::all($type);
+
+        $data['slug'] = $category->urlByCollection($type, true);
+        $data['category'] = $category;
+
+        $data['media_values'] = $category->getMediaDataForObject();
+        $data['meta_values'] = $category->getMetaDataForObject();
+
+
+        return view('category::form', $data);
     }
 
     /**
