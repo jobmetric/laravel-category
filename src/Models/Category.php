@@ -24,17 +24,18 @@ use JobMetric\PackageCore\Models\HasBooleanStatus;
 use JobMetric\Star\HasStar;
 use JobMetric\Translation\Contracts\TranslationContract;
 use JobMetric\Translation\HasTranslation;
+use JobMetric\Translation\Models\Translation;
 use JobMetric\Translation\TranslatableWithType;
 use JobMetric\Url\HasUrl;
 
 /**
  * JobMetric\Category\Models\Category
  *
- * @property int id
- * @property int type
- * @property int parent_id
- * @property int ordering
- * @property int status
+ * @property int $id
+ * @property string $type
+ * @property int $parent_id
+ * @property int $ordering
+ * @property bool $status
  *
  * @method static find(int $int)
  */
