@@ -3,6 +3,9 @@
 @section('body')
     <form method="post" action="{{ $action }}" class="form d-flex flex-column flex-lg-row" id="form">
         @csrf
+        @if($mode === 'edit')
+            @method('put')
+        @endif
         <input type="hidden" name="type" value="{{ $type }}">
         <div class="d-flex flex-column gap-7 gap-lg-10 w-100 w-lg-300px mb-7 me-lg-10">
 
@@ -51,7 +54,8 @@
             <div class="tab-content">
                 <div class="tab-pane fade show active" id="tab_general">
                     <div class="d-flex flex-column gap-7 gap-lg-10">
-                        @php
+                        @if($mode === 'create')
+                            @php
                             $translation_values = [];
                             $translation_values['name'] = old('translation.name');
                             foreach($translation['fields'] ?? [] as $translation_key => $translation_value) {
@@ -62,8 +66,28 @@
                                 $translation_values['meta_description'] = old('translation.meta_description');
                                 $translation_values['meta_keywords'] = old('translation.meta_keywords');
                             }
-                        @endphp
-                        <x-translation-card :items="$translation" :values="$translation_values" />
+                            @endphp
+                            <x-translation-card :items="$translation" :values="$translation_values" />
+                        @endif
+
+                        @if($mode === 'edit')
+                            @php
+                            $translation_values = [];
+                            foreach ($languages as $language) {
+                                $translation_values[$language->locale]['name'] = old("translation.$language->locale.name", $translation_edit_values[$language->locale]['name'] ?? null);
+                                foreach($translation['fields'] ?? [] as $translation_key => $translation_value) {
+                                    $translation_values[$language->locale][$translation_key] = old("translation.$language->locale.$translation_key", $translation_edit_values[$language->locale][$translation_key] ?? null);
+                                }
+                                if (isset($translation['seo']) && $translation['seo']) {
+                                    $translation_values[$language->locale]['meta_title'] = old("translation.$language->locale.meta_title", $translation_edit_values[$language->locale]['meta_title'] ?? null);
+                                    $translation_values[$language->locale]['meta_description'] = old("translation.$language->locale.meta_description", $translation_edit_values[$language->locale]['meta_description'] ?? null);
+                                    $translation_values[$language->locale]['meta_keywords'] = old("translation.$language->locale.meta_keywords", $translation_edit_values[$language->locale]['meta_keywords'] ?? null);
+                                }
+                            }
+
+                            @endphp
+                            <x-translation-card :items="$translation" :values="$translation_values" multiple />
+                        @endif
 
                         <!--begin::Information-->
                         <div class="card card-flush py-4 @empty($metadata) mb-10 @endif">

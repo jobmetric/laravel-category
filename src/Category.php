@@ -356,10 +356,12 @@ class Category
             $category->save();
 
             if (array_key_exists('translation', $data)) {
-                foreach ($data['translation'] ?? [] as $translation_key => $translation_value) {
-                    $category->translate(app()->getLocale(), [
-                        $translation_key => $translation_value
-                    ]);
+                foreach ($data['translation'] ?? [] as $locale => $translation_data) {
+                    foreach ($translation_data as $translation_key => $translation_value) {
+                        $category->translate($locale, [
+                            $translation_key => $translation_value
+                        ]);
+                    }
                 }
             }
 

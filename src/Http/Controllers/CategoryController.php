@@ -8,7 +8,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use JobMetric\Category\Facades\Category;
 use JobMetric\Category\Http\Requests\StoreCategoryRequest;
+use JobMetric\Category\Http\Requests\UpdateCategoryRequest;
 use JobMetric\Category\Models\Category as CategoryModel;
+use JobMetric\Language\Facades\Language;
 use JobMetric\Panelio\Facades\Breadcrumb;
 use JobMetric\Panelio\Facades\Button;
 use JobMetric\Panelio\Facades\Datatable;
@@ -97,6 +99,8 @@ class CategoryController extends Controller
      */
     public function create(string $panel, string $section, string $type): View
     {
+        $data['mode'] = 'create';
+
         // Set data category
         $data['name'] = getCategoryTypeArg($type);
 
@@ -178,10 +182,19 @@ class CategoryController extends Controller
 
     /**
      * Show the form for editing the specified resource.
+     *
+     * @param string $panel
+     * @param string $section
+     * @param string $type
+     * @param CategoryModel $category
+     *
+     * @return View
      */
-    public function edit(string $panel, string $section, string $type, CategoryModel $category)
+    public function edit(string $panel, string $section, string $type, CategoryModel $category): View
     {
         $category->load(['files', 'metas', 'translations']);
+
+        $data['mode'] = 'edit';
 
         // Set data category
         $data['name'] = getCategoryTypeArg($type);
@@ -208,7 +221,12 @@ class CategoryController extends Controller
         DomiScript('assets/vendor/category/js/form.js');
 
         $data['type'] = $type;
-        $data['action'] = $this->route['store'];
+        $data['action'] = route('category.{type}.update', [
+            'panel' => $panel,
+            'section' => $section,
+            'type' => $type,
+            'jm_category' => $category->id
+        ]);
 
         $data['hierarchical'] = getCategoryTypeArg($type, 'hierarchical');
         $data['translation'] = getCategoryTypeArg($type, 'translation');
@@ -222,8 +240,11 @@ class CategoryController extends Controller
         $data['slug'] = $category->urlByCollection($type, true);
         $data['category'] = $category;
 
+        $data['translation_edit_values'] = translationResourceData($category->translations);
         $data['media_values'] = $category->getMediaDataForObject();
         $data['meta_values'] = $category->getMetaDataForObject();
+
+        $data['languages'] = Language::all();
 
 
         return view('category::form', $data);
@@ -231,10 +252,45 @@ class CategoryController extends Controller
 
     /**
      * Update the specified resource in storage.
+     *
+     * @param UpdateCategoryRequest $request
+     * @param string $panel
+     * @param string $section
+     * @param string $type
+     * @param CategoryModel $category
+     *
+     * @return RedirectResponse
+     * @throws Throwable
      */
-    public function update(Request $request, string $panel, string $section, string $type, CategoryModel $category)
+    public function update(UpdateCategoryRequest $request, string $panel, string $section, string $type, CategoryModel $category): RedirectResponse
     {
-        //
+        $form_data = $request->all();
+
+        $category = Category::update($category->id, $request->validated());
+
+        if ($category['ok']) {
+            $this->alert($category['message']);
+
+            if ($form_data['save'] == 'save.new') {
+                return redirect()->to($this->route['create']);
+            }
+
+            if ($form_data['save'] == 'save.close') {
+                return redirect()->to($this->route['index']);
+            }
+
+            // btn save
+            return redirect()->route('category.{type}.edit', [
+                'panel' => $panel,
+                'section' => $section,
+                'type' => $type,
+                'jm_category' => $category['data']->id
+            ]);
+        }
+
+        $this->alert($category['message'], 'danger');
+
+        return back();
     }
 
     /**
