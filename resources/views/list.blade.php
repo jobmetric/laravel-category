@@ -5,8 +5,8 @@
         <x-slot name="filter">
             <div class="col-md-3">
                 <div class="mb-5">
-                    <label class="form-label">{{ trans('category::base.list.filters.name.title') }}</label>
-                    <input type="text" name="translation[name]" class="form-control filter-list" id="filter-name" placeholder="{{ trans('category::base.list.filters.name.placeholder') }}" value="" autocomplete="off">
+                    <label class="form-label">{{ trans('taxonomy::base.list.filters.name.title') }}</label>
+                    <input type="text" name="translation[name]" class="form-control filter-list" id="filter-name" placeholder="{{ trans('taxonomy::base.list.filters.name.placeholder') }}" value="" autocomplete="off">
                 </div>
             </div>
         </x-slot>
@@ -20,9 +20,9 @@
                     </div>
                 </th>
                 <th width="64%" class="text-gray-800">نام</th>
-                <th width="10%" class="text-center text-gray-800">{{ trans('category::base.list.columns.status') }}</th>
-                <th width="10%" class="text-center text-gray-800">{{ trans('category::base.list.columns.ordering') }}</th>
-                <th width="15%" class="text-center text-gray-800">{{ trans('category::base.list.columns.action') }}</th>
+                <th width="10%" class="text-center text-gray-800">{{ trans('taxonomy::base.list.columns.status') }}</th>
+                <th width="10%" class="text-center text-gray-800">{{ trans('taxonomy::base.list.columns.ordering') }}</th>
+                <th width="15%" class="text-center text-gray-800">{{ trans('taxonomy::base.list.columns.action') }}</th>
             </tr>
         </thead>
     </x-list-view>

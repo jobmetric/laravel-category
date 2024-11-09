@@ -7,7 +7,7 @@ return [
     | Cache Time
     |--------------------------------------------------------------------------
     |
-    | Cache time for get data category
+    | Cache time for get data taxonomy
     |
     | - set zero for remove cache
     | - set null for forever
@@ -15,7 +15,7 @@ return [
     | - unit: minutes
     */
 
-    "cache_time" => env("CATEGORY_CACHE_TIME", 0),
+    "cache_time" => env("TAXONOMY_CACHE_TIME", 0),
 
     /*
     |--------------------------------------------------------------------------
@@ -26,9 +26,9 @@ return [
     */
 
     "tables" => [
-        'category' => 'categories',
-        'category_path' => 'category_paths',
-        'category_relation' => 'category_relations'
+        'taxonomy' => 'taxonomies',
+        'taxonomy_path' => 'taxonomy_paths',
+        'taxonomy_relation' => 'taxonomy_relations'
     ],
 
     /*
@@ -36,12 +36,12 @@ return [
     | Arrow Icon
     |--------------------------------------------------------------------------
     |
-    | Arrow icon for show category tree
+    | Arrow icon for show taxonomy tree
     */
 
     "arrow_icon" => [
-        'rtl' => env('CATEGORY_ARROW_ICON_RTL', ' ◄ '),
-        'ltr' => env('CATEGORY_ARROW_ICON_LTR', ' ► '),
+        'rtl' => env('TAXONOMY_ARROW_ICON_RTL', ' ◄ '),
+        'ltr' => env('TAXONOMY_ARROW_ICON_LTR', ' ► '),
     ],
 
     /*
@@ -53,8 +53,8 @@ return [
     */
 
     "default_image_size" => [
-        'width' => env('CATEGORY_DEFAULT_IMAGE_SIZE_WIDTH', 100),
-        'height' => env('CATEGORY_DEFAULT_IMAGE_SIZE_HEIGHT', 100),
+        'width' => env('TAXONOMY_DEFAULT_IMAGE_SIZE_WIDTH', 100),
+        'height' => env('TAXONOMY_DEFAULT_IMAGE_SIZE_HEIGHT', 100),
     ],
 
 ];

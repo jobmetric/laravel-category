@@ -1,74 +1,74 @@
 <?php
 
-use JobMetric\Category\Exceptions\CategoryTypeNotMatchException;
+use JobMetric\Taxonomy\Exceptions\TaxonomyTypeNotMatchException;
 
-if (!function_exists('getCategoryType')) {
+if (!function_exists('getTaxonomyType')) {
     /**
-     * Get the category type
+     * Get the taxonomy type
      *
      * @param string|null $mode
      * @param string|null $type
      *
      * @return array
      */
-    function getCategoryType(string $mode = null, string $type = null): array
+    function getTaxonomyType(string $mode = null, string $type = null): array
     {
-        $categoryTypes = collect(app('categoryType'));
+        $taxonomyTypes = collect(app('taxonomyType'));
 
         if ($mode === 'key') {
-            return $categoryTypes->keys()->toArray();
+            return $taxonomyTypes->keys()->toArray();
         }
 
         if ($type) {
-            return $categoryTypes[$type] ?? [];
+            return $taxonomyTypes[$type] ?? [];
         }
 
-        return $categoryTypes->toArray();
+        return $taxonomyTypes->toArray();
     }
 }
 
-if (!function_exists('getCategoryTypeArg')) {
+if (!function_exists('getTaxonomyTypeArg')) {
     /**
-     * Get the category type argument
+     * Get the taxonomy type argument
      *
      * @param string $type
      * @param string $arg
      *
      * @return mixed
      */
-    function getCategoryTypeArg(string $type, string $arg = 'label'): mixed
+    function getTaxonomyTypeArg(string $type, string $arg = 'label'): mixed
     {
-        $categoryTypes = getCategoryType();
+        $taxonomyTypes = getTaxonomyType();
 
         return match ($arg) {
-            'label' => isset($categoryTypes[$type]['label']) ? trans($categoryTypes[$type]['label']) : null,
-            'description' => isset($categoryTypes[$type]['description']) ? trans($categoryTypes[$type]['description']) : null,
-            'hierarchical' => $categoryTypes[$type]['hierarchical'] ?? false,
-            'translation' => $categoryTypes[$type]['translation'] ?? [],
-            'metadata' => $categoryTypes[$type]['metadata'] ?? [],
-            'has_url' => $categoryTypes[$type]['has_url'] ?? false,
-            'has_base_media' => $categoryTypes[$type]['has_base_media'] ?? false,
-            'media' => $categoryTypes[$type]['media'] ?? [],
+            'label' => isset($taxonomyTypes[$type]['label']) ? trans($taxonomyTypes[$type]['label']) : null,
+            'description' => isset($taxonomyTypes[$type]['description']) ? trans($taxonomyTypes[$type]['description']) : null,
+            'hierarchical' => $taxonomyTypes[$type]['hierarchical'] ?? false,
+            'translation' => $taxonomyTypes[$type]['translation'] ?? [],
+            'metadata' => $taxonomyTypes[$type]['metadata'] ?? [],
+            'has_url' => $taxonomyTypes[$type]['has_url'] ?? false,
+            'has_base_media' => $taxonomyTypes[$type]['has_base_media'] ?? false,
+            'media' => $taxonomyTypes[$type]['media'] ?? [],
             default => null,
         };
     }
 }
 
-if (!function_exists('checkTypeInCategoryTypes')) {
+if (!function_exists('checkTypeInTaxonomyTypes')) {
     /**
-     * Check type in category type
+     * Check type in taxonomy type
      *
      * @param string $type
      *
      * @return void
      * @throws Throwable
      */
-    function checkTypeInCategoryTypes(string $type): void
+    function checkTypeInTaxonomyTypes(string $type): void
     {
-        $categoryTypes = getCategoryType();
+        $taxonomyTypes = getTaxonomyType();
 
-        if (!array_key_exists($type, $categoryTypes)) {
-            throw new CategoryTypeNotMatchException($type);
+        if (!array_key_exists($type, $taxonomyTypes)) {
+            throw new TaxonomyTypeNotMatchException($type);
         }
     }
 }

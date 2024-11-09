@@ -1,148 +1,148 @@
 <?php
 
-namespace JobMetric\Category\Tests;
+namespace JobMetric\Taxonomy\Tests;
 
-use JobMetric\Category\Exceptions\CannotMakeParentSubsetOwnChild;
-use JobMetric\Category\Exceptions\CategoryNotFoundException;
-use JobMetric\Category\Exceptions\CategoryUsedException;
-use JobMetric\Category\Facades\Category;
-use JobMetric\Category\Http\Resources\CategoryRelationResource;
-use JobMetric\Category\Http\Resources\CategoryResource;
+use JobMetric\Taxonomy\Exceptions\CannotMakeParentSubsetOwnChild;
+use JobMetric\Taxonomy\Exceptions\TaxonomyNotFoundException;
+use JobMetric\Taxonomy\Exceptions\TaxonomyUsedException;
+use JobMetric\Taxonomy\Facades\Taxonomy;
+use JobMetric\Taxonomy\Http\Resources\TaxonomyRelationResource;
+use JobMetric\Taxonomy\Http\Resources\TaxonomyResource;
 use Throwable;
 
-class CategoryTest extends BaseCategory
+class TaxonomyTest extends BaseTaxonomy
 {
     /**
      * @throws Throwable
      */
     public function test_store()
     {
-        // store category
-        $category = $this->create_category_product();
+        // store taxonomy
+        $taxonomy = $this->create_taxonomy_product();
 
-        $this->assertIsArray($category);
-        $this->assertTrue($category['ok']);
-        $this->assertEquals($category['message'], trans('category::base.messages.created'));
-        $this->assertInstanceOf(CategoryResource::class, $category['data']);
-        $this->assertEquals(201, $category['status']);
+        $this->assertIsArray($taxonomy);
+        $this->assertTrue($taxonomy['ok']);
+        $this->assertEquals($taxonomy['message'], trans('taxonomy::base.messages.created'));
+        $this->assertInstanceOf(TaxonomyResource::class, $taxonomy['data']);
+        $this->assertEquals(201, $taxonomy['status']);
 
-        $this->assertDatabaseHas('categories', [
-            'type' => 'product_category',
+        $this->assertDatabaseHas('taxonomies', [
+            'type' => 'product_taxonomy',
             'parent_id' => null,
             'ordering' => 1,
             'status' => true,
         ]);
 
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $category['data']->id,
-            'path_id' => $category['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomy['data']->id,
+            'path_id' => $taxonomy['data']->id,
             'level' => 0,
         ]);
 
         $this->assertDatabaseHas('translations', [
-            'translatable_type' => 'JobMetric\Category\Models\Category',
-            'translatable_id' => $category['data']->id,
+            'translatable_type' => 'JobMetric\Taxonomy\Models\Taxonomy',
+            'translatable_id' => $taxonomy['data']->id,
             'locale' => app()->getLocale(),
             'key' => 'name',
-            'value' => 'category name',
+            'value' => 'taxonomy name',
         ]);
 
         // store duplicate name
-        $categoryDuplicate = $this->create_category_product();
+        $taxonomyDuplicate = $this->create_taxonomy_product();
 
-        $this->assertIsArray($categoryDuplicate);
-        $this->assertFalse($categoryDuplicate['ok']);
-        $this->assertEquals($categoryDuplicate['message'], trans('category::base.validation.errors'));
-        $this->assertEquals(422, $categoryDuplicate['status']);
+        $this->assertIsArray($taxonomyDuplicate);
+        $this->assertFalse($taxonomyDuplicate['ok']);
+        $this->assertEquals($taxonomyDuplicate['message'], trans('taxonomy::base.validation.errors'));
+        $this->assertEquals(422, $taxonomyDuplicate['status']);
 
-        // store with parent category
-        $parentCategory = Category::store([
-            'type' => 'product_category',
-            'parent_id' => $category['data']->id,
+        // store with parent taxonomy
+        $parentTaxonomy = Taxonomy::store([
+            'type' => 'product_taxonomy',
+            'parent_id' => $taxonomy['data']->id,
             'ordering' => 1,
             'status' => true,
             'translation' => [
-                'name' => 'category name',
-                'description' => 'category description',
-                'meta_title' => 'category meta title',
-                'meta_description' => 'category meta description',
-                'meta_keywords' => 'category meta keywords',
+                'name' => 'taxonomy name',
+                'description' => 'taxonomy description',
+                'meta_title' => 'taxonomy meta title',
+                'meta_description' => 'taxonomy meta description',
+                'meta_keywords' => 'taxonomy meta keywords',
             ],
         ]);
 
-        $this->assertIsArray($parentCategory);
-        $this->assertTrue($parentCategory['ok']);
-        $this->assertEquals($parentCategory['message'], trans('category::base.messages.created'));
-        $this->assertInstanceOf(CategoryResource::class, $parentCategory['data']);
-        $this->assertEquals(201, $parentCategory['status']);
+        $this->assertIsArray($parentTaxonomy);
+        $this->assertTrue($parentTaxonomy['ok']);
+        $this->assertEquals($parentTaxonomy['message'], trans('taxonomy::base.messages.created'));
+        $this->assertInstanceOf(TaxonomyResource::class, $parentTaxonomy['data']);
+        $this->assertEquals(201, $parentTaxonomy['status']);
 
-        // store duplicate name with parent category
-        $categoryDuplicate = Category::store([
-            'type' => 'product_category',
-            'parent_id' => $category['data']->id,
+        // store duplicate name with parent taxonomy
+        $taxonomyDuplicate = Taxonomy::store([
+            'type' => 'product_taxonomy',
+            'parent_id' => $taxonomy['data']->id,
             'ordering' => 1,
             'status' => true,
             'translation' => [
-                'name' => 'category name',
-                'description' => 'category description',
-                'meta_title' => 'category meta title',
-                'meta_description' => 'category meta description',
-                'meta_keywords' => 'category meta keywords',
+                'name' => 'taxonomy name',
+                'description' => 'taxonomy description',
+                'meta_title' => 'taxonomy meta title',
+                'meta_description' => 'taxonomy meta description',
+                'meta_keywords' => 'taxonomy meta keywords',
             ],
         ]);
 
-        $this->assertIsArray($categoryDuplicate);
-        $this->assertFalse($categoryDuplicate['ok']);
-        $this->assertEquals($categoryDuplicate['message'], trans('category::base.validation.errors'));
-        $this->assertEquals(422, $categoryDuplicate['status']);
+        $this->assertIsArray($taxonomyDuplicate);
+        $this->assertFalse($taxonomyDuplicate['ok']);
+        $this->assertEquals($taxonomyDuplicate['message'], trans('taxonomy::base.validation.errors'));
+        $this->assertEquals(422, $taxonomyDuplicate['status']);
 
-        // store product tag category
-        $categoryProductTag = $this->create_category_product_tag();
+        // store product tag taxonomy
+        $taxonomyProductTag = $this->create_taxonomy_product_tag();
 
-        $this->assertIsArray($categoryProductTag);
-        $this->assertTrue($categoryProductTag['ok']);
-        $this->assertEquals($categoryProductTag['message'], trans('category::base.messages.created'));
-        $this->assertInstanceOf(CategoryResource::class, $categoryProductTag['data']);
-        $this->assertEquals(201, $categoryProductTag['status']);
+        $this->assertIsArray($taxonomyProductTag);
+        $this->assertTrue($taxonomyProductTag['ok']);
+        $this->assertEquals($taxonomyProductTag['message'], trans('taxonomy::base.messages.created'));
+        $this->assertInstanceOf(TaxonomyResource::class, $taxonomyProductTag['data']);
+        $this->assertEquals(201, $taxonomyProductTag['status']);
 
-        $this->assertDatabaseMissing('category_paths', [
+        $this->assertDatabaseMissing('taxonomy_paths', [
             'type' => 'product_tag',
-            'category_id' => $categoryProductTag['data']->id,
-            'path_id' => $categoryProductTag['data']->id,
+            'taxonomy_id' => $taxonomyProductTag['data']->id,
+            'path_id' => $taxonomyProductTag['data']->id,
             'level' => 0,
         ]);
 
-        // duplicate product tag category
-        $categoryDuplicate = $this->create_category_product_tag();
+        // duplicate product tag taxonomy
+        $taxonomyDuplicate = $this->create_taxonomy_product_tag();
 
-        $this->assertIsArray($categoryDuplicate);
-        $this->assertFalse($categoryDuplicate['ok']);
-        $this->assertEquals($categoryDuplicate['message'], trans('category::base.validation.errors'));
-        $this->assertEquals(422, $categoryDuplicate['status']);
+        $this->assertIsArray($taxonomyDuplicate);
+        $this->assertFalse($taxonomyDuplicate['ok']);
+        $this->assertEquals($taxonomyDuplicate['message'], trans('taxonomy::base.validation.errors'));
+        $this->assertEquals(422, $taxonomyDuplicate['status']);
 
-        // store product tag category with parent category
-        $parentCategory = Category::store([
+        // store product tag taxonomy with parent taxonomy
+        $parentTaxonomy = Taxonomy::store([
             'type' => 'product_tag',
-            'parent_id' => $categoryProductTag['data']->id,
+            'parent_id' => $taxonomyProductTag['data']->id,
             'ordering' => 1,
             'status' => true,
             'translation' => [
-                'name' => 'category name',
-                'description' => 'category description',
-                'meta_title' => 'category meta title',
-                'meta_description' => 'category meta description',
-                'meta_keywords' => 'category meta keywords',
+                'name' => 'taxonomy name',
+                'description' => 'taxonomy description',
+                'meta_title' => 'taxonomy meta title',
+                'meta_description' => 'taxonomy meta description',
+                'meta_keywords' => 'taxonomy meta keywords',
             ],
         ]);
 
-        $this->assertIsArray($parentCategory);
-        $this->assertTrue($parentCategory['ok']);
-        $this->assertEquals($parentCategory['message'], trans('category::base.messages.created'));
-        $this->assertInstanceOf(CategoryResource::class, $parentCategory['data']);
-        $this->assertEquals(201, $parentCategory['status']);
+        $this->assertIsArray($parentTaxonomy);
+        $this->assertTrue($parentTaxonomy['ok']);
+        $this->assertEquals($parentTaxonomy['message'], trans('taxonomy::base.messages.created'));
+        $this->assertInstanceOf(TaxonomyResource::class, $parentTaxonomy['data']);
+        $this->assertEquals(201, $parentTaxonomy['status']);
 
-        $this->assertDatabaseHas('categories', [
+        $this->assertDatabaseHas('taxonomies', [
             'type' => 'product_tag',
             'parent_id' => null,
             'ordering' => 1,
@@ -155,27 +155,27 @@ class CategoryTest extends BaseCategory
      */
     public function test_update()
     {
-        // category not found
+        // taxonomy not found
         try {
-            $category = Category::update(1000, [
+            $taxonomy = Taxonomy::update(1000, [
                 'ordering' => 1000,
                 'status' => true,
                 'translation' => [
-                    'name' => 'category name',
-                    'description' => 'category description',
-                    'meta_title' => 'category meta title',
-                    'meta_description' => 'category meta description',
-                    'meta_keywords' => 'category meta keywords',
+                    'name' => 'taxonomy name',
+                    'description' => 'taxonomy description',
+                    'meta_title' => 'taxonomy meta title',
+                    'meta_description' => 'taxonomy meta description',
+                    'meta_keywords' => 'taxonomy meta keywords',
                 ],
             ]);
 
-            $this->assertIsArray($category);
+            $this->assertIsArray($taxonomy);
         } catch (Throwable $e) {
-            $this->assertInstanceOf(CategoryNotFoundException::class, $e);
+            $this->assertInstanceOf(TaxonomyNotFoundException::class, $e);
         }
 
         /**
-         * store category - use sample map
+         * store taxonomy - use sample map
          *
          * 1  - A
          * 2  - |__ B
@@ -183,130 +183,130 @@ class CategoryTest extends BaseCategory
          * 4  - |__ |__ |__ D
          * 5  - |__ E
          */
-        $categoryA = Category::store([
-            'type' => 'product_category',
+        $taxonomyA = Taxonomy::store([
+            'type' => 'product_taxonomy',
             'parent_id' => null,
             'translation' => [
                 'name' => 'A'
             ],
         ]);
 
-        // check database category path
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryA['data']->id,
-            'path_id' => $categoryA['data']->id,
+        // check database taxonomy path
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyA['data']->id,
+            'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
 
-        $categoryB = Category::store([
-            'type' => 'product_category',
-            'parent_id' => $categoryA['data']->id,
+        $taxonomyB = Taxonomy::store([
+            'type' => 'product_taxonomy',
+            'parent_id' => $taxonomyA['data']->id,
             'translation' => [
                 'name' => 'B'
             ],
         ]);
 
-        // check database category path
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryB['data']->id,
-            'path_id' => $categoryA['data']->id,
+        // check database taxonomy path
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyB['data']->id,
+            'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryB['data']->id,
-            'path_id' => $categoryB['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyB['data']->id,
+            'path_id' => $taxonomyB['data']->id,
             'level' => 1,
         ]);
 
-        $categoryC = Category::store([
-            'type' => 'product_category',
-            'parent_id' => $categoryB['data']->id,
+        $taxonomyC = Taxonomy::store([
+            'type' => 'product_taxonomy',
+            'parent_id' => $taxonomyB['data']->id,
             'translation' => [
                 'name' => 'C'
             ],
         ]);
 
-        // check database category path
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryC['data']->id,
-            'path_id' => $categoryA['data']->id,
+        // check database taxonomy path
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyC['data']->id,
+            'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryC['data']->id,
-            'path_id' => $categoryB['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyC['data']->id,
+            'path_id' => $taxonomyB['data']->id,
             'level' => 1,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryC['data']->id,
-            'path_id' => $categoryC['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyC['data']->id,
+            'path_id' => $taxonomyC['data']->id,
             'level' => 2,
         ]);
 
-        $categoryD = Category::store([
-            'type' => 'product_category',
-            'parent_id' => $categoryC['data']->id,
+        $taxonomyD = Taxonomy::store([
+            'type' => 'product_taxonomy',
+            'parent_id' => $taxonomyC['data']->id,
             'translation' => [
                 'name' => 'D'
             ],
         ]);
 
-        // check database category path
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryD['data']->id,
-            'path_id' => $categoryA['data']->id,
+        // check database taxonomy path
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyD['data']->id,
+            'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryD['data']->id,
-            'path_id' => $categoryB['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyD['data']->id,
+            'path_id' => $taxonomyB['data']->id,
             'level' => 1,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryD['data']->id,
-            'path_id' => $categoryC['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyD['data']->id,
+            'path_id' => $taxonomyC['data']->id,
             'level' => 2,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryD['data']->id,
-            'path_id' => $categoryD['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyD['data']->id,
+            'path_id' => $taxonomyD['data']->id,
             'level' => 3,
         ]);
 
-        $categoryE = Category::store([
-            'type' => 'product_category',
-            'parent_id' => $categoryA['data']->id,
+        $taxonomyE = Taxonomy::store([
+            'type' => 'product_taxonomy',
+            'parent_id' => $taxonomyA['data']->id,
             'translation' => [
                 'name' => 'E'
             ],
         ]);
 
-        // check database category path
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryE['data']->id,
-            'path_id' => $categoryA['data']->id,
+        // check database taxonomy path
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyE['data']->id,
+            'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryE['data']->id,
-            'path_id' => $categoryE['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyE['data']->id,
+            'path_id' => $taxonomyE['data']->id,
             'level' => 1,
         ]);
 
         /**
-         * update category move C to E - use sample map
+         * update taxonomy move C to E - use sample map
          *
          * 1  - A
          * 2  - |__ B
@@ -314,64 +314,64 @@ class CategoryTest extends BaseCategory
          * 3  - |__ |__ C
          * 4  - |__ |__ |__ D
          */
-        $categoryUpdate = Category::update($categoryC['data']->id, [
-            'parent_id' => $categoryE['data']->id
+        $taxonomyUpdate = Taxonomy::update($taxonomyC['data']->id, [
+            'parent_id' => $taxonomyE['data']->id
         ]);
 
-        $this->assertIsArray($categoryUpdate);
-        $this->assertTrue($categoryUpdate['ok']);
-        $this->assertEquals($categoryUpdate['message'], trans('category::base.messages.updated'));
-        $this->assertInstanceOf(CategoryResource::class, $categoryUpdate['data']);
-        $this->assertEquals(200, $categoryUpdate['status']);
+        $this->assertIsArray($taxonomyUpdate);
+        $this->assertTrue($taxonomyUpdate['ok']);
+        $this->assertEquals($taxonomyUpdate['message'], trans('taxonomy::base.messages.updated'));
+        $this->assertInstanceOf(TaxonomyResource::class, $taxonomyUpdate['data']);
+        $this->assertEquals(200, $taxonomyUpdate['status']);
 
-        // check database category path for C
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryC['data']->id,
-            'path_id' => $categoryA['data']->id,
+        // check database taxonomy path for C
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyC['data']->id,
+            'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryC['data']->id,
-            'path_id' => $categoryE['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyC['data']->id,
+            'path_id' => $taxonomyE['data']->id,
             'level' => 1,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryC['data']->id,
-            'path_id' => $categoryC['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyC['data']->id,
+            'path_id' => $taxonomyC['data']->id,
             'level' => 2,
         ]);
 
-        // check database category path for D
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryD['data']->id,
-            'path_id' => $categoryA['data']->id,
+        // check database taxonomy path for D
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyD['data']->id,
+            'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryD['data']->id,
-            'path_id' => $categoryE['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyD['data']->id,
+            'path_id' => $taxonomyE['data']->id,
             'level' => 1,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryD['data']->id,
-            'path_id' => $categoryC['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyD['data']->id,
+            'path_id' => $taxonomyC['data']->id,
             'level' => 2,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryD['data']->id,
-            'path_id' => $categoryD['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyD['data']->id,
+            'path_id' => $taxonomyD['data']->id,
             'level' => 3,
         ]);
 
         /**
-         * update category move B to E - use sample map
+         * update taxonomy move B to E - use sample map
          *
          * 1  - A
          * 5  - |__ E
@@ -379,38 +379,38 @@ class CategoryTest extends BaseCategory
          * 4  - |__ |__ |__ D
          * 2  - |__ |__ B
          */
-        $categoryUpdate = Category::update($categoryB['data']->id, [
-            'parent_id' => $categoryE['data']->id
+        $taxonomyUpdate = Taxonomy::update($taxonomyB['data']->id, [
+            'parent_id' => $taxonomyE['data']->id
         ]);
 
-        $this->assertIsArray($categoryUpdate);
-        $this->assertTrue($categoryUpdate['ok']);
-        $this->assertEquals($categoryUpdate['message'], trans('category::base.messages.updated'));
-        $this->assertInstanceOf(CategoryResource::class, $categoryUpdate['data']);
-        $this->assertEquals(200, $categoryUpdate['status']);
+        $this->assertIsArray($taxonomyUpdate);
+        $this->assertTrue($taxonomyUpdate['ok']);
+        $this->assertEquals($taxonomyUpdate['message'], trans('taxonomy::base.messages.updated'));
+        $this->assertInstanceOf(TaxonomyResource::class, $taxonomyUpdate['data']);
+        $this->assertEquals(200, $taxonomyUpdate['status']);
 
-        // check database category path for B
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryB['data']->id,
-            'path_id' => $categoryA['data']->id,
+        // check database taxonomy path for B
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyB['data']->id,
+            'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryB['data']->id,
-            'path_id' => $categoryE['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyB['data']->id,
+            'path_id' => $taxonomyE['data']->id,
             'level' => 1,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryB['data']->id,
-            'path_id' => $categoryB['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyB['data']->id,
+            'path_id' => $taxonomyB['data']->id,
             'level' => 2,
         ]);
 
         /**
-         * update category move C to A - use sample map
+         * update taxonomy move C to A - use sample map
          *
          * 1  - A
          * 5  - |__ E
@@ -418,126 +418,126 @@ class CategoryTest extends BaseCategory
          * 3  - |__ C
          * 4  - |__ |__ D
          */
-        $categoryUpdate = Category::update($categoryC['data']->id, [
-            'parent_id' => $categoryA['data']->id
+        $taxonomyUpdate = Taxonomy::update($taxonomyC['data']->id, [
+            'parent_id' => $taxonomyA['data']->id
         ]);
 
-        $this->assertIsArray($categoryUpdate);
-        $this->assertTrue($categoryUpdate['ok']);
-        $this->assertEquals($categoryUpdate['message'], trans('category::base.messages.updated'));
-        $this->assertInstanceOf(CategoryResource::class, $categoryUpdate['data']);
-        $this->assertEquals(200, $categoryUpdate['status']);
+        $this->assertIsArray($taxonomyUpdate);
+        $this->assertTrue($taxonomyUpdate['ok']);
+        $this->assertEquals($taxonomyUpdate['message'], trans('taxonomy::base.messages.updated'));
+        $this->assertInstanceOf(TaxonomyResource::class, $taxonomyUpdate['data']);
+        $this->assertEquals(200, $taxonomyUpdate['status']);
 
-        // check database category path for C
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryC['data']->id,
-            'path_id' => $categoryA['data']->id,
+        // check database taxonomy path for C
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyC['data']->id,
+            'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryC['data']->id,
-            'path_id' => $categoryC['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyC['data']->id,
+            'path_id' => $taxonomyC['data']->id,
             'level' => 1,
         ]);
 
-        // check database category path for D
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryD['data']->id,
-            'path_id' => $categoryA['data']->id,
+        // check database taxonomy path for D
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyD['data']->id,
+            'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryD['data']->id,
-            'path_id' => $categoryC['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyD['data']->id,
+            'path_id' => $taxonomyC['data']->id,
             'level' => 1,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryD['data']->id,
-            'path_id' => $categoryD['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyD['data']->id,
+            'path_id' => $taxonomyD['data']->id,
             'level' => 2,
         ]);
 
         // Entering an illegitimate relationship from A to B
         try {
-            $categoryUpdate = Category::update($categoryA['data']->id, [
-                'parent_id' => $categoryB['data']->id
+            $taxonomyUpdate = Taxonomy::update($taxonomyA['data']->id, [
+                'parent_id' => $taxonomyB['data']->id
             ]);
 
-            $this->assertIsArray($categoryUpdate);
+            $this->assertIsArray($taxonomyUpdate);
         } catch (Throwable $e) {
             $this->assertInstanceOf(CannotMakeParentSubsetOwnChild::class, $e);
         }
 
         // Test Full translation
-        $categoryUpdate = Category::update($categoryA['data']->id, [
+        $taxonomyUpdate = Taxonomy::update($taxonomyA['data']->id, [
             'translation' => [
-                'name' => 'category name updated',
-                'description' => 'category description updated',
-                'meta_title' => 'category meta title updated',
-                'meta_description' => 'category meta description updated',
-                'meta_keywords' => 'category meta keywords updated',
+                'name' => 'taxonomy name updated',
+                'description' => 'taxonomy description updated',
+                'meta_title' => 'taxonomy meta title updated',
+                'meta_description' => 'taxonomy meta description updated',
+                'meta_keywords' => 'taxonomy meta keywords updated',
             ],
         ]);
 
-        $this->assertIsArray($categoryUpdate);
-        $this->assertTrue($categoryUpdate['ok']);
-        $this->assertEquals($categoryUpdate['message'], trans('category::base.messages.updated'));
-        $this->assertInstanceOf(CategoryResource::class, $categoryUpdate['data']);
+        $this->assertIsArray($taxonomyUpdate);
+        $this->assertTrue($taxonomyUpdate['ok']);
+        $this->assertEquals($taxonomyUpdate['message'], trans('taxonomy::base.messages.updated'));
+        $this->assertInstanceOf(TaxonomyResource::class, $taxonomyUpdate['data']);
 
         $this->assertDatabaseHas('translations', [
-            'translatable_type' => 'JobMetric\Category\Models\Category',
-            'translatable_id' => $categoryA['data']->id,
+            'translatable_type' => 'JobMetric\Taxonomy\Models\Taxonomy',
+            'translatable_id' => $taxonomyA['data']->id,
             'locale' => app()->getLocale(),
             'key' => 'name',
-            'value' => 'category name updated',
+            'value' => 'taxonomy name updated',
         ]);
 
         $this->assertDatabaseHas('translations', [
-            'translatable_type' => 'JobMetric\Category\Models\Category',
-            'translatable_id' => $categoryA['data']->id,
+            'translatable_type' => 'JobMetric\Taxonomy\Models\Taxonomy',
+            'translatable_id' => $taxonomyA['data']->id,
             'locale' => app()->getLocale(),
             'key' => 'description',
-            'value' => 'category description updated',
+            'value' => 'taxonomy description updated',
         ]);
 
-        // Store product tag category
-        $categoryProductTag = $this->create_category_product_tag();
+        // Store product tag taxonomy
+        $taxonomyProductTag = $this->create_taxonomy_product_tag();
 
-        // Update product tag category
-        $categoryProductTagUpdate = Category::update($categoryProductTag['data']->id, [
+        // Update product tag taxonomy
+        $taxonomyProductTagUpdate = Taxonomy::update($taxonomyProductTag['data']->id, [
             'translation' => [
-                'name' => 'category name updated',
-                'description' => 'category description updated',
-                'meta_title' => 'category meta title updated',
-                'meta_description' => 'category meta description updated',
-                'meta_keywords' => 'category meta keywords updated',
+                'name' => 'taxonomy name updated',
+                'description' => 'taxonomy description updated',
+                'meta_title' => 'taxonomy meta title updated',
+                'meta_description' => 'taxonomy meta description updated',
+                'meta_keywords' => 'taxonomy meta keywords updated',
             ],
         ]);
 
-        $this->assertIsArray($categoryProductTagUpdate);
-        $this->assertTrue($categoryProductTagUpdate['ok']);
-        $this->assertEquals($categoryProductTagUpdate['message'], trans('category::base.messages.updated'));
-        $this->assertInstanceOf(CategoryResource::class, $categoryProductTagUpdate['data']);
+        $this->assertIsArray($taxonomyProductTagUpdate);
+        $this->assertTrue($taxonomyProductTagUpdate['ok']);
+        $this->assertEquals($taxonomyProductTagUpdate['message'], trans('taxonomy::base.messages.updated'));
+        $this->assertInstanceOf(TaxonomyResource::class, $taxonomyProductTagUpdate['data']);
 
         $this->assertDatabaseHas('translations', [
-            'translatable_type' => 'JobMetric\Category\Models\Category',
-            'translatable_id' => $categoryProductTag['data']->id,
+            'translatable_type' => 'JobMetric\Taxonomy\Models\Taxonomy',
+            'translatable_id' => $taxonomyProductTag['data']->id,
             'locale' => app()->getLocale(),
             'key' => 'name',
-            'value' => 'category name updated',
+            'value' => 'taxonomy name updated',
         ]);
 
         $this->assertDatabaseMissing('translations', [
-            'translatable_type' => 'JobMetric\Category\Models\Category',
-            'translatable_id' => $categoryProductTag['data']->id,
+            'translatable_type' => 'JobMetric\Taxonomy\Models\Taxonomy',
+            'translatable_id' => $taxonomyProductTag['data']->id,
             'locale' => app()->getLocale(),
             'key' => 'description',
-            'value' => 'category description updated',
+            'value' => 'taxonomy description updated',
         ]);
     }
 
@@ -546,17 +546,17 @@ class CategoryTest extends BaseCategory
      */
     public function test_delete()
     {
-        // category not found
+        // taxonomy not found
         try {
-            $category = Category::delete(1000);
+            $taxonomy = Taxonomy::delete(1000);
 
-            $this->assertIsArray($category);
+            $this->assertIsArray($taxonomy);
         } catch (Throwable $e) {
-            $this->assertInstanceOf(CategoryNotFoundException::class, $e);
+            $this->assertInstanceOf(TaxonomyNotFoundException::class, $e);
         }
 
         /**
-         * store category - use sample map
+         * store taxonomy - use sample map
          *
          * 1  - A
          * 2  - |__ B
@@ -564,130 +564,130 @@ class CategoryTest extends BaseCategory
          * 4  - |__ |__ |__ D
          * 5  - |__ E
          */
-        $categoryA = Category::store([
-            'type' => 'product_category',
+        $taxonomyA = Taxonomy::store([
+            'type' => 'product_taxonomy',
             'parent_id' => null,
             'translation' => [
                 'name' => 'A'
             ],
         ]);
 
-        // check database category path
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryA['data']->id,
-            'path_id' => $categoryA['data']->id,
+        // check database taxonomy path
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyA['data']->id,
+            'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
 
-        $categoryB = Category::store([
-            'type' => 'product_category',
-            'parent_id' => $categoryA['data']->id,
+        $taxonomyB = Taxonomy::store([
+            'type' => 'product_taxonomy',
+            'parent_id' => $taxonomyA['data']->id,
             'translation' => [
                 'name' => 'B'
             ],
         ]);
 
-        // check database category path
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryB['data']->id,
-            'path_id' => $categoryA['data']->id,
+        // check database taxonomy path
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyB['data']->id,
+            'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryB['data']->id,
-            'path_id' => $categoryB['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyB['data']->id,
+            'path_id' => $taxonomyB['data']->id,
             'level' => 1,
         ]);
 
-        $categoryC = Category::store([
-            'type' => 'product_category',
-            'parent_id' => $categoryB['data']->id,
+        $taxonomyC = Taxonomy::store([
+            'type' => 'product_taxonomy',
+            'parent_id' => $taxonomyB['data']->id,
             'translation' => [
                 'name' => 'C'
             ],
         ]);
 
-        // check database category path
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryC['data']->id,
-            'path_id' => $categoryA['data']->id,
+        // check database taxonomy path
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyC['data']->id,
+            'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryC['data']->id,
-            'path_id' => $categoryB['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyC['data']->id,
+            'path_id' => $taxonomyB['data']->id,
             'level' => 1,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryC['data']->id,
-            'path_id' => $categoryC['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyC['data']->id,
+            'path_id' => $taxonomyC['data']->id,
             'level' => 2,
         ]);
 
-        $categoryD = Category::store([
-            'type' => 'product_category',
-            'parent_id' => $categoryC['data']->id,
+        $taxonomyD = Taxonomy::store([
+            'type' => 'product_taxonomy',
+            'parent_id' => $taxonomyC['data']->id,
             'translation' => [
                 'name' => 'D'
             ],
         ]);
 
-        // check database category path
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryD['data']->id,
-            'path_id' => $categoryA['data']->id,
+        // check database taxonomy path
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyD['data']->id,
+            'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryD['data']->id,
-            'path_id' => $categoryB['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyD['data']->id,
+            'path_id' => $taxonomyB['data']->id,
             'level' => 1,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryD['data']->id,
-            'path_id' => $categoryC['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyD['data']->id,
+            'path_id' => $taxonomyC['data']->id,
             'level' => 2,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryD['data']->id,
-            'path_id' => $categoryD['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyD['data']->id,
+            'path_id' => $taxonomyD['data']->id,
             'level' => 3,
         ]);
 
-        $categoryE = Category::store([
-            'type' => 'product_category',
-            'parent_id' => $categoryA['data']->id,
+        $taxonomyE = Taxonomy::store([
+            'type' => 'product_taxonomy',
+            'parent_id' => $taxonomyA['data']->id,
             'translation' => [
                 'name' => 'E'
             ],
         ]);
 
-        // check database category path
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryE['data']->id,
-            'path_id' => $categoryA['data']->id,
+        // check database taxonomy path
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyE['data']->id,
+            'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
-        $this->assertDatabaseHas('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryE['data']->id,
-            'path_id' => $categoryE['data']->id,
+        $this->assertDatabaseHas('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyE['data']->id,
+            'path_id' => $taxonomyE['data']->id,
             'level' => 1,
         ]);
 
         /**
-         * delete category E - use sample map
+         * delete taxonomy E - use sample map
          *
          * 1  - A
          * 2  - |__ B
@@ -695,25 +695,25 @@ class CategoryTest extends BaseCategory
          * 4  - |__ |__ |__ D
          * 5  - |__ E -> delete
          */
-        $categoryDelete = Category::delete($categoryE['data']->id);
+        $taxonomyDelete = Taxonomy::delete($taxonomyE['data']->id);
 
-        $this->assertIsArray($categoryDelete);
-        $this->assertTrue($categoryDelete['ok']);
-        $this->assertEquals($categoryDelete['message'], trans('category::base.messages.deleted'));
-        $this->assertInstanceOf(CategoryResource::class, $categoryDelete['data']);
-        $this->assertEquals(200, $categoryDelete['status']);
+        $this->assertIsArray($taxonomyDelete);
+        $this->assertTrue($taxonomyDelete['ok']);
+        $this->assertEquals($taxonomyDelete['message'], trans('taxonomy::base.messages.deleted'));
+        $this->assertInstanceOf(TaxonomyResource::class, $taxonomyDelete['data']);
+        $this->assertEquals(200, $taxonomyDelete['status']);
 
-        // check database category path for E
-        $this->assertDatabaseMissing('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryE['data']->id,
-            'path_id' => $categoryA['data']->id,
+        // check database taxonomy path for E
+        $this->assertDatabaseMissing('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyE['data']->id,
+            'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
-        $this->assertDatabaseMissing('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryE['data']->id,
-            'path_id' => $categoryE['data']->id,
+        $this->assertDatabaseMissing('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyE['data']->id,
+            'path_id' => $taxonomyE['data']->id,
             'level' => 1,
         ]);
 
@@ -727,10 +727,10 @@ class CategoryTest extends BaseCategory
          */
         $product = $this->create_product();
 
-        $product->attachCategory($categoryD['data']->id, 'category');
+        $product->attachTaxonomy($taxonomyD['data']->id, 'taxonomy');
 
         /**
-         * delete category C for error used exception - use sample map
+         * delete taxonomy C for error used exception - use sample map
          *
          * 1  - A
          * 2  - |__ B
@@ -738,11 +738,11 @@ class CategoryTest extends BaseCategory
          * 4  - |__ |__ |__ D -> attach product
          */
         try {
-            $categoryDelete = Category::delete($categoryC['data']->id);
+            $taxonomyDelete = Taxonomy::delete($taxonomyC['data']->id);
 
-            $this->assertIsArray($categoryDelete);
+            $this->assertIsArray($taxonomyDelete);
         } catch (Throwable $e) {
-            $this->assertInstanceOf(CategoryUsedException::class, $e);
+            $this->assertInstanceOf(TaxonomyUsedException::class, $e);
         }
 
         /**
@@ -753,71 +753,71 @@ class CategoryTest extends BaseCategory
          * 3  - |__ |__ C
          * 4  - |__ |__ |__ D -> detach product
          */
-        $product->detachCategory($categoryD['data']->id);
+        $product->detachTaxonomy($taxonomyD['data']->id);
 
         /**
-         * delete category C - use sample map
+         * delete taxonomy C - use sample map
          *
          * 1  - A
          * 2  - |__ B
          * 3  - |__ |__ C -> delete
          * 4  - |__ |__ |__ D
          */
-        $categoryDelete = Category::delete($categoryC['data']->id);
+        $taxonomyDelete = Taxonomy::delete($taxonomyC['data']->id);
 
-        $this->assertIsArray($categoryDelete);
-        $this->assertTrue($categoryDelete['ok']);
-        $this->assertEquals($categoryDelete['message'], trans('category::base.messages.deleted'));
-        $this->assertInstanceOf(CategoryResource::class, $categoryDelete['data']);
-        $this->assertEquals(200, $categoryDelete['status']);
+        $this->assertIsArray($taxonomyDelete);
+        $this->assertTrue($taxonomyDelete['ok']);
+        $this->assertEquals($taxonomyDelete['message'], trans('taxonomy::base.messages.deleted'));
+        $this->assertInstanceOf(TaxonomyResource::class, $taxonomyDelete['data']);
+        $this->assertEquals(200, $taxonomyDelete['status']);
 
         /**
-         * delete category C for not found error - use sample map
+         * delete taxonomy C for not found error - use sample map
          *
          * 1  - A
          * 2  - |__ B
          */
         try {
-            $categoryDelete = Category::delete($categoryC['data']->id);
+            $taxonomyDelete = Taxonomy::delete($taxonomyC['data']->id);
 
-            $this->assertIsArray($categoryDelete);
+            $this->assertIsArray($taxonomyDelete);
         } catch (Throwable $e) {
-            $this->assertInstanceOf(CategoryNotFoundException::class, $e);
+            $this->assertInstanceOf(TaxonomyNotFoundException::class, $e);
         }
 
         /**
-         * delete category A - use sample map
+         * delete taxonomy A - use sample map
          *
          * 1  - A -> delete
          * 2  - |__ B
          */
-        $categoryDelete = Category::delete($categoryA['data']->id);
+        $taxonomyDelete = Taxonomy::delete($taxonomyA['data']->id);
 
-        $this->assertIsArray($categoryDelete);
-        $this->assertTrue($categoryDelete['ok']);
-        $this->assertEquals($categoryDelete['message'], trans('category::base.messages.deleted'));
-        $this->assertInstanceOf(CategoryResource::class, $categoryDelete['data']);
-        $this->assertEquals(200, $categoryDelete['status']);
+        $this->assertIsArray($taxonomyDelete);
+        $this->assertTrue($taxonomyDelete['ok']);
+        $this->assertEquals($taxonomyDelete['message'], trans('taxonomy::base.messages.deleted'));
+        $this->assertInstanceOf(TaxonomyResource::class, $taxonomyDelete['data']);
+        $this->assertEquals(200, $taxonomyDelete['status']);
 
-        // check database category path for A
-        $this->assertDatabaseMissing('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryA['data']->id,
-            'path_id' => $categoryA['data']->id,
+        // check database taxonomy path for A
+        $this->assertDatabaseMissing('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyA['data']->id,
+            'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
 
-        // check database category path for B
-        $this->assertDatabaseMissing('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryB['data']->id,
-            'path_id' => $categoryA['data']->id,
+        // check database taxonomy path for B
+        $this->assertDatabaseMissing('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyB['data']->id,
+            'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
-        $this->assertDatabaseMissing('category_paths', [
-            'type' => 'product_category',
-            'category_id' => $categoryB['data']->id,
-            'path_id' => $categoryB['data']->id,
+        $this->assertDatabaseMissing('taxonomy_paths', [
+            'type' => 'product_taxonomy',
+            'taxonomy_id' => $taxonomyB['data']->id,
+            'path_id' => $taxonomyB['data']->id,
             'level' => 1,
         ]);
     }
@@ -827,66 +827,66 @@ class CategoryTest extends BaseCategory
      */
     public function test_get_name()
     {
-        // category not found
+        // taxonomy not found
         try {
-            $category = Category::delete(1000);
+            $taxonomy = Taxonomy::delete(1000);
 
-            $this->assertIsArray($category);
+            $this->assertIsArray($taxonomy);
         } catch (Throwable $e) {
-            $this->assertInstanceOf(CategoryNotFoundException::class, $e);
+            $this->assertInstanceOf(TaxonomyNotFoundException::class, $e);
         }
 
         /**
-         * store category - use sample map
+         * store taxonomy - use sample map
          *
          * 1  - A
          * 2  - |__ B
          * 3  - |__ |__ C
          * 4  - |__ |__ |__ D
          */
-        $categoryA = Category::store([
-            'type' => 'product_category',
+        $taxonomyA = Taxonomy::store([
+            'type' => 'product_taxonomy',
             'parent_id' => null,
             'translation' => [
                 'name' => 'A'
             ],
         ]);
 
-        $categoryB = Category::store([
-            'type' => 'product_category',
-            'parent_id' => $categoryA['data']->id,
+        $taxonomyB = Taxonomy::store([
+            'type' => 'product_taxonomy',
+            'parent_id' => $taxonomyA['data']->id,
             'translation' => [
                 'name' => 'B'
             ],
         ]);
 
-        $categoryC = Category::store([
-            'type' => 'product_category',
-            'parent_id' => $categoryB['data']->id,
+        $taxonomyC = Taxonomy::store([
+            'type' => 'product_taxonomy',
+            'parent_id' => $taxonomyB['data']->id,
             'translation' => [
                 'name' => 'C'
             ],
         ]);
 
-        $categoryD = Category::store([
-            'type' => 'product_category',
-            'parent_id' => $categoryC['data']->id,
+        $taxonomyD = Taxonomy::store([
+            'type' => 'product_taxonomy',
+            'parent_id' => $taxonomyC['data']->id,
             'translation' => [
                 'name' => 'D'
             ],
         ]);
 
-        // get name of category D full path
-        $categoryName = Category::getName($categoryD['data']->id);
+        // get name of taxonomy D full path
+        $taxonomyName = Taxonomy::getName($taxonomyD['data']->id);
 
-        $this->assertIsString($categoryName);
-        $this->assertEquals('A ► B ► C ► D', $categoryName);
+        $this->assertIsString($taxonomyName);
+        $this->assertEquals('A ► B ► C ► D', $taxonomyName);
 
-        // get name of category D single name
-        $categoryName = Category::getName($categoryD['data']->id, false);
+        // get name of taxonomy D single name
+        $taxonomyName = Taxonomy::getName($taxonomyD['data']->id, false);
 
-        $this->assertIsString($categoryName);
-        $this->assertEquals('D', $categoryName);
+        $this->assertIsString($taxonomyName);
+        $this->assertEquals('D', $taxonomyName);
     }
 
     /**
@@ -895,7 +895,7 @@ class CategoryTest extends BaseCategory
     public function test_all()
     {
         /**
-         * store product category - use sample map
+         * store product taxonomy - use sample map
          *
          * 1  - A
          * 2  - |__ B
@@ -903,55 +903,55 @@ class CategoryTest extends BaseCategory
          * 4  - |__ |__ |__ D
          * 5  - |__ E
          */
-        $categoryA = Category::store([
-            'type' => 'product_category',
+        $taxonomyA = Taxonomy::store([
+            'type' => 'product_taxonomy',
             'parent_id' => null,
             'translation' => [
                 'name' => 'A'
             ],
         ]);
 
-        $categoryB = Category::store([
-            'type' => 'product_category',
-            'parent_id' => $categoryA['data']->id,
+        $taxonomyB = Taxonomy::store([
+            'type' => 'product_taxonomy',
+            'parent_id' => $taxonomyA['data']->id,
             'translation' => [
                 'name' => 'B'
             ],
         ]);
 
-        $categoryC = Category::store([
-            'type' => 'product_category',
-            'parent_id' => $categoryB['data']->id,
+        $taxonomyC = Taxonomy::store([
+            'type' => 'product_taxonomy',
+            'parent_id' => $taxonomyB['data']->id,
             'translation' => [
                 'name' => 'C'
             ],
         ]);
 
-        Category::store([
-            'type' => 'product_category',
-            'parent_id' => $categoryC['data']->id,
+        Taxonomy::store([
+            'type' => 'product_taxonomy',
+            'parent_id' => $taxonomyC['data']->id,
             'translation' => [
                 'name' => 'D'
             ],
         ]);
 
-        Category::store([
-            'type' => 'product_category',
-            'parent_id' => $categoryA['data']->id,
+        Taxonomy::store([
+            'type' => 'product_taxonomy',
+            'parent_id' => $taxonomyA['data']->id,
             'translation' => [
                 'name' => 'E'
             ],
         ]);
 
-        $productCategories = Category::all('product_category');
+        $productCategories = Taxonomy::all('product_taxonomy');
 
         $this->assertCount(5, $productCategories);
 
-        $productCategories->each(function ($productCategory) {
-            $this->assertInstanceOf(CategoryResource::class, $productCategory);
+        $productCategories->each(function ($productTaxonomy) {
+            $this->assertInstanceOf(TaxonomyResource::class, $productTaxonomy);
         });
 
-        $char = config('category.arrow_icon.' . trans('domi::base.direction'));
+        $char = config('taxonomy.arrow_icon.' . trans('domi::base.direction'));
 
         $this->assertEquals('A', $productCategories[0]->name);
         $this->assertArrayHasKey('name_multiple', $productCategories[0]);
@@ -980,33 +980,33 @@ class CategoryTest extends BaseCategory
          * 2  - B
          * 3  - C
          */
-        Category::store([
+        Taxonomy::store([
             'type' => 'product_tag',
             'translation' => [
                 'name' => 'A'
             ],
         ]);
 
-        Category::store([
+        Taxonomy::store([
             'type' => 'product_tag',
             'translation' => [
                 'name' => 'B'
             ],
         ]);
 
-        Category::store([
+        Taxonomy::store([
             'type' => 'product_tag',
             'translation' => [
                 'name' => 'C'
             ],
         ]);
 
-        $productTags = Category::all('product_tag');
+        $productTags = Taxonomy::all('product_tag');
 
         $this->assertCount(3, $productTags);
 
         $productTags->each(function ($productTag) {
-            $this->assertInstanceOf(CategoryResource::class, $productTag);
+            $this->assertInstanceOf(TaxonomyResource::class, $productTag);
         });
 
         $this->assertEquals('A', $productTags[0]->name);
@@ -1025,7 +1025,7 @@ class CategoryTest extends BaseCategory
     public function test_pagination()
     {
         /**
-         * store product category - use sample map
+         * store product taxonomy - use sample map
          *
          * 1  - A
          * 2  - |__ B
@@ -1033,50 +1033,50 @@ class CategoryTest extends BaseCategory
          * 4  - |__ |__ |__ D
          * 5  - |__ E
          */
-        $categoryA = Category::store([
-            'type' => 'product_category',
+        $taxonomyA = Taxonomy::store([
+            'type' => 'product_taxonomy',
             'parent_id' => null,
             'translation' => [
                 'name' => 'A'
             ],
         ]);
 
-        $categoryB = Category::store([
-            'type' => 'product_category',
-            'parent_id' => $categoryA['data']->id,
+        $taxonomyB = Taxonomy::store([
+            'type' => 'product_taxonomy',
+            'parent_id' => $taxonomyA['data']->id,
             'translation' => [
                 'name' => 'B'
             ],
         ]);
 
-        $categoryC = Category::store([
-            'type' => 'product_category',
-            'parent_id' => $categoryB['data']->id,
+        $taxonomyC = Taxonomy::store([
+            'type' => 'product_taxonomy',
+            'parent_id' => $taxonomyB['data']->id,
             'translation' => [
                 'name' => 'C'
             ],
         ]);
 
-        Category::store([
-            'type' => 'product_category',
-            'parent_id' => $categoryC['data']->id,
+        Taxonomy::store([
+            'type' => 'product_taxonomy',
+            'parent_id' => $taxonomyC['data']->id,
             'translation' => [
                 'name' => 'D'
             ],
         ]);
 
-        Category::store([
-            'type' => 'product_category',
-            'parent_id' => $categoryA['data']->id,
+        Taxonomy::store([
+            'type' => 'product_taxonomy',
+            'parent_id' => $taxonomyA['data']->id,
             'translation' => [
                 'name' => 'E'
             ],
         ]);
 
-        $paginateProductCategories = Category::paginate('product_category');
+        $paginateProductCategories = Taxonomy::paginate('product_taxonomy');
 
-        $paginateProductCategories->each(function ($paginateProductCategory) {
-            $this->assertInstanceOf(CategoryResource::class, $paginateProductCategory);
+        $paginateProductCategories->each(function ($paginateProductTaxonomy) {
+            $this->assertInstanceOf(TaxonomyResource::class, $paginateProductTaxonomy);
         });
 
         $this->assertIsInt($paginateProductCategories->total());
@@ -1093,32 +1093,32 @@ class CategoryTest extends BaseCategory
     {
         $product = $this->create_product();
 
-        // Store a category
-        $category_store = $this->create_category_product();
+        // Store a taxonomy
+        $taxonomy_store = $this->create_taxonomy_product();
 
-        // Attach the category to the product
-        $product->attachCategory($category_store['data']->id, 'category');
+        // Attach the taxonomy to the product
+        $product->attachTaxonomy($taxonomy_store['data']->id, 'taxonomy');
 
-        // Get the category used in the product
-        $used_in = Category::usedIn($category_store['data']->id);
+        // Get the taxonomy used in the product
+        $used_in = Taxonomy::usedIn($taxonomy_store['data']->id);
 
         $this->assertIsArray($used_in);
         $this->assertTrue($used_in['ok']);
-        $this->assertEquals($used_in['message'], trans('category::base.messages.used_in', [
+        $this->assertEquals($used_in['message'], trans('taxonomy::base.messages.used_in', [
             'count' => 1
         ]));
         $used_in['data']->each(function ($dataUsedIn) {
-            $this->assertInstanceOf(CategoryRelationResource::class, $dataUsedIn);
+            $this->assertInstanceOf(TaxonomyRelationResource::class, $dataUsedIn);
         });
         $this->assertEquals(200, $used_in['status']);
 
-        // Get the category used in the product with a wrong category id
+        // Get the taxonomy used in the product with a wrong taxonomy id
         try {
-            $used_in = Category::usedIn(1000);
+            $used_in = Taxonomy::usedIn(1000);
 
             $this->assertIsArray($used_in);
         } catch (Throwable $e) {
-            $this->assertInstanceOf(CategoryNotFoundException::class, $e);
+            $this->assertInstanceOf(TaxonomyNotFoundException::class, $e);
         }
     }
 
@@ -1129,24 +1129,24 @@ class CategoryTest extends BaseCategory
     {
         $product = $this->create_product();
 
-        // Store a category
-        $categoryStore = $this->create_category_product();
+        // Store a taxonomy
+        $taxonomyStore = $this->create_taxonomy_product();
 
-        // Attach the category to the product
-        $product->attachCategory($categoryStore['data']->id, 'category');
+        // Attach the taxonomy to the product
+        $product->attachTaxonomy($taxonomyStore['data']->id, 'taxonomy');
 
         // check has used in
-        $usedIn = Category::hasUsed($categoryStore['data']->id);
+        $usedIn = Taxonomy::hasUsed($taxonomyStore['data']->id);
 
         $this->assertTrue($usedIn);
 
-        // check with wrong category id
+        // check with wrong taxonomy id
         try {
-            $usedIn = Category::hasUsed(1000);
+            $usedIn = Taxonomy::hasUsed(1000);
 
             $this->assertIsArray($usedIn);
         } catch (Throwable $e) {
-            $this->assertInstanceOf(CategoryNotFoundException::class, $e);
+            $this->assertInstanceOf(TaxonomyNotFoundException::class, $e);
         }
     }
 }

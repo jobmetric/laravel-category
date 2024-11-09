@@ -1,26 +1,26 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use JobMetric\Category\Http\Controllers\CategoryController;
+use JobMetric\Taxonomy\Http\Controllers\TaxonomyController;
 use JobMetric\Panelio\Facades\Middleware;
 
 /*
 |--------------------------------------------------------------------------
-| Laravel Category Routes
+| Laravel Taxonomy Routes
 |--------------------------------------------------------------------------
 |
-| All Route in Laravel Category package
+| All Route in Laravel Taxonomy package
 |
 */
 
-// category
+// taxonomy
 Route::prefix('p/{panel}/{section}')->group(function () {
-    Route::prefix('category')->name('category.')->namespace('JobMetric\Category\Http\Controllers')->group(function () {
+    Route::prefix('taxonomy')->name('taxonomy.')->namespace('JobMetric\Taxonomy\Http\Controllers')->group(function () {
         Route::middleware(Middleware::getMiddlewares())->group(function () {
-            Route::get('{type}/import', [CategoryController::class, 'import'])->name('import');
-            Route::get('{type}/export', [CategoryController::class, 'export'])->name('export');
-            Route::options('{type}', [CategoryController::class, 'options'])->name('options');
-            Route::resource('{type}', CategoryController::class)->except(['show', 'destroy'])->parameter('{type}', 'jm_category:id');
+            Route::get('{type}/import', [TaxonomyController::class, 'import'])->name('import');
+            Route::get('{type}/export', [TaxonomyController::class, 'export'])->name('export');
+            Route::options('{type}', [TaxonomyController::class, 'options'])->name('options');
+            Route::resource('{type}', TaxonomyController::class)->except(['show', 'destroy'])->parameter('{type}', 'jm_taxonomy:id');
         });
     });
 });

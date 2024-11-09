@@ -1,5 +1,5 @@
 {
-    "name": "jobmetric/laravel-category",
+    "name": "jobmetric/laravel-taxonomy",
     "description": "This is an optimized parent and child classification model for Laravel that you can use in your projects.",
     "type": "library",
     "license": "MIT",
@@ -7,11 +7,9 @@
         "laravel",
         "jobmetric",
         "package",
-        "category",
-        "taxonomy",
-        "tag"
+        "taxonomy"
     ],
-    "homepage": "https://doc.jobmetric.net/package/laravel-category",
+    "homepage": "https://doc.jobmetric.net/package/laravel-taxonomy",
     "authors": [
         {
             "name": "Majid Mohammadian",
@@ -41,24 +39,24 @@
             "src/helpers.php"
         ],
         "psr-4": {
-            "JobMetric\\Category\\": "src/",
-            "JobMetric\\Category\\Factories\\": "database/factories/"
+            "JobMetric\\Taxonomy\\": "src/",
+            "JobMetric\\Taxonomy\\Factories\\": "database/factories/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "JobMetric\\Category\\CategoryServiceProvider"
+                "JobMetric\\Taxonomy\\TaxonomyServiceProvider"
             ],
             "aliases": {
-                "Category": "JobMetric\\Category\\Facades\\Category"
+                "Taxonomy": "JobMetric\\Taxonomy\\Facades\\Taxonomy"
             }
         }
     },
     "minimum-stability": "stable",
     "support": {
-        "issues": "https://github.com/jobmetric/laravel-category/issues",
+        "issues": "https://github.com/jobmetric/laravel-taxonomy/issues",
         "forum": "https://twitter.com/jobmetric",
-        "source": "https://github.com/jobmetric/laravel-category"
+        "source": "https://github.com/jobmetric/laravel-taxonomy"
     }
 }

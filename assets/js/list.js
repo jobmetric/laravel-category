@@ -6,7 +6,7 @@ $(document).ready(function(){
         serverSide: true,
         drawCallback: function(settings) {},
         ajax: {
-            url: localize.category.route,
+            url: localize.taxonomy.route,
             data: function (data) {
                 if (data.order && data.order.length > 0) {
                     data.sort = data.order[0].dir === 'asc' ? data.columns[data.order[0].column].name : `-${data.columns[data.order[0].column].name}`
@@ -67,7 +67,7 @@ $(document).ready(function(){
             {
                 data: function(e) {
                     return `<div class="align-center">
-                                <a href="${localize.category.route}/${e.id}/edit" class="btn btn-sm btn-light-info">
+                                <a href="${localize.taxonomy.route}/${e.id}/edit" class="btn btn-sm btn-light-info">
                                     <i class="la la-edit fs-2 position-absolute"></i>
                                     <span class="ps-9">${localize.language.panelio.button.edit}</span>
                                 </a>

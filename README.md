@@ -1,4 +1,4 @@
-# Category for laravel
+# Taxonomy for laravel
 
 This is an optimized parent and child classification model for Laravel that you can use in your projects
 
@@ -6,7 +6,7 @@ This is an optimized parent and child classification model for Laravel that you 
 
 Run the following command to pull in the latest version:
 ```bash
-composer require jobmetric/laravel-category
+composer require jobmetric/laravel-taxonomy
 ```
 
 ## Documentation

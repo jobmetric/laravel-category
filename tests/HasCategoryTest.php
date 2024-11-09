@@ -1,187 +1,187 @@
 <?php
 
-namespace JobMetric\Category\Tests;
+namespace JobMetric\Taxonomy\Tests;
 
 use App\Models\Product;
-use JobMetric\Category\Exceptions\CategoryCollectionNotInCategoryAllowTypesException;
-use JobMetric\Category\Exceptions\CategoryIsDisableException;
-use JobMetric\Category\Exceptions\InvalidCategoryTypeInCollectionException;
-use JobMetric\Category\Http\Resources\CategoryResource;
-use JobMetric\Category\Models\Category;
+use JobMetric\Taxonomy\Exceptions\TaxonomyCollectionNotInTaxonomyAllowTypesException;
+use JobMetric\Taxonomy\Exceptions\TaxonomyIsDisableException;
+use JobMetric\Taxonomy\Exceptions\InvalidTaxonomyTypeInCollectionException;
+use JobMetric\Taxonomy\Http\Resources\TaxonomyResource;
+use JobMetric\Taxonomy\Models\Taxonomy;
 use Throwable;
 
-class HasCategoryTest extends BaseCategory
+class HasTaxonomyTest extends BaseTaxonomy
 {
     /**
      * @throws Throwable
      */
-    public function test_categories_trait_relationship()
+    public function test_taxonomies_trait_relationship()
     {
         $product = new Product();
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\MorphToMany::class, $product->categories());
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\MorphToMany::class, $product->taxonomies());
     }
 
     /**
      * @throws Throwable
      */
-    public function test_attach_category(): void
+    public function test_attach_taxonomy(): void
     {
         /**
          * @var Product $product
-         * @var Category $category_product_1
-         * @var Category $category_product_2
-         * @var Category $category_product_tag_1
-         * @var Category $category_product_tag_2
-         * @var Category $category_product_tag_3
+         * @var Taxonomy $taxonomy_product_1
+         * @var Taxonomy $taxonomy_product_2
+         * @var Taxonomy $taxonomy_product_tag_1
+         * @var Taxonomy $taxonomy_product_tag_2
+         * @var Taxonomy $taxonomy_product_tag_3
          */
         $product = $this->create_product();
-        $category_product_1 = $this->create_category_for_has('product_category', 'product 1');
-        $category_product_2 = $this->create_category_for_has('product_category', 'product 2');
-        $category_product_tag_1 = $this->create_category_for_has('product_tag', 'product tag 1');
-        $category_product_tag_2 = $this->create_category_for_has('product_tag', 'product tag 2');
-        $category_product_tag_3 = $this->create_category_for_has('product_tag', 'product tag 3', false);
+        $taxonomy_product_1 = $this->create_taxonomy_for_has('product_taxonomy', 'product 1');
+        $taxonomy_product_2 = $this->create_taxonomy_for_has('product_taxonomy', 'product 2');
+        $taxonomy_product_tag_1 = $this->create_taxonomy_for_has('product_tag', 'product tag 1');
+        $taxonomy_product_tag_2 = $this->create_taxonomy_for_has('product_tag', 'product tag 2');
+        $taxonomy_product_tag_3 = $this->create_taxonomy_for_has('product_tag', 'product tag 3', false);
 
         // attach normally single collection
-        $attach_1 = $product->attachCategory($category_product_1->id, 'category');
+        $attach_1 = $product->attachTaxonomy($taxonomy_product_1->id, 'taxonomy');
 
         $this->assertIsArray($attach_1);
         $this->assertTrue($attach_1['ok']);
-        $this->assertEquals($attach_1['message'], trans('category::base.messages.attached'));
-        $this->assertInstanceOf(CategoryResource::class, $attach_1['data']);
+        $this->assertEquals($attach_1['message'], trans('taxonomy::base.messages.attached'));
+        $this->assertInstanceOf(TaxonomyResource::class, $attach_1['data']);
         $this->assertEquals(200, $attach_1['status']);
 
-        $this->assertDatabaseHas(config('category.tables.category_relation'), [
-            'category_id' => $category_product_1->id,
-            'categorizable_id' => $product->id,
-            'categorizable_type' => Product::class,
-            'collection' => 'category'
+        $this->assertDatabaseHas(config('taxonomy.tables.taxonomy_relation'), [
+            'taxonomy_id' => $taxonomy_product_1->id,
+            'taxonomizable_id' => $product->id,
+            'taxonomizable_type' => Product::class,
+            'collection' => 'taxonomy'
         ]);
 
-        $attach_2 = $product->attachCategory($category_product_2->id, 'category');
+        $attach_2 = $product->attachTaxonomy($taxonomy_product_2->id, 'taxonomy');
 
         $this->assertIsArray($attach_2);
         $this->assertTrue($attach_2['ok']);
-        $this->assertEquals($attach_2['message'], trans('category::base.messages.attached'));
-        $this->assertInstanceOf(CategoryResource::class, $attach_2['data']);
+        $this->assertEquals($attach_2['message'], trans('taxonomy::base.messages.attached'));
+        $this->assertInstanceOf(TaxonomyResource::class, $attach_2['data']);
         $this->assertEquals(200, $attach_2['status']);
 
-        $this->assertDatabaseMissing(config('category.tables.category_relation'), [
-            'category_id' => $category_product_1->id,
-            'categorizable_id' => $product->id,
-            'categorizable_type' => Product::class,
-            'collection' => 'category'
+        $this->assertDatabaseMissing(config('taxonomy.tables.taxonomy_relation'), [
+            'taxonomy_id' => $taxonomy_product_1->id,
+            'taxonomizable_id' => $product->id,
+            'taxonomizable_type' => Product::class,
+            'collection' => 'taxonomy'
         ]);
 
-        $this->assertDatabaseHas(config('category.tables.category_relation'), [
-            'category_id' => $category_product_2->id,
-            'categorizable_id' => $product->id,
-            'categorizable_type' => Product::class,
-            'collection' => 'category'
+        $this->assertDatabaseHas(config('taxonomy.tables.taxonomy_relation'), [
+            'taxonomy_id' => $taxonomy_product_2->id,
+            'taxonomizable_id' => $product->id,
+            'taxonomizable_type' => Product::class,
+            'collection' => 'taxonomy'
         ]);
 
         // attach normally multiple collection
-        $attach_1 = $product->attachCategory($category_product_tag_1->id, 'tag');
+        $attach_1 = $product->attachTaxonomy($taxonomy_product_tag_1->id, 'tag');
 
         $this->assertIsArray($attach_1);
         $this->assertTrue($attach_1['ok']);
-        $this->assertEquals($attach_1['message'], trans('category::base.messages.attached'));
-        $this->assertInstanceOf(CategoryResource::class, $attach_1['data']);
+        $this->assertEquals($attach_1['message'], trans('taxonomy::base.messages.attached'));
+        $this->assertInstanceOf(TaxonomyResource::class, $attach_1['data']);
         $this->assertEquals(200, $attach_1['status']);
 
-        $this->assertDatabaseHas(config('category.tables.category_relation'), [
-            'category_id' => $category_product_tag_1->id,
-            'categorizable_id' => $product->id,
-            'categorizable_type' => Product::class,
+        $this->assertDatabaseHas(config('taxonomy.tables.taxonomy_relation'), [
+            'taxonomy_id' => $taxonomy_product_tag_1->id,
+            'taxonomizable_id' => $product->id,
+            'taxonomizable_type' => Product::class,
             'collection' => 'tag'
         ]);
 
-        $attach_2 = $product->attachCategory($category_product_tag_2->id, 'tag');
+        $attach_2 = $product->attachTaxonomy($taxonomy_product_tag_2->id, 'tag');
 
         $this->assertIsArray($attach_1);
         $this->assertTrue($attach_2['ok']);
-        $this->assertEquals($attach_2['message'], trans('category::base.messages.attached'));
-        $this->assertInstanceOf(CategoryResource::class, $attach_2['data']);
+        $this->assertEquals($attach_2['message'], trans('taxonomy::base.messages.attached'));
+        $this->assertInstanceOf(TaxonomyResource::class, $attach_2['data']);
         $this->assertEquals(200, $attach_2['status']);
 
-        $this->assertDatabaseHas(config('category.tables.category_relation'), [
-            'category_id' => $category_product_tag_1->id,
-            'categorizable_id' => $product->id,
-            'categorizable_type' => Product::class,
+        $this->assertDatabaseHas(config('taxonomy.tables.taxonomy_relation'), [
+            'taxonomy_id' => $taxonomy_product_tag_1->id,
+            'taxonomizable_id' => $product->id,
+            'taxonomizable_type' => Product::class,
             'collection' => 'tag'
         ]);
-        $this->assertDatabaseHas(config('category.tables.category_relation'), [
-            'category_id' => $category_product_tag_2->id,
-            'categorizable_id' => $product->id,
-            'categorizable_type' => Product::class,
+        $this->assertDatabaseHas(config('taxonomy.tables.taxonomy_relation'), [
+            'taxonomy_id' => $taxonomy_product_tag_2->id,
+            'taxonomizable_id' => $product->id,
+            'taxonomizable_type' => Product::class,
             'collection' => 'tag'
         ]);
 
         // attach invalid collection
         try {
-            $product->attachCategory($category_product_1->id, 'invalid_collection');
+            $product->attachTaxonomy($taxonomy_product_1->id, 'invalid_collection');
         } catch (Throwable $e) {
-            $this->assertInstanceOf(CategoryCollectionNotInCategoryAllowTypesException::class, $e);
+            $this->assertInstanceOf(TaxonomyCollectionNotInTaxonomyAllowTypesException::class, $e);
         }
 
         // attach invalid collection type
         try {
-            $product->attachCategory($category_product_1->id, 'tag');
+            $product->attachTaxonomy($taxonomy_product_1->id, 'tag');
         } catch (Throwable $e) {
-            $this->assertInstanceOf(InvalidCategoryTypeInCollectionException::class, $e);
+            $this->assertInstanceOf(InvalidTaxonomyTypeInCollectionException::class, $e);
         }
 
-        // attach disabled category
+        // attach disabled taxonomy
         try {
-            $product->attachCategory($category_product_tag_3->id, 'tag');
+            $product->attachTaxonomy($taxonomy_product_tag_3->id, 'tag');
         } catch (Throwable $e) {
-            $this->assertInstanceOf(CategoryIsDisableException::class, $e);
+            $this->assertInstanceOf(TaxonomyIsDisableException::class, $e);
         }
     }
 
     /**
      * @throws Throwable
      */
-    public function test_attach_categories(): void
+    public function test_attach_taxonomies(): void
     {
         /**
          * @var Product $product
-         * @var Category $category_product_tag_1
-         * @var Category $category_product_tag_2
-         * @var Category $category_product_tag_3
+         * @var Taxonomy $taxonomy_product_tag_1
+         * @var Taxonomy $taxonomy_product_tag_2
+         * @var Taxonomy $taxonomy_product_tag_3
          */
         $product = $this->create_product();
-        $category_product_tag_1 = $this->create_category_for_has('product_tag', 'product tag 1');
-        $category_product_tag_2 = $this->create_category_for_has('product_tag', 'product tag 2');
-        $category_product_tag_3 = $this->create_category_for_has('product_tag', 'product tag 3');
+        $taxonomy_product_tag_1 = $this->create_taxonomy_for_has('product_tag', 'product tag 1');
+        $taxonomy_product_tag_2 = $this->create_taxonomy_for_has('product_tag', 'product tag 2');
+        $taxonomy_product_tag_3 = $this->create_taxonomy_for_has('product_tag', 'product tag 3');
 
-        // attach multiple category
+        // attach multiple taxonomy
         $attach_1 = $product->attachCategories([
-            $category_product_tag_1->id,
-            $category_product_tag_2->id,
-            $category_product_tag_3->id,
+            $taxonomy_product_tag_1->id,
+            $taxonomy_product_tag_2->id,
+            $taxonomy_product_tag_3->id,
         ], 'tag');
 
         $this->assertIsArray($attach_1);
         $this->assertTrue($attach_1['ok']);
-        $this->assertEquals($attach_1['message'], trans('category::base.messages.multi_attached'));
+        $this->assertEquals($attach_1['message'], trans('taxonomy::base.messages.multi_attached'));
         $this->assertEquals(200, $attach_1['status']);
 
-        $this->assertDatabaseHas(config('category.tables.category_relation'), [
-            'category_id' => $category_product_tag_1->id,
-            'categorizable_id' => $product->id,
-            'categorizable_type' => Product::class,
+        $this->assertDatabaseHas(config('taxonomy.tables.taxonomy_relation'), [
+            'taxonomy_id' => $taxonomy_product_tag_1->id,
+            'taxonomizable_id' => $product->id,
+            'taxonomizable_type' => Product::class,
             'collection' => 'tag'
         ]);
-        $this->assertDatabaseHas(config('category.tables.category_relation'), [
-            'category_id' => $category_product_tag_2->id,
-            'categorizable_id' => $product->id,
-            'categorizable_type' => Product::class,
+        $this->assertDatabaseHas(config('taxonomy.tables.taxonomy_relation'), [
+            'taxonomy_id' => $taxonomy_product_tag_2->id,
+            'taxonomizable_id' => $product->id,
+            'taxonomizable_type' => Product::class,
             'collection' => 'tag'
         ]);
-        $this->assertDatabaseHas(config('category.tables.category_relation'), [
-            'category_id' => $category_product_tag_3->id,
-            'categorizable_id' => $product->id,
-            'categorizable_type' => Product::class,
+        $this->assertDatabaseHas(config('taxonomy.tables.taxonomy_relation'), [
+            'taxonomy_id' => $taxonomy_product_tag_3->id,
+            'taxonomizable_id' => $product->id,
+            'taxonomizable_type' => Product::class,
             'collection' => 'tag'
         ]);
     }
@@ -189,36 +189,36 @@ class HasCategoryTest extends BaseCategory
     /**
      * @throws Throwable
      */
-    public function test_detach_category(): void
+    public function test_detach_taxonomy(): void
     {
         /**
          * @var Product $product
-         * @var Category $category_product
+         * @var Taxonomy $taxonomy_product
          */
         $product = $this->create_product();
-        $category_product = $this->create_category_for_has('product_category', 'product');
+        $taxonomy_product = $this->create_taxonomy_for_has('product_taxonomy', 'product');
 
-        // attach category
-        $product->attachCategory($category_product->id, 'category');
+        // attach taxonomy
+        $product->attachTaxonomy($taxonomy_product->id, 'taxonomy');
 
-        $detach = $product->detachCategory($category_product->id);
+        $detach = $product->detachTaxonomy($taxonomy_product->id);
 
         $this->assertIsArray($detach);
 
-        $this->assertDatabaseMissing(config('category.tables.category_relation'), [
-            'category_id' => $category_product->id,
-            'categorizable_id' => $product->id,
-            'categorizable_type' => Product::class,
-            'collection' => 'category'
+        $this->assertDatabaseMissing(config('taxonomy.tables.taxonomy_relation'), [
+            'taxonomy_id' => $taxonomy_product->id,
+            'taxonomizable_id' => $product->id,
+            'taxonomizable_type' => Product::class,
+            'collection' => 'taxonomy'
         ]);
     }
 
     /**
      * @throws Throwable
      */
-    public function test_get_category_by_collection(): void
+    public function test_get_taxonomy_by_collection(): void
     {
         $product = new Product();
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\MorphToMany::class, $product->getCategoryByCollection('category'));
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\MorphToMany::class, $product->getTaxonomyByCollection('taxonomy'));
     }
 }

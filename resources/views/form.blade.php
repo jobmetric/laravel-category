@@ -13,14 +13,14 @@
                 <!--begin::image-->
                 <x-file-manager>
                     @if ($has_base_media)
-                        <x-file-single name="{{ trans('category::base.form.media.base.title') }}" collection="base" mime-types="image" value="{{ old('media.base', isset($media_values['base']) ? implode(',', $media_values['base']) : '') }}" />
+                        <x-file-single name="{{ trans('taxonomy::base.form.media.base.title') }}" collection="base" mime-types="image" value="{{ old('media.base', isset($media_values['base']) ? implode(',', $media_values['base']) : '') }}" />
                     @endif
 
                     @foreach($media as $media_collection => $media_item)
                         @if($media_item['multiple'])
-                            <x-file-multiple name="{{ trans('category::base.form.media.' . $media_collection . '.title') }}" collection="{{ $media_collection }}" mime-types="{{ implode(',', $media_item['mime_types']) }}" value="{{ implode(',', old('media.' . $media_collection, $media_values[$media_collection] ?? [])) }}" />
+                            <x-file-multiple name="{{ trans('taxonomy::base.form.media.' . $media_collection . '.title') }}" collection="{{ $media_collection }}" mime-types="{{ implode(',', $media_item['mime_types']) }}" value="{{ implode(',', old('media.' . $media_collection, $media_values[$media_collection] ?? [])) }}" />
                         @else
-                            <x-file-single name="{{ trans('category::base.form.media.' . $media_collection . '.title') }}" collection="{{ $media_collection }}" mime-types="{{ implode(',', $media_item['mime_types']) }}" value="{{ old('media.' . $media_collection, isset($media_values[$media_collection]) ? implode(',', $media_values[$media_collection]) : '') }}" />
+                            <x-file-single name="{{ trans('taxonomy::base.form.media.' . $media_collection . '.title') }}" collection="{{ $media_collection }}" mime-types="{{ implode(',', $media_item['mime_types']) }}" value="{{ old('media.' . $media_collection, isset($media_values[$media_collection]) ? implode(',', $media_values[$media_collection]) : '') }}" />
                         @endif
                     @endforeach
                 </x-file-manager>
@@ -31,7 +31,7 @@
                 <x-url-slug value="{{ old('slug', $slug ?? null) }}" />
             @endif
 
-            <x-boolean-status value="{{ old('status', $category->status ?? true) }}" />
+            <x-boolean-status value="{{ old('status', $taxonomy->status ?? true) }}" />
         </div>
 
         <div class="d-flex flex-column flex-row-fluid gap-7 gap-lg-10">
@@ -98,11 +98,11 @@
                             </div>
                             <div class="card-body">
                                 <div class="mb-10">
-                                    <label class="form-label">{{ trans('category::base.form.fields.parent.title') }}</label>
+                                    <label class="form-label">{{ trans('taxonomy::base.form.fields.parent.title') }}</label>
                                     <select name="parent_id" class="form-select" data-control="select2">
                                         <option value="">{{ trans('package-core::base.select.none') }}</option>
-                                        @foreach($categories as $category_item)
-                                            <option value="{{ $category_item->id }}" @if(old('parent_id', $category->parent_id ?? null) == $category_item->id) selected @endif>{{ $category_item->name_multiple }}</option>
+                                        @foreach($taxonomies as $taxonomy_item)
+                                            <option value="{{ $taxonomy_item->id }}" @if(old('parent_id', $taxonomy->parent_id ?? null) == $taxonomy_item->id) selected @endif>{{ $taxonomy_item->name_multiple }}</option>
                                         @endforeach
                                     </select>
                                     @error('parent_id')
@@ -110,8 +110,8 @@
                                     @enderror
                                 </div>
                                 <div class="mb-0">
-                                    <label class="form-label">{{ trans('category::base.form.fields.ordering.title') }}</label>
-                                    <input type="number" name="ordering" class="form-control mb-2" placeholder="{{ trans('category::base.form.fields.ordering.placeholder') }}" value="{{ old('ordering', $category->ordering ?? null) }}">
+                                    <label class="form-label">{{ trans('taxonomy::base.form.fields.ordering.title') }}</label>
+                                    <input type="number" name="ordering" class="form-control mb-2" placeholder="{{ trans('taxonomy::base.form.fields.ordering.placeholder') }}" value="{{ old('ordering', $taxonomy->ordering ?? null) }}">
                                     @error('ordering')
                                         <div class="form-errors text-danger fs-7 mt-2">{{ $message }}</div>
                                     @enderror

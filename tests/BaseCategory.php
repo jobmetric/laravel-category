@@ -1,14 +1,14 @@
 <?php
 
-namespace JobMetric\Category\Tests;
+namespace JobMetric\Taxonomy\Tests;
 
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Model;
-use JobMetric\Category\Facades\Category;
-use JobMetric\Category\Models\Category as CategoryModels;
+use JobMetric\Taxonomy\Facades\Taxonomy;
+use JobMetric\Taxonomy\Models\Taxonomy as TaxonomyModels;
 use Tests\BaseDatabaseTestCase as BaseTestCase;
 
-class BaseCategory extends BaseTestCase
+class BaseTaxonomy extends BaseTestCase
 {
     /**
      * create a fake product
@@ -21,7 +21,7 @@ class BaseCategory extends BaseTestCase
     }
 
     /**
-     * create a fake category
+     * create a fake taxonomy
      *
      * @param string $type
      * @param string $name
@@ -29,9 +29,9 @@ class BaseCategory extends BaseTestCase
      *
      * @return Model
      */
-    public function create_category_for_has(string $type, string $name, bool $status = true): Model
+    public function create_taxonomy_for_has(string $type, string $name, bool $status = true): Model
     {
-        $category = Category::store([
+        $taxonomy = Taxonomy::store([
             'type' => $type,
             'status' => $status,
             'translation' => [
@@ -39,39 +39,39 @@ class BaseCategory extends BaseTestCase
             ],
         ]);
 
-        return CategoryModels::find($category['data']->id);
+        return TaxonomyModels::find($taxonomy['data']->id);
     }
 
     /**
-     * create a fake category
+     * create a fake taxonomy
      *
      * @return array
      */
-    public function create_category_product(): array
+    public function create_taxonomy_product(): array
     {
-        return Category::store([
-            'type' => 'product_category',
+        return Taxonomy::store([
+            'type' => 'product_taxonomy',
             'parent_id' => null,
             'ordering' => 1,
             'status' => true,
             'translation' => [
-                'name' => 'category name',
-                'description' => 'category description',
-                'meta_title' => 'category meta title',
-                'meta_description' => 'category meta description',
-                'meta_keywords' => 'category meta keywords',
+                'name' => 'taxonomy name',
+                'description' => 'taxonomy description',
+                'meta_title' => 'taxonomy meta title',
+                'meta_description' => 'taxonomy meta description',
+                'meta_keywords' => 'taxonomy meta keywords',
             ],
         ]);
     }
 
     /**
-     * create a fake category
+     * create a fake taxonomy
      *
      * @return array
      */
-    public function create_category_product_tag(): array
+    public function create_taxonomy_product_tag(): array
     {
-        return Category::store([
+        return Taxonomy::store([
             'type' => 'product_tag',
             'ordering' => 1,
             'status' => true,
