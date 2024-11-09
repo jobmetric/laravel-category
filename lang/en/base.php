@@ -27,6 +27,11 @@ return [
         "attached" => "The category was attached successfully.",
         "multi_attached" => "The categories were attached successfully.",
         "used_in" => "The category used in ':count' places.",
+        "deleted_items" => "{1} One item :taxonomy was deleted successfully.|[2,*] The :count items :taxonomy were deleted successfully.",
+        "status" => [
+            "enable" => "{1} One item :taxonomy was enabled successfully.|[2,*] The :count items :taxonomy were enabled successfully.",
+            "disable" => "{1} One item :taxonomy was disabled successfully.|[2,*] The :count items :taxonomy were disabled successfully.",
+        ],
     ],
 
     "exceptions" => [

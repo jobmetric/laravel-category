@@ -27,6 +27,11 @@ return [
         "attached" => "دسته بندی با موفقیت متصل شد.",
         "multi_attached" => "دسته بندی ها با موفقیت متصل شدند.",
         "used_in" => "دسته بندی در ':count' مکان استفاده شده است.",
+        "deleted_items" => "{1} یک مورد :taxonomy با موفقیت حذف شد.|[2,*] :count مورد :taxonomy با موفقیت حذف شدند.",
+        "status" => [
+            "enable" => "{1} یک مورد :taxonomy فعال شد.|[2,*] :count مورد :taxonomy فعال شدند.",
+            "disable" => "{1} یک مورد :taxonomy غیرفعال شد.|[2,*] :count مورد :taxonomy غیرفعال شدند.",
+        ],
     ],
 
     "exceptions" => [

@@ -69,6 +69,7 @@ class CategoryController extends Controller
 
         // add button
         Button::add($this->route['create']);
+        Button::delete();
         Button::status();
         Button::import();
         Button::export();
@@ -294,38 +295,74 @@ class CategoryController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Delete the specified resource from storage.
+     *
+     * @param array $ids
+     * @param mixed $params
+     * @param string|null $alert
+     * @param string|null $danger
+     *
+     * @return bool
+     * @throws Throwable
      */
-    public function destroy(string $panel, string $section, string $type, CategoryModel $category)
+    public function deletes(array $ids, mixed $params, string &$alert = null, string &$danger = null): bool
     {
-        //
+        $type = $params[2] ?? null;
+
+        try {
+            foreach ($ids as $id) {
+                Category::delete($id);
+            }
+
+            $alert = trans_choice('category::base.messages.deleted_items', count($ids), [
+                'taxonomy' => getCategoryTypeArg($type)
+            ]);
+
+            return true;
+        } catch (Throwable $e) {
+            $danger = $e->getMessage();
+
+            return false;
+        }
     }
 
     /**
-     * Run Actions in list
+     * Change Status the specified resource from storage.
+     *
+     * @param array $ids
+     * @param bool $value
+     * @param mixed $params
+     * @param string|null $alert
+     * @param string|null $danger
+     *
+     * @return bool
+     * @throws Throwable
      */
-    public function options(ActionListRequest $request, string $panel, string $section, string $type)
+    public function changeStatus(array $ids, bool $value, mixed $params, string &$alert = null, string &$danger = null): bool
     {
-        $ids = $request->input('ids');
-        $action = $request->input('action');
+        $type = $params[2] ?? null;
 
-        $alert = null;
-        switch ($action) {
-            case 'status.enable':
-                foreach ($ids as $id) {
-                    Category::update($id, ['status' => true]);
-                }
-                $alert = trans('panelio::base.message.status.enable', ['count' => count($ids)]);
-                break;
-            case 'status.disable':
-                foreach ($ids as $id) {
-                    Category::update($id, ['status' => false]);
-                }
-                $alert = trans('panelio::base.message.status.disable', ['count' => count($ids)]);
-                break;
+        try {
+            foreach ($ids as $id) {
+                Category::update($id, ['status' => $value]);
+            }
+
+            if ($value) {
+                $alert = trans_choice('category::base.messages.status.enable', count($ids), [
+                    'taxonomy' => getCategoryTypeArg($type)
+                ]);
+            } else {
+                $alert = trans_choice('category::base.messages.status.disable', count($ids), [
+                    'taxonomy' => getCategoryTypeArg($type)
+                ]);
+            }
+
+            return true;
+        } catch (Throwable $e) {
+            $danger = $e->getMessage();
+
+            return false;
         }
-
-        return back()->with('success', $alert);
     }
 
     /**
