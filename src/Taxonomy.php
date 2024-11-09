@@ -91,7 +91,7 @@ class Taxonomy
 
             // Get the full name with parent taxonomy
             $char = config('taxonomy.arrow_icon.' . trans('domi::base.direction'));
-            $query->selectSub("GROUP_CONCAT( `t`.`value` ORDER BY `cp`.`level` SEPARATOR '" . $char . "' )", "name_multiple");
+            $query->selectSub("CASE WHEN COUNT(t.value) = MAX(cp.level) + 1 THEN GROUP_CONCAT(t.value ORDER BY cp.level SEPARATOR '" . $char . "') ELSE NULL END","name_multiple");
 
             // Join the taxonomy table for select all fields
             $query->join($taxonomy_table . ' as c', 'cp.taxonomy_id', '=', 'c.id');
