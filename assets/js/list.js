@@ -33,7 +33,11 @@ $(document).ready(function(){
             {
                 name: 'name',
                 data: function(e) {
-                    return `<div class="align-start text-gray-800">${e.name_multiple}</div>`
+                    if (e.name_multiple) {
+                        return `<div class="align-start text-gray-800">${e.name_multiple}</div>`
+                    } else {
+                        return `<div class="align-start text-gray-800"><div class="badge badge-light-danger">${localize.language.package_core.undefined_in_this_language}</div></div>`
+                    }
                 },
                 sortable: true
             },

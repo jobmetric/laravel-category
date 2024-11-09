@@ -97,7 +97,7 @@ class Category
             $query->join($category_table . ' as c', 'cp.category_id', '=', 'c.id');
 
             // Join the translation table for select the name of the category
-            $query->join($translation_table . ' as t', function ($join) use ($category_table) {
+            $query->leftJoin($translation_table . ' as t', function ($join) use ($category_table) {
                 $join->on('t.translatable_id', '=', 'cp.path_id')
                     ->where('t.translatable_type', '=', CategoryModel::class)
                     ->where('t.locale', '=', app()->getLocale())
@@ -379,7 +379,9 @@ class Category
                         $category->attachMedia($media_item, $media_key);
                     }
                 } else {
-                    $category->attachMedia($media_value, $media_key);
+                    if ($media_value) {
+                        $category->attachMedia($media_value, $media_key);
+                    }
                 }
             }
 
