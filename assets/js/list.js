@@ -16,6 +16,11 @@ $(document).ready(function(){
                 data.filter = {
                     name: $('#filter-name').val()
                 }
+
+                data.metadata = {}
+                $('.filter-metadata').each(function(){
+                    data.metadata[$(this).attr('name')] = $(this).val();
+                });
             }
         },
         columns: [
@@ -67,10 +72,15 @@ $(document).ready(function(){
             {
                 data: function(e) {
                     return `<div class="align-center">
-                                <a href="${localize.taxonomy.route}/${e.id}/edit" class="btn btn-sm btn-light-info">
-                                    <i class="la la-edit fs-2 position-absolute"></i>
-                                    <span class="ps-9">${localize.language.panelio.button.edit}</span>
-                                </a>
+                                <div class="d-flex ">
+                                    <a href="${localize.taxonomy.route}/${e.id}/edit" class="btn btn-sm btn-light-info">
+                                        <i class="la la-edit fs-2 position-absolute"></i>
+                                        <span class="ps-9">${localize.language.panelio.button.edit}</span>
+                                    </a>
+                                    <a href="javascript:void(0)" class="btn btn-sm btn-light-primary btn-icon btn-circle ms-2 show-details">
+                                        <i class="la la-plus fs-2"></i>
+                                    </a>
+                                </div>
                            </div>`
                 },
                 sortable: false
@@ -85,4 +95,118 @@ $(document).ready(function(){
         pageLength: localize.list_view.page_limit,
         language: localize.language.datatable
     })
+
+    // Toggle child row on click
+    function show_details(data) {
+        const date_created_at = new Date(data.created_at)
+        const local_date_created_at =
+            date_created_at.getFullYear() + '-' +
+            String(date_created_at.getMonth() + 1).padStart(2, '0') + '-' +
+            String(date_created_at.getDate()).padStart(2, '0') + ' ' +
+            String(date_created_at.getHours()).padStart(2, '0') + ':' +
+            String(date_created_at.getMinutes()).padStart(2, '0') + ':' +
+            String(date_created_at.getSeconds()).padStart(2, '0')
+
+        const date_updated_at = new Date(data.updated_at)
+        const local_date_updated_at =
+            date_updated_at.getFullYear() + '-' +
+            String(date_updated_at.getMonth() + 1).padStart(2, '0') + '-' +
+            String(date_updated_at.getDate()).padStart(2, '0') + ' ' +
+            String(date_updated_at.getHours()).padStart(2, '0') + ':' +
+            String(date_updated_at.getMinutes()).padStart(2, '0') + ':' +
+            String(date_updated_at.getSeconds()).padStart(2, '0')
+
+        let html = `
+            <div class="row">
+                <div class="col-12 col-md-4">
+                    <div class="card card-xxl-stretch mb-xl-8 theme-dark-bg-body h-xl-100" style="background-color: #CBD4F4">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex flex-column mb-7">
+                                <a href="javascript:void(0)" class="text-dark text-hover-primary fw-bold fs-3">${data.name}</a>
+                            </div>
+                            <div class="row g-0">
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center mb-9 me-2">
+                                        <div class="symbol symbol-40px me-3">
+                                            <div class="symbol-label bg-light">
+                                                <i class="ki-duotone ki-abstract-42 fs-1 text-dark">
+                                                    <span class="path1"></span>
+                                                    <span class="path2"></span>
+                                                </i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="fs-5 text-dark fw-bold lh-1" dir="ltr">${local_date_created_at}</div>
+                                            <div class="fs-7 text-gray-600 fw-bold">تاریخ افزودن</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center me-2">
+                                        <div class="symbol symbol-40px me-3">
+                                            <div class="symbol-label bg-light">
+                                                <i class="ki-duotone ki-abstract-21 fs-1 text-dark">
+                                                    <span class="path1"></span>
+                                                    <span class="path2"></span>
+                                                </i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="fs-5 text-dark fw-bold lh-1" dir="ltr">${local_date_updated_at}</div>
+                                            <div class="fs-7 text-gray-600 fw-bold">تاریخ ویرایش</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="card card-flush h-xl-100">
+                        <div class="card-header pt-7">
+                            <h3 class="card-title align-items-start flex-column">
+                                <span class="card-label fw-bold text-dark">اطلاعات اضافی</span>
+                            </h3>
+                        </div>
+                        <div class="card-body pt-2">
+                            <div class="row">
+                                <div class="col-12">`
+                                    $.each(data.metas, function(key, value) {
+                                        html += `<div class="col-12">
+                                                    <div class="d-flex justify-content-between align-items-center border border-dashed border-hover-secondary p-3">
+                                                        <div>${eval(`localize.taxonomy.metadata.${value.key}.label`)}</div>
+                                                        <div>${value.value}</div>
+                                                    </div>
+                                                </div>`
+                                    })
+                    html += `</div>
+                        </div>
+                    </div>
+                </div>`
+        return html
+    }
+
+    $('#datatable tbody').on('click', 'td .show-details', function () {
+        const tr = $(this).closest('tr')
+        const row = dt.row(tr)
+        const icon = $(this).find('i')
+
+        dt.rows().every(function () {
+            if (this.child.isShown() && this.index() !== row.index()) {
+                this.child.hide();
+                $(this.node()).removeClass('shown');
+                $(this.node()).find('.show-details i').removeClass('la-minus').addClass('la-plus')
+            }
+        })
+
+        if (row.child.isShown()) {
+            row.child.hide();
+            tr.removeClass('shown');
+            icon.removeClass('la-minus').addClass('la-plus')
+        } else {
+            row.child(show_details(row.data())).show();
+            tr.addClass('shown');
+            icon.removeClass('la-plus').addClass('la-minus')
+        }
+    });
 })

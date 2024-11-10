@@ -52,7 +52,7 @@ class TaxonomyController extends Controller
     public function index(string $panel, string $section, string $type): View|JsonResponse
     {
         if (request()->ajax()) {
-            $query = Taxonomy::query($type, with: ['translations']);
+            $query = Taxonomy::query($type, with: ['translations', 'files', 'metas']);
 
             return Datatable::of($query);
         }
@@ -109,8 +109,16 @@ class TaxonomyController extends Controller
             Button::export();
         }
 
+        $data['metadata'] = getTaxonomyTypeArg($type, 'metadata');
+
         DomiLocalize('taxonomy', [
             'route' => $this->route['index'],
+            'metadata' => collect($data['metadata'])->select('label', 'info')->map(function ($item) {
+                return [
+                    'label' => trans($item['label']),
+                    'info' => trans($item['info']),
+                ];
+            }),
         ]);
 
         DomiScript('assets/vendor/taxonomy/js/list.js');
@@ -120,8 +128,6 @@ class TaxonomyController extends Controller
         $data['route'] = $this->route['options'];
         $data['import_action'] = $this->route['import'];
         $data['export_action'] = $this->route['export'];
-
-        $data['metadata'] = getTaxonomyTypeArg($type, 'metadata');
 
         return view('taxonomy::list', $data);
     }
