@@ -3,6 +3,7 @@
 namespace JobMetric\Taxonomy;
 
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -65,6 +66,8 @@ class Taxonomy
             'updated_at'
         ];
 
+        $metadata_table = config('metadata.tables.meta');
+
         if (getTaxonomyTypeArg($type, 'hierarchical')) {
             $fields[] = 'parent_id';
 
@@ -104,6 +107,36 @@ class Taxonomy
                     ->where('t.key', '=', 'name');
             });
 
+            // filter metadata
+            if (request()->has('metadata')) {
+                $metadata = request()->get('metadata', []);
+                if (!empty($metadata)) {
+                    $flagMeta = false;
+                    foreach ($metadata as $meta) {
+                        if (!is_null($meta) && $meta != '') {
+                            $flagMeta = true;
+                            break;
+                        }
+                    }
+
+                    if ($flagMeta) {
+                        $query->join($metadata_table . ' as m', 'm.metaable_id', '=', 'c.id')
+                            ->where('m.metaable_type', '=', TaxonomyModel::class);
+
+                        $query->where(function (Builder $q) use ($metadata) {
+                            foreach ($metadata as $meta_key => $meta_value) {
+                                if (!is_null($meta_value) && $meta_value != '') {
+                                    $q->where(function () use ($q, $meta_key, $meta_value) {
+                                        $q->where('m.key', $meta_key);
+                                        $q->where('m.value', $meta_value);
+                                    });
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+
             // Where the type of the taxonomy is equal to the specified type
             $query->where([
                 'cp.type' => $type,
@@ -138,6 +171,36 @@ class Taxonomy
                 ])
                 ->getQuery();
             $queryBuilder->selectSub($taxonomy_name, 'name');
+
+            // filter metadata
+            if (request()->has('metadata')) {
+                $metadata = request()->get('metadata', []);
+                if (!empty($metadata)) {
+                    $flagMeta = false;
+                    foreach ($metadata as $meta) {
+                        if (!is_null($meta) && $meta != '') {
+                            $flagMeta = true;
+                            break;
+                        }
+                    }
+
+                    if ($flagMeta) {
+                        $queryBuilder->join($metadata_table . ' as m', 'm.metaable_id', '=', 'c.id')
+                            ->where('m.metaable_type', '=', TaxonomyModel::class);
+
+                        $queryBuilder->where(function (Builder $q) use ($metadata) {
+                            foreach ($metadata as $meta_key => $meta_value) {
+                                if (!is_null($meta_value) && $meta_value != '') {
+                                    $q->where(function () use ($q, $meta_key, $meta_value) {
+                                        $q->where('m.key', $meta_key);
+                                        $q->where('m.value', $meta_value);
+                                    });
+                                }
+                            }
+                        });
+                    }
+                }
+            }
 
             // Where the type of the taxonomy is equal to the specified type
             $queryBuilder->where('type', $type);

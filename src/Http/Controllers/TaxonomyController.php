@@ -57,9 +57,25 @@ class TaxonomyController extends Controller
             return Datatable::of($query);
         }
 
+        $configuration = getTaxonomyTypeArg($type, 'configuration');
+
         // Set data taxonomy
         $data['name'] = getTaxonomyTypeArg($type);
-        $data['description'] = getTaxonomyTypeArg($type, 'description');
+
+        // Show description
+        // if show_description exist and value = true -> show description
+        if (isset($configuration['list']['show_description']) && $configuration['list']['show_description']) {
+            $data['description'] = getTaxonomyTypeArg($type, 'description');
+        } else {
+            $data['description'] = null;
+        }
+
+        // Set filter
+        // if filter = false -> not show filter
+        $data['show_filter'] = true;
+        if (isset($configuration['list']['filter']) && !$configuration['list']['filter']) {
+            $data['show_filter'] = false;
+        }
 
         DomiTitle(getTaxonomyTypeArg($type));
 
@@ -70,9 +86,28 @@ class TaxonomyController extends Controller
         // add button
         Button::add($this->route['create']);
         Button::delete();
-        Button::status();
-        Button::import();
-        Button::export();
+
+        // Check show button change status
+        // if change_status = false -> not show button
+        if (isset($configuration['list']['change_status'])) {
+            if ($configuration['list']['change_status']) {
+                Button::status();
+            }
+        } else {
+            Button::status();
+        }
+
+        // Check show button import
+        // if import = false or not exist -> not show button
+        if (isset($configuration['list']['import']) && $configuration['list']['import']) {
+            Button::import();
+        }
+
+        // Check show button export
+        // if export = false or not exist -> not show button
+        if (isset($configuration['list']['export']) && $configuration['list']['export']) {
+            Button::export();
+        }
 
         DomiLocalize('taxonomy', [
             'route' => $this->route['index'],
@@ -85,6 +120,8 @@ class TaxonomyController extends Controller
         $data['route'] = $this->route['options'];
         $data['import_action'] = $this->route['import'];
         $data['export_action'] = $this->route['export'];
+
+        $data['metadata'] = getTaxonomyTypeArg($type, 'metadata');
 
         return view('taxonomy::list', $data);
     }

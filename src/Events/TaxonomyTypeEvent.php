@@ -29,6 +29,7 @@ class TaxonomyTypeEvent
         $has_url = $params['args']['has_url'] ?? false;
         $has_base_media = $params['args']['has_base_media'] ?? false;
         $media = $params['args']['media'] ?? [];
+        $configuration = $params['args']['configuration'] ?? [];
 
         if (!array_key_exists($type, $this->taxonomyType)) {
             $this->taxonomyType = array_merge($this->taxonomyType, [
@@ -41,6 +42,7 @@ class TaxonomyTypeEvent
                     'has_url' => $has_url,
                     'has_base_media' => $has_base_media,
                     'media' => $media,
+                    'configuration' => $configuration,
                 ],
             ]);
         }

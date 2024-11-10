@@ -49,6 +49,7 @@ if (!function_exists('getTaxonomyTypeArg')) {
             'has_url' => $taxonomyTypes[$type]['has_url'] ?? false,
             'has_base_media' => $taxonomyTypes[$type]['has_base_media'] ?? false,
             'media' => $taxonomyTypes[$type]['media'] ?? [],
+            'configuration' => $taxonomyTypes[$type]['configuration'] ?? [],
             default => null,
         };
     }

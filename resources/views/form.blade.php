@@ -124,7 +124,7 @@
                             @php
                                 $metadata_values = [];
                                 foreach($metadata as $metadata_key => $metadata_value) {
-                                    $metadata_values[$metadata_key] = old('metadata.' . $metadata_key, $meta_values[$metadata_key] ?? null);
+                                    $metadata_values[$metadata_key] = old('metadata.' . $metadata_key, $meta_values[$metadata_key] ?? $metadata_value['default'] ?? null);
                                 }
                             @endphp
                             <x-metadata-card :items="$metadata" :values="$metadata_values" />
