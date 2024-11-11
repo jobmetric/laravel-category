@@ -125,7 +125,7 @@ $(document).ready(function(){
         let html = `
             <div class="row">
                 <div class="col-12 col-md-4">
-                    <div class="card card-xxl-stretch mb-xl-8 theme-dark-bg-body h-xl-100" style="background-color: #CBD4F4">
+                    <div class="card card-xxl-stretch mb-xl-8 theme-dark-bg-body h-xl-100">
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex flex-column mb-7">
                                 <a href="javascript:void(0)" class="text-dark text-hover-primary fw-bold fs-3">${data.name}</a>
@@ -135,7 +135,7 @@ $(document).ready(function(){
                                     <div class="d-flex align-items-center mb-9 me-2">
                                         <div class="symbol symbol-40px me-3">
                                             <div class="symbol-label bg-light">
-                                                <i class="ki-duotone ki-abstract-42 fs-1 text-dark">
+                                                <i class="ki-duotone ki-calendar fs-1 text-dark">
                                                     <span class="path1"></span>
                                                     <span class="path2"></span>
                                                 </i>
@@ -143,7 +143,7 @@ $(document).ready(function(){
                                         </div>
                                         <div>
                                             <div class="fs-5 text-dark fw-bold lh-1" dir="ltr">${local_date_created_at}</div>
-                                            <div class="fs-7 text-gray-600 fw-bold">تاریخ افزودن</div>
+                                            <div class="fs-7 text-gray-600 fw-bold">${localize.language.package_core.fields.created_at}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -151,7 +151,7 @@ $(document).ready(function(){
                                     <div class="d-flex align-items-center me-2">
                                         <div class="symbol symbol-40px me-3">
                                             <div class="symbol-label bg-light">
-                                                <i class="ki-duotone ki-abstract-21 fs-1 text-dark">
+                                                <i class="ki-duotone ki-calendar fs-1 text-dark">
                                                     <span class="path1"></span>
                                                     <span class="path2"></span>
                                                 </i>
@@ -159,7 +159,7 @@ $(document).ready(function(){
                                         </div>
                                         <div>
                                             <div class="fs-5 text-dark fw-bold lh-1" dir="ltr">${local_date_updated_at}</div>
-                                            <div class="fs-7 text-gray-600 fw-bold">تاریخ ویرایش</div>
+                                            <div class="fs-7 text-gray-600 fw-bold">${localize.language.package_core.fields.updated_at}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -171,7 +171,7 @@ $(document).ready(function(){
                     <div class="card card-flush h-xl-100">
                         <div class="card-header pt-7">
                             <h3 class="card-title align-items-start flex-column">
-                                <span class="card-label fw-bold text-dark">اطلاعات اضافی</span>
+                                <span class="card-label fw-bold text-dark">${localize.language.metadata.components.metadata_card.title}</span>
                             </h3>
                         </div>
                         <div class="card-body pt-2">
@@ -196,7 +196,7 @@ $(document).ready(function(){
                     <div class="card card-flush h-xl-100">
                         <div class="card-header pt-7">
                             <h3 class="card-title align-items-start flex-column">
-                                <span class="card-label fw-bold text-dark">اتصالات</span>
+                                <span class="card-label fw-bold text-dark">${localize.language.package_core.tabs.connections}</span>
                             </h3>
                         </div>
                         <div class="card-body pt-2">
@@ -227,7 +227,7 @@ $(document).ready(function(){
                                                             </div>
                                                             <div class="d-flex justify-content-between align-items-center">
                                                                 <div>${relation.collection}</div>
-                                                                <div>${local_date_relation_created_at}</div>
+                                                                <div dir="ltr">${local_date_relation_created_at}</div>
                                                             </div>
                                                         </div>
                                                     </div>`
