@@ -82,7 +82,7 @@ $(document).ready(function(){
                 data: function(e) {
                     return `<div class="align-center">
                                 <div class="d-flex align-items-center">
-                                    <a href="${localize.taxonomy.route}/${e.id}/edit" class="btn btn-sm btn-light-info">
+                                    <a href="${localize.taxonomy.route}/${e.id}/edit" class="btn btn-sm btn-light-info bg-hover-secondary">
                                         <i class="la la-edit fs-2 position-absolute"></i>
                                         <span class="ps-9">${localize.language.panelio.button.edit}</span>
                                     </a>
