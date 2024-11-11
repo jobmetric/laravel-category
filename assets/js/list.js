@@ -177,18 +177,68 @@ $(document).ready(function(){
                         <div class="card-body pt-2">
                             <div class="row">
                                 <div class="col-12">`
-                                    $.each(data.metas, function(key, value) {
-                                        html += `<div class="col-12">
-                                                    <div class="d-flex justify-content-between align-items-center border border-dashed border-hover-secondary p-3">
-                                                        <div>${eval(`localize.taxonomy.metadata.${value.key}.label`)}</div>
-                                                        <div>${value.value}</div>
-                                                    </div>
-                                                </div>`
+                                    $.each(data.metas, function(key, meta) {
+                                        $.each(meta, function(key, value) {
+                                            html += `<div class="col-12">
+                                                        <div class="d-flex justify-content-between align-items-center border border-dashed border-hover-secondary p-3">
+                                                            <div>${eval(`localize.taxonomy.metadata.${key}.label`)}</div>
+                                                            <div>${value}</div>
+                                                        </div>
+                                                    </div>`
+                                        })
                                     })
-                    html += `</div>
+                        html += `</div>
+                            </div>
                         </div>
                     </div>
-                </div>`
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="card card-flush h-xl-100">
+                        <div class="card-header pt-7">
+                            <h3 class="card-title align-items-start flex-column">
+                                <span class="card-label fw-bold text-dark">اتصالات</span>
+                            </h3>
+                        </div>
+                        <div class="card-body pt-2">
+                            <div class="row">
+                                <div class="col-12">`
+                                    $.each(data.taxonomyRelations, function(key, relation) {
+                                        if (relation.length === 0) {
+                                            return
+                                        }
+
+                                        if (relation.taxonomizable) {
+
+                                        } else {
+                                            const date_relation_created_at = new Date(relation.created_at)
+                                            const local_date_relation_created_at =
+                                                date_relation_created_at.getFullYear() + '-' +
+                                                String(date_relation_created_at.getMonth() + 1).padStart(2, '0') + '-' +
+                                                String(date_relation_created_at.getDate()).padStart(2, '0') + ' ' +
+                                                String(date_relation_created_at.getHours()).padStart(2, '0') + ':' +
+                                                String(date_relation_created_at.getMinutes()).padStart(2, '0') + ':' +
+                                                String(date_relation_created_at.getSeconds()).padStart(2, '0')
+
+                                            html += `<div class="col-12">
+                                                        <div class="border border-dashed border-hover-secondary p-3">
+                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                <div>${relation.taxonomizable_type}</div>
+                                                                <div>${relation.taxonomizable_id}</div>
+                                                            </div>
+                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                <div>${relation.collection}</div>
+                                                                <div>${local_date_relation_created_at}</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>`
+                                        }
+                                    })
+                        html += `</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`
         return html
     }
 
