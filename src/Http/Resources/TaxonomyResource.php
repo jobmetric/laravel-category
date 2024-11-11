@@ -4,6 +4,8 @@ namespace JobMetric\Taxonomy\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use JobMetric\Metadata\Http\Resources\MetadataResource;
+use JobMetric\Metadata\Models\Meta;
 use JobMetric\Taxonomy\Models\Taxonomy;
 use JobMetric\Taxonomy\Models\TaxonomyPath;
 use JobMetric\Taxonomy\Models\TaxonomyRelation;
@@ -21,6 +23,7 @@ use JobMetric\Translation\Models\Translation;
  *
  * @property Translation[] translations
  * @property TaxonomyRelation[] taxonomyRelations
+ * @property Meta[] metas
  * @property TaxonomyPath[] paths
  * @property Taxonomy[] children
  */
@@ -54,6 +57,10 @@ class TaxonomyResource extends JsonResource
 
             'taxonomyRelations' => $this->whenLoaded('taxonomyRelations', function () {
                 return TaxonomyRelationResource::collection($this->taxonomyRelations);
+            }),
+
+            'metas' => $this->whenLoaded('metas', function () {
+                return MetadataResource::collection($this->metas);
             }),
 
             'paths' => $this->whenLoaded('paths', function () {
