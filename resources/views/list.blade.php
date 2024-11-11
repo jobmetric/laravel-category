@@ -37,6 +37,7 @@
 
         <thead>
             <tr>
+                <th width="1%"></th>
                 <th width="1%">
                     <div class="form-check form-check-custom form-check-solid">
                         <input class="form-check-input" type="checkbox" value="1" id="check-all"/>

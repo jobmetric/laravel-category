@@ -1,7 +1,7 @@
 $(document).ready(function(){
     dt = $('#datatable').on('preXhr.dt', function (e, settings, data) {
     }).DataTable({
-        responsive: true,
+        responsive: false,
         processing: true,
         serverSide: true,
         drawCallback: function(settings) {},
@@ -24,6 +24,15 @@ $(document).ready(function(){
             }
         },
         columns: [
+            // show details
+            {
+                data: function(e) {
+                    return `<a href="javascript:void(0)" class="btn btn-usm btn-dark btn-icon btn-circle show-details">
+                                <i class="la la-plus fs-5"></i>
+                            </a>`
+                },
+                sortable: false
+            },
             // checkbox
             {
                 data: function(e) {
@@ -72,13 +81,10 @@ $(document).ready(function(){
             {
                 data: function(e) {
                     return `<div class="align-center">
-                                <div class="d-flex ">
+                                <div class="d-flex align-items-center">
                                     <a href="${localize.taxonomy.route}/${e.id}/edit" class="btn btn-sm btn-light-info">
                                         <i class="la la-edit fs-2 position-absolute"></i>
                                         <span class="ps-9">${localize.language.panelio.button.edit}</span>
-                                    </a>
-                                    <a href="javascript:void(0)" class="btn btn-sm btn-light-primary btn-icon btn-circle ms-2 show-details">
-                                        <i class="la la-plus fs-2"></i>
                                     </a>
                                 </div>
                            </div>`
@@ -87,7 +93,7 @@ $(document).ready(function(){
             }
         ],
         order: [
-            [1, "asc"]
+            [2, "asc"]
         ],
         searching: false,
         lengthChange: false,
