@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use JobMetric\Taxonomy\Facades\Taxonomy;
 use JobMetric\Taxonomy\Http\Requests\StoreTaxonomyRequest;
 use JobMetric\Taxonomy\Http\Requests\UpdateTaxonomyRequest;
+use JobMetric\Taxonomy\Http\Resources\TaxonomyResource;
 use JobMetric\Taxonomy\Models\Taxonomy as TaxonomyModel;
 use JobMetric\Language\Facades\Language;
 use JobMetric\Panelio\Facades\Breadcrumb;
@@ -52,9 +53,9 @@ class TaxonomyController extends Controller
     public function index(string $panel, string $section, string $type): View|JsonResponse
     {
         if (request()->ajax()) {
-            $query = Taxonomy::query($type, with: ['translations', 'files', 'metas']);
+            $query = Taxonomy::query($type, with: ['translations', 'files', 'metas', 'taxonomyRelations']);
 
-            return Datatable::of($query);
+            return Datatable::of($query, resource_class: TaxonomyResource::class);
         }
 
         $configuration = getTaxonomyTypeArg($type, 'configuration');
