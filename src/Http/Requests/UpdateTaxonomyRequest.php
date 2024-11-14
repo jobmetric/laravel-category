@@ -149,7 +149,7 @@ class UpdateTaxonomyRequest extends FormRequest
             'parent_id' => trans('taxonomy::base.form.fields.parent.title'),
             'ordering' => trans('taxonomy::base.form.fields.ordering.title'),
             'status' => trans('package-core::base.components.boolean_status.label'),
-            'translation.name' => trans('translation::base.fields.name.label'),
+            'translation.name' => trans('translation::base.components.translation_card.fields.name.label'),
         ];
 
         $taxonomyTypes = getTaxonomyType(type: $type);
@@ -164,9 +164,9 @@ class UpdateTaxonomyRequest extends FormRequest
                     }
                 }
                 if (isset($taxonomyTypes['translation']['seo']) && $taxonomyTypes['translation']['seo']) {
-                    $params["translation.$language->locale.meta_title"] = trans('translation::base.fields.meta_title.label');
-                    $params["translation.$language->locale.meta_description"] = trans('translation::base.fields.meta_description.label');
-                    $params["translation.$language->locale.meta_keywords"] = trans('translation::base.fields.meta_keywords.label');
+                    $params["translation.$language->locale.meta_title"] = trans('translation::base.components.translation_card.fields.meta_title.label');
+                    $params["translation.$language->locale.meta_description"] = trans('translation::base.components.translation_card.fields.meta_description.label');
+                    $params["translation.$language->locale.meta_keywords"] = trans('translation::base.components.translation_card.fields.meta_keywords.label');
                 }
             }
         }
