@@ -28,6 +28,7 @@ return [
         "multi_attached" => "The taxonomies were attached successfully.",
         "used_in" => "The taxonomy used in ':count' places.",
         "deleted_items" => "{1} One item :taxonomy was deleted successfully.|[2,*] The :count items :taxonomy were deleted successfully.",
+        "set_translation" => "The translation was saved successfully.",
         "status" => [
             "enable" => "{1} One item :taxonomy was enabled successfully.|[2,*] The :count items :taxonomy were enabled successfully.",
             "disable" => "{1} One item :taxonomy was disabled successfully.|[2,*] The :count items :taxonomy were disabled successfully.",

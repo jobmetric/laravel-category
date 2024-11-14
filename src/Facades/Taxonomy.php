@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static string getName(int $taxonomy_id, bool $concat = true, string $locale = null)
  * @method static array usedIn(int $taxonomy_id)
  * @method static bool hasUsed(int $taxonomy_id)
+ * @method static array setTranslation(array $data)
  */
 class Taxonomy extends Facade
 {

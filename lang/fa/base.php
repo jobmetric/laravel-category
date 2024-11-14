@@ -28,6 +28,7 @@ return [
         "multi_attached" => "طبقه بندی ها با موفقیت متصل شدند.",
         "used_in" => "طبقه بندی در ':count' مکان استفاده شده است.",
         "deleted_items" => "{1} یک مورد :taxonomy با موفقیت حذف شد.|[2,*] :count مورد :taxonomy با موفقیت حذف شدند.",
+        "set_translation" => "ترجمه با موفقیت ذخیره شد.",
         "status" => [
             "enable" => "{1} یک مورد :taxonomy فعال شد.|[2,*] :count مورد :taxonomy فعال شدند.",
             "disable" => "{1} یک مورد :taxonomy غیرفعال شد.|[2,*] :count مورد :taxonomy غیرفعال شدند.",

@@ -13,6 +13,7 @@ use JobMetric\Taxonomy\Events\TaxonomyUpdateEvent;
 use JobMetric\Taxonomy\Exceptions\CannotMakeParentSubsetOwnChild;
 use JobMetric\Taxonomy\Exceptions\TaxonomyNotFoundException;
 use JobMetric\Taxonomy\Exceptions\TaxonomyUsedException;
+use JobMetric\Taxonomy\Http\Requests\SetTranslationRequest;
 use JobMetric\Taxonomy\Http\Requests\StoreTaxonomyRequest;
 use JobMetric\Taxonomy\Http\Requests\UpdateTaxonomyRequest;
 use JobMetric\Taxonomy\Http\Resources\TaxonomyRelationResource;
@@ -683,5 +684,32 @@ class Taxonomy
         return TaxonomyRelation::query()->where([
             'taxonomy_id' => $taxonomy_id
         ])->exists();
+    }
+
+    /**
+     * Set Translation in list
+     *
+     * @param array $data
+     *
+     * @return array
+     * @throws Throwable
+     */
+    public function setTranslation(array $data): array
+    {
+        return DB::transaction(function () use ($data) {
+            $taxonomy = TaxonomyModel::find($data['translatable_id'] ?? null);
+
+            foreach ($data['translation'] as $translation_key => $translation_value) {
+                $taxonomy->translate($data['locale'] ?? null, [
+                    $translation_key => $translation_value
+                ]);
+            }
+
+            return [
+                'ok' => true,
+                'message' => trans('taxonomy::base.messages.set_translation'),
+                'status' => 200
+            ];
+        });
     }
 }

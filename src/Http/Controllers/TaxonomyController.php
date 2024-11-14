@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use JobMetric\Taxonomy\Facades\Taxonomy;
+use JobMetric\Taxonomy\Http\Requests\SetTranslationRequest;
 use JobMetric\Taxonomy\Http\Requests\StoreTaxonomyRequest;
 use JobMetric\Taxonomy\Http\Requests\UpdateTaxonomyRequest;
 use JobMetric\Taxonomy\Http\Resources\TaxonomyResource;
@@ -37,6 +38,7 @@ class TaxonomyController extends Controller
                 'options' => route('taxonomy.options', $parameters),
                 'import' => route('taxonomy.import', $parameters),
                 'export' => route('taxonomy.export', $parameters),
+                'set_translation' => route('taxonomy.set-translation', $parameters),
             ];
         }
     }
@@ -49,6 +51,7 @@ class TaxonomyController extends Controller
      * @param string $type
      *
      * @return View|JsonResponse
+     * @throws Throwable
      */
     public function index(string $panel, string $section, string $type): View|JsonResponse
     {
@@ -120,6 +123,15 @@ class TaxonomyController extends Controller
                     'info' => trans($item['info']),
                 ];
             }),
+        ]);
+
+        DomiPlugins('jquery.form');
+
+        DomiAddModal('translation', '', view('translation::modals.translation-list', [
+            'action' => $this->route['set_translation'],
+            'items' => getTaxonomyTypeArg($type, 'translation')
+        ]), options: [
+            'size' => 'lg'
         ]);
 
         DomiScript('assets/vendor/taxonomy/js/list.js');
@@ -430,5 +442,24 @@ class TaxonomyController extends Controller
         return response()->download($filePath, $fileName, [
             'Content-Disposition' => 'attachment; filename="' . $fileName . '"'
         ]);
+    }
+
+    /**
+     * Set Translation in list
+     *
+     * @param SetTranslationRequest $request
+     *
+     * @return JsonResponse
+     * @throws Throwable
+     */
+    public function setTranslation(SetTranslationRequest $request): JsonResponse
+    {
+        try {
+            return $this->response(
+                Taxonomy::setTranslation($request->validated())
+            );
+        } catch (Throwable $exception) {
+            return $this->response(message: $exception->getMessage(), status: $exception->getCode());
+        }
     }
 }
