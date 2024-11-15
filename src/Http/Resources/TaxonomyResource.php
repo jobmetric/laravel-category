@@ -4,6 +4,8 @@ namespace JobMetric\Taxonomy\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use JobMetric\Media\Enums\MediaImageResponsiveModeEnum;
+use JobMetric\Media\Models\Media;
 use JobMetric\Metadata\Http\Resources\MetadataResource;
 use JobMetric\Metadata\Models\Meta;
 use JobMetric\Taxonomy\Models\Taxonomy;
@@ -26,6 +28,7 @@ use JobMetric\Translation\Models\Translation;
  * @property Meta[] metas
  * @property TaxonomyPath[] paths
  * @property Taxonomy[] children
+ * @property Media[] files
  */
 class TaxonomyResource extends JsonResource
 {
@@ -69,6 +72,50 @@ class TaxonomyResource extends JsonResource
 
             'children_count' => $this->whenLoaded('children', function () {
                 return count($this->children);
+            }),
+
+            'files' => $this->whenLoaded('files', function () {
+                $config = [];
+
+                $has_base_media = getTaxonomyTypeArg($this->type, 'has_base_media');
+                $media_config = getTaxonomyTypeArg($this->type, 'media');
+
+                if ($has_base_media) {
+                    $config['base'] = [
+                        'default' => [
+                            'w' => config('media.default_image_size.width'),
+                            'h' => config('media.default_image_size.height'),
+                        ],
+                        'thumb' => [
+                            'w' => config('media.thumb_image_size.width'),
+                            'h' => config('media.thumb_image_size.height'),
+                        ],
+                    ];
+                }
+
+                foreach ($media_config as $collection => $media) {
+                    $config[$collection] = $media['size'];
+                }
+
+                $files = [];
+                foreach ($this->files as $file) {
+                    if (getMimeGroup($file->mime_type) == 'image') {
+                        foreach ($config[$file->pivot->collection] as $config_key => $config_item) {
+                            $files[$file->pivot->collection][$config_key] = route('media.image.responsive', [
+                                'uuid' => $file->uuid,
+                                'w' => $config_item['w'],
+                                'h' => $config_item['h'],
+                                'm' => MediaImageResponsiveModeEnum::COVER()
+                            ]);
+                        }
+                    } else {
+                        $files[$file->pivot->collection] = route('media.download', [
+                            'media' => $file->id,
+                        ]);
+                    }
+                }
+
+                return $files;
             }),
         ];
     }
