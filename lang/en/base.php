@@ -56,14 +56,6 @@ return [
                 "title" => "Status",
             ],
         ],
-        "columns" => [
-            "name" => "Name",
-            "status" => "Status",
-            "ordering" => "Ordering",
-            "action" => "Action",
-            "created_at" => "Created At",
-            "updated_at" => "Updated At",
-        ],
     ],
 
     "form" => [

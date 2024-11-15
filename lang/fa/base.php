@@ -56,14 +56,6 @@ return [
                 "title" => "وضعیت",
             ],
         ],
-        "columns" => [
-            "name" => "نام",
-            "status" => "وضعیت",
-            "ordering" => "ترتیب",
-            "action" => "عملیات",
-            "created_at" => "تاریخ ایجاد",
-            "updated_at" => "تاریخ به روزرسانی",
-        ],
     ],
 
     "form" => [
