@@ -15,9 +15,8 @@ class TaxonomyExistRule implements ValidationRule
      * @return void
      */
     public function __construct(
-        private readonly string $type
-    )
-    {
+        private readonly string|null $type = null
+    ) {
     }
 
     /**
@@ -27,12 +26,26 @@ class TaxonomyExistRule implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if ($value == 0) {
+        if ($value == 0 || empty($value)) {
             return;
         }
-
-        if (!Taxonomy::query()->where('id', $value)->where('type', $this->type)->exists()) {
-            $fail(__('taxonomy::base.validation.taxonomy_exist', ['type' => $this->type]));
+        $value = collect($value);
+        $taxonomies = Taxonomy::query()->whereIn('id', $value);
+        $this->type && $taxonomies->where('type', $this->type); // it's just used when we want store the taxonomy
+        $diff = $value->diff(
+            $taxonomies->pluck('id')
+        );
+        if ($diff->isNotEmpty()) { //means that we have $values (ids) that aren't exist in taxonomies table
+            if ($this->type) {
+                $fail(__('taxonomy::base.validation.taxonomy_exist', ['type' => $this->type]));
+            } else {
+                $fail(__(
+                    'taxonomy::base.validation.taxonomies_exists',
+                    [
+                        'ids' => $diff->implode(", ")
+                    ]
+                ));
+            }
         }
     }
 }
