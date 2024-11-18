@@ -31,11 +31,15 @@ class TaxonomyExistRule implements ValidationRule
         }
         $value = collect($value);
         $taxonomies = Taxonomy::query()->whereIn('id', $value);
-        $this->type && $taxonomies->where('type', $this->type); // it's just used when we want store the taxonomy
+
+        // it's just used when we want store the taxonomy
+        $this->type && $taxonomies->where('type', $this->type);
         $diff = $value->diff(
             $taxonomies->pluck('id')
         );
-        if ($diff->isNotEmpty()) { //means that we have $values (ids) that aren't exist in taxonomies table
+        
+        //means that we have $values (ids) that aren't exist in taxonomies table
+        if ($diff->isNotEmpty()) { 
             if ($this->type) {
                 $fail(__('taxonomy::base.validation.taxonomy_exist', ['type' => $this->type]));
             } else {
