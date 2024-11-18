@@ -17,6 +17,7 @@ return [
         "type_required" => "The type field is required.",
         "slug_in_type" => "The slug already exists in type (:type).",
         "taxonomy_exist" => "The taxonomy does not exist in type (:type).",
+        "taxonomies_exists" => "The following taxonomy IDs do not exist: :ids .",
         "taxonomy_not_found" => "The taxonomy not found.",
     ],
 
@@ -43,7 +44,7 @@ return [
         "model_taxonomy_contract_not_found" => "Model ':model' not implements 'JobMetric\Taxonomy\Contracts\TaxonomyContract' interface!",
         "taxonomy_collection_not_in_taxonomy_allow_types" => "The taxonomy collection :collection not in taxonomy allow types.",
         "invalid_taxonomy_type_in_collection" => "The type of collection entered is ':collection', and the ':collection' also accepts ':collectionType' taxonomy type, but the taxonomy type you have given is ':baseType' and it is not acceptable.",
-        "taxonomy_type_not_match" => "The taxonomy type ':type' does not match.",
+        "taxonomy_type_not_match" => "The taxonomy type ':type' does not match any taxonomy types registered in your application via listeners.",
     ],
 
     "list" => [

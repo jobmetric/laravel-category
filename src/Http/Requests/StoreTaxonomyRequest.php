@@ -58,6 +58,7 @@ class StoreTaxonomyRequest extends FormRequest
 
         $taxonomyTypes = getTaxonomyType();
 
+        checkTypeInTaxonomyTypes($type);
         $this->renderTranslationFiled($rules, $taxonomyTypes[$type], Taxonomy::class, 'name', parent_id: $parent_id, parent_where: ['type' => $type]);
         $this->renderMetadataFiled($rules, $taxonomyTypes[$type]);
         $this->renderMediaFiled($rules, $taxonomyTypes[$type]);
