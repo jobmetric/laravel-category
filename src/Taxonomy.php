@@ -68,6 +68,7 @@ class Taxonomy
         ];
 
         $metadata_table = config('metadata.tables.meta');
+        $dbDriver = DB::getDriverName();
 
         if (getTaxonomyTypeArg($type, 'hierarchical')) {
             $fields[] = 'parent_id';
@@ -95,7 +96,19 @@ class Taxonomy
 
             // Get the full name with parent taxonomy
             $char = config('taxonomy.arrow_icon.' . trans('domi::base.direction'));
-            $query->selectSub("CASE WHEN COUNT(t.value) = MAX(cp.level) + 1 THEN GROUP_CONCAT(t.value ORDER BY cp.level SEPARATOR '" . $char . "') ELSE NULL END","name_multiple");
+
+            if ($dbDriver == 'pgsql') {
+                // PostgreSQL
+                $query->selectSub(
+                    "CASE WHEN COUNT(t.value) = MAX(cp.level) + 1 THEN STRING_AGG(t.value, '" . $char . "' ORDER BY cp.level) ELSE NULL END",
+                    "name_multiple"
+                );
+            }
+
+            if ($dbDriver == 'mysql') {
+                // MySQL
+                $query->selectSub("CASE WHEN COUNT(t.value) = MAX(cp.level) + 1 THEN GROUP_CONCAT(t.value ORDER BY cp.level SEPARATOR '" . $char . "') ELSE NULL END","name_multiple");
+            }
 
             // Join the taxonomy table for select all fields
             $query->join($taxonomy_table . ' as c', 'cp.taxonomy_id', '=', 'c.id');
@@ -145,7 +158,18 @@ class Taxonomy
             ]);
 
             // Group by the taxonomy id for get the unique taxonomy
-            $query->groupBy('cp.taxonomy_id');
+            if ($dbDriver == 'pgsql') {
+                // PostgreSQL
+                $query->groupBy([
+                    'cp.taxonomy_id',
+                    'c.id', 'c.parent_id', 'c.ordering', 'c.status', 'c.created_at', 'c.updated_at'
+                ]);
+            }
+
+            if ($dbDriver == 'mysql') {
+                // MySQL
+                $query->groupBy('cp.taxonomy_id');
+            }
 
             $queryBuilder = QueryBuilder::for(TaxonomyModel::class)
                 ->fromSub($query, config('taxonomy.tables.taxonomy'))
