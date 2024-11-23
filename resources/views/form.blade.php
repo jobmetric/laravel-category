@@ -97,18 +97,20 @@
                                 </div>
                             </div>
                             <div class="card-body">
-                                <div class="mb-10">
-                                    <label class="form-label">{{ trans('taxonomy::base.form.fields.parent.title') }}</label>
-                                    <select name="parent_id" class="form-select" data-control="select2">
-                                        <option value="">{{ trans('package-core::base.select.none') }}</option>
-                                        @foreach($taxonomies as $taxonomy_item)
-                                            <option value="{{ $taxonomy_item->id }}" @if(old('parent_id', $taxonomy->parent_id ?? null) == $taxonomy_item->id) selected @endif>{{ $taxonomy_item->name_multiple }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('parent_id')
-                                        <div class="form-errors text-danger fs-7 mt-2">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                                @if($hierarchical)
+                                    <div class="mb-10">
+                                        <label class="form-label">{{ trans('taxonomy::base.form.fields.parent.title') }}</label>
+                                        <select name="parent_id" class="form-select" data-control="select2">
+                                            <option value="">{{ trans('package-core::base.select.none') }}</option>
+                                            @foreach($taxonomies as $taxonomy_item)
+                                                <option value="{{ $taxonomy_item->id }}" @if(old('parent_id', $taxonomy->parent_id ?? null) == $taxonomy_item->id) selected @endif>{{ $taxonomy_item->name_multiple }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('parent_id')
+                                            <div class="form-errors text-danger fs-7 mt-2">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                @endif
                                 <div class="mb-0">
                                     <label class="form-label">{{ trans('taxonomy::base.form.fields.ordering.title') }}</label>
                                     <input type="number" name="ordering" class="form-control mb-2" placeholder="{{ trans('taxonomy::base.form.fields.ordering.placeholder') }}" value="{{ old('ordering', $taxonomy->ordering ?? null) }}">
