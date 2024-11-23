@@ -113,10 +113,12 @@ class TaxonomyController extends Controller
             Button::export();
         }
 
+        $data['has_base_media'] = getTaxonomyTypeArg($type, 'has_base_media');
         $data['metadata'] = getTaxonomyTypeArg($type, 'metadata');
 
         DomiLocalize('taxonomy', [
             'route' => $this->route['index'],
+            'has_base_media' => $data['has_base_media'],
             'metadata' => collect($data['metadata'])->select('label', 'info')->map(function ($item) {
                 return [
                     'label' => trans($item['label']),

@@ -100,8 +100,8 @@ class TaxonomyResource extends JsonResource
                 $files = [];
                 foreach ($this->files as $file) {
                     if (getMimeGroup($file->mime_type) == 'image') {
-                        foreach ($config[$file->pivot->collection] as $config_key => $config_item) {
-                            $files[$file->pivot->collection][$config_key] = route('media.image.responsive', [
+                        foreach ($config[$file?->pivot?->collection] ?? [] as $config_key => $config_item) {
+                            $files[$file?->pivot?->collection][$config_key] = route('media.image.responsive', [
                                 'uuid' => $file->uuid,
                                 'w' => $config_item['w'],
                                 'h' => $config_item['h'],

@@ -174,7 +174,8 @@ loadScriptsSequentially([
 
                         return ''
                     },
-                    sortable: false
+                    sortable: false,
+                    visible: localize.taxonomy.has_base_media
                 },
                 // name
                 {
