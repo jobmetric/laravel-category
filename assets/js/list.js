@@ -18,7 +18,10 @@ function listShowDetails(data) {
         String(date_updated_at.getMinutes()).padStart(2, '0') + ':' +
         String(date_updated_at.getSeconds()).padStart(2, '0')
 
-    const metadata = datatableShowDetailsMetadata(data)
+    let metadata = ''
+    if (localize.taxonomy.metadata.length > 0) {
+        metadata += datatableShowDetailsMetadata(data)
+    }
 
     let html = `
                 <div class="row">
@@ -177,10 +180,18 @@ loadScriptsSequentially([
                 {
                     name: 'name',
                     data: function(e) {
-                        if (e.name_multiple) {
-                            return `<div class="align-start text-gray-800 word-no-break">${e.name_multiple}</div>`
+                        if (e.hierarchical) {
+                            if (e.name_multiple) {
+                                return `<div class="align-start text-gray-800 word-no-break">${e.name_multiple}</div>`
+                            } else {
+                                return `<div class="align-start text-gray-800"><div class="badge badge-light-danger word-no-break">${localize.language.package_core.undefined_in_this_language}</div></div>`
+                            }
                         } else {
-                            return `<div class="align-start text-gray-800"><div class="badge badge-light-danger word-no-break">${localize.language.package_core.undefined_in_this_language}</div></div>`
+                            if (e.name) {
+                                return `<div class="align-start text-gray-800 word-no-break">${e.name}</div>`
+                            } else {
+                                return `<div class="align-start text-gray-800"><div class="badge badge-light-danger word-no-break">${localize.language.package_core.undefined_in_this_language}</div></div>`
+                            }
                         }
                     },
                     sortable: true
