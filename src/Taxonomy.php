@@ -67,15 +67,16 @@ class Taxonomy
             'updated_at'
         ];
 
+        $taxonomy_table = config('taxonomy.tables.taxonomy');
+        $translation_table = config('translation.tables.translation');
         $metadata_table = config('metadata.tables.meta');
         $dbDriver = DB::getDriverName();
+
 
         if (getTaxonomyTypeArg($type, 'hierarchical')) {
             $fields[] = 'parent_id';
 
-            $taxonomy_table = config('taxonomy.tables.taxonomy');
             $taxonomy_path_table = config('taxonomy.tables.taxonomy_path');
-            $translation_table = config('translation.tables.translation');
 
             // Get the path of the taxonomy
             $query = TaxonomyPath::query()
@@ -172,7 +173,7 @@ class Taxonomy
             }
 
             $queryBuilder = QueryBuilder::for(TaxonomyModel::class)
-                ->fromSub($query, config('taxonomy.tables.taxonomy'))
+                ->fromSub($query, $taxonomy_table)
                 ->allowedFields($fields)
                 ->allowedSorts($fields)
                 ->allowedFilters($fields)
@@ -181,21 +182,27 @@ class Taxonomy
                 ])
                 ->where($filter);
         } else {
-            // Get the path of the taxonomy
-            $queryBuilder = QueryBuilder::for(TaxonomyModel::class)
-                ->select(['*']);
+            $query = TaxonomyModel::query()->select([$taxonomy_table . '.*']);
 
             // Get the name of the taxonomy
             $taxonomy_name = Translation::query()
                 ->select('value')
-                ->whereColumn('translatable_id', config('taxonomy.tables.taxonomy') . '.id')
+                ->whereColumn('translatable_id', $taxonomy_table . '.id')
                 ->where([
                     'translatable_type' => TaxonomyModel::class,
                     'locale' => app()->getLocale(),
                     'key' => 'name'
                 ])
                 ->getQuery();
-            $queryBuilder->selectSub($taxonomy_name, 'name');
+            $query->selectSub($taxonomy_name, 'name');
+
+            // Join the translation table for select the name of the taxonomy
+            $query->leftJoin($translation_table . ' as t', function ($join) use ($taxonomy_table) {
+                $join->on('t.translatable_id', '=', $taxonomy_table . '.id')
+                    ->where('t.translatable_type', '=', TaxonomyModel::class)
+                    ->where('t.locale', '=', app()->getLocale())
+                    ->where('t.key', '=', 'name');
+            });
 
             // filter metadata
             if (request()->has('metadata')) {
@@ -210,10 +217,10 @@ class Taxonomy
                     }
 
                     if ($flagMeta) {
-                        $queryBuilder->join($metadata_table . ' as m', 'm.metaable_id', '=', 'c.id')
+                        $query->join($metadata_table . ' as m', 'm.metaable_id', '=', 'c.id')
                             ->where('m.metaable_type', '=', TaxonomyModel::class);
 
-                        $queryBuilder->where(function (Builder $q) use ($metadata) {
+                        $query->where(function (Builder $q) use ($metadata) {
                             foreach ($metadata as $meta_key => $meta_value) {
                                 if (!is_null($meta_value) && $meta_value != '') {
                                     $q->where(function () use ($q, $meta_key, $meta_value) {
@@ -228,16 +235,17 @@ class Taxonomy
             }
 
             // Where the type of the taxonomy is equal to the specified type
-            $queryBuilder->where('type', $type);
+            $query->where('type', $type);
 
-            $queryBuilder->allowedFields($fields)
+            $queryBuilder = QueryBuilder::for(TaxonomyModel::class)
+                ->fromSub($query, $taxonomy_table)
+                ->allowedFields($fields)
                 ->allowedSorts($fields)
                 ->allowedFilters($fields)
                 ->defaultSort([
                     'name'
                 ])
                 ->where($filter);
-
         }
 
         $queryBuilder->with('translations');
