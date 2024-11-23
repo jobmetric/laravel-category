@@ -99,17 +99,25 @@ class Taxonomy extends Model implements TranslationContract, MetaContract, Media
 
         foreach ($taxonomyTypes as $type => $taxonomyType) {
             // Set the translation for the taxonomy type.
-            $this->setTrans($type, $taxonomyType['translation']['fields']);
+            if (isset($taxonomyType['translation']['fields'])) {
+                $this->setTrans($type, $taxonomyType['translation']['fields']);
+            } else {
+                $this->setTrans($type, []);
+            }
 
             if (isset($taxonomyType['translation']['seo']) && $taxonomyType['translation']['seo']) {
                 $this->setSeoTransFields($type);
             }
 
             // Set the metadata for the taxonomy type.
-            $this->setMeta($type, $taxonomyType['metadata']);
+            if (isset($taxonomyType['metadata'])) {
+                $this->setMeta($type, $taxonomyType['metadata']);
+            }
 
             // Set the media collection for the taxonomy type.
-            $this->setMediaCollection($type, $taxonomyType['media']);
+            if (isset($taxonomyType['media'])) {
+                $this->setMediaCollection($type, $taxonomyType['media']);
+            }
         }
     }
 
