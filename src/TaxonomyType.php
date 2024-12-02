@@ -3,6 +3,7 @@
 namespace JobMetric\Taxonomy;
 
 use Illuminate\Support\Traits\Macroable;
+use JobMetric\Media\MediaServiceType;
 use JobMetric\Metadata\MetadataServiceType;
 use JobMetric\PackageCore\Services\HierarchicalServiceType;
 use JobMetric\PackageCore\Services\InformationServiceType;
@@ -15,7 +16,8 @@ class TaxonomyType extends ServiceType
         InformationServiceType,
         HierarchicalServiceType,
         UrlServiceType,
-        MetadataServiceType;
+        MetadataServiceType,
+        MediaServiceType;
 
     protected function serviceType(): string
     {
