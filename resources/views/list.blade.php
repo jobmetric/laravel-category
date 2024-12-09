@@ -1,8 +1,8 @@
 @extends('panelio::layout.layout')
 
 @section('body')
-    <x-list-view name="{{ $name }}" action="{{ $route }}" export-action="{{ $export_action }}" import-action="{{ $import_action }}">
-        @if($show_filter)
+    <x-list-view name="{{ $label }}" action="{{ $route }}" export-action="{{ $export_action }}" import-action="{{ $import_action }}">
+        @if($hasRemoveFilterInList)
             <x-slot name="filter">
                 <div class="col-md-3">
                     <div class="mb-5">
@@ -10,25 +10,15 @@
                         <input type="text" name="translation[name]" class="form-control filter-list" id="filter-name" placeholder="{{ trans('taxonomy::base.list.filters.name.placeholder') }}" autocomplete="off">
                     </div>
                 </div>
-                @foreach($metadata as $meta_key => $meta_value)
-                    @if(isset($meta_value['has_filter']) && $meta_value['has_filter'])
+                @foreach($metadata as $meta)
+                    @php
+                        /**
+                         * @var \JobMetric\Metadata\ServiceType\Metadata $meta
+                         */
+                    @endphp
+                    @if($meta->hasFilter)
                         <div class="col-md-3">
-                            <div class="mb-5">
-                                <label class="form-label">{{ trans($meta_value['label']) }}</label>
-                                @if(isset($meta_value['type']) && $meta_value['type'] === 'select')
-                                    <select name="{{ $meta_key }}" class="form-control filter-list filter-metadata">
-                                        @foreach($meta_value['options'] as $option_key => $option_value)
-                                            <option value="{{ $option_key }}">{{ $option_value }}</option>
-                                        @endforeach
-                                    </select>
-                                @endif
-                                @if(isset($meta_value['type']) && $meta_value['type'] === 'text')
-                                    <input type="text" name="{{ $meta_key }}" class="form-control filter-list filter-metadata" placeholder="{{ trans($meta_value['placeholder']) }}" autocomplete="off">
-                                @endif
-                                @if(isset($meta_value['type']) && $meta_value['type'] === 'number')
-                                    <input type="number" name="{{ $meta_key }}" class="form-control filter-list filter-metadata" placeholder="{{ trans($meta_value['placeholder']) }}" autocomplete="off">
-                                @endif
-                            </div>
+                            {!! $meta->customField->render(showInfo: false, class: 'filter-list filter-metadata', classParent: 'mb-5') !!}
                         </div>
                     @endif
                 @endforeach
@@ -54,5 +44,9 @@
         </thead>
     </x-list-view>
 
-    <h6 class="mt-10">{{ $description ?? '' }}</h6>
+    @if($hasShowDescriptionInList)
+        <div class="mt-10">
+            <h6>{{ $description ?? '' }}</h6>
+        </div>
+    @endif
 @endsection

@@ -5,8 +5,9 @@ namespace JobMetric\Taxonomy\Http\Controllers;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use JobMetric\Metadata\ServiceType\Metadata as MetadataServiceType;
 use JobMetric\Taxonomy\Facades\Taxonomy;
+use JobMetric\Taxonomy\Facades\TaxonomyType;
 use JobMetric\Taxonomy\Http\Requests\SetTranslationRequest;
 use JobMetric\Taxonomy\Http\Requests\StoreTaxonomyRequest;
 use JobMetric\Taxonomy\Http\Requests\UpdateTaxonomyRequest;
@@ -61,68 +62,54 @@ class TaxonomyController extends Controller
             return Datatable::of($query, resource_class: TaxonomyResource::class);
         }
 
-        $configuration = getTaxonomyTypeArg($type, 'configuration');
+        $serviceType = TaxonomyType::type($type);
 
-        // Set data taxonomy
-        $data['name'] = getTaxonomyTypeArg($type);
+        $data['label'] = $serviceType->getLabel();
+        $data['description'] = $serviceType->getDescription();
+        $data['translation'] = $serviceType->getTranslation();
+        $data['media'] = $serviceType->getMedia();
+        $data['metadata'] = $serviceType->getMetadata();
+        $data['hasUrl'] = $serviceType->hasUrl();
+        $data['hasHierarchical'] = $serviceType->hasHierarchical();
+        $data['hasBaseMedia'] = $serviceType->hasBaseMedia();
+        $data['hasShowDescriptionInList'] = $serviceType->hasShowDescriptionInList();
+        $data['hasRemoveFilterInList'] = $serviceType->hasRemoveFilterInList();
+        $hasChangeStatusInList = $serviceType->hasChangeStatusInList();
+        $hasImportInList = $serviceType->hasImportInList();
+        $hasExportInList = $serviceType->hasExportInList();
 
-        // Show description
-        // if show_description exist and value = true -> show description
-        if (isset($configuration['list']['show_description']) && $configuration['list']['show_description']) {
-            $data['description'] = getTaxonomyTypeArg($type, 'description');
-        } else {
-            $data['description'] = null;
-        }
-
-        // Set filter
-        // if filter = false -> not show filter
-        $data['show_filter'] = true;
-        if (isset($configuration['list']['filter']) && !$configuration['list']['filter']) {
-            $data['show_filter'] = false;
-        }
-
-        DomiTitle(getTaxonomyTypeArg($type));
+        DomiTitle($data['label']);
 
         // Add breadcrumb
         add_breadcrumb_base($panel, $section);
-        Breadcrumb::add($data['name']);
+        Breadcrumb::add($data['label']);
 
         // add button
         Button::add($this->route['create']);
         Button::delete();
 
         // Check show button change status
-        // if change_status = false -> not show button
-        if (isset($configuration['list']['change_status'])) {
-            if ($configuration['list']['change_status']) {
-                Button::status();
-            }
-        } else {
+        if ($hasChangeStatusInList) {
             Button::status();
         }
 
         // Check show button import
-        // if import = false or not exist -> not show button
-        if (isset($configuration['list']['import']) && $configuration['list']['import']) {
+        if ($hasImportInList) {
             Button::import();
         }
 
         // Check show button export
-        // if export = false or not exist -> not show button
-        if (isset($configuration['list']['export']) && $configuration['list']['export']) {
+        if ($hasExportInList) {
             Button::export();
         }
 
-        $data['has_base_media'] = getTaxonomyTypeArg($type, 'has_base_media');
-        $data['metadata'] = getTaxonomyTypeArg($type, 'metadata');
-
         DomiLocalize('taxonomy', [
             'route' => $this->route['index'],
-            'has_base_media' => $data['has_base_media'],
-            'metadata' => collect($data['metadata'])->select('label', 'info')->map(function ($item) {
+            'has_base_media' => $data['hasBaseMedia'],
+            'metadata' => $data['metadata']->map(function (MetadataServiceType $item) {
                 return [
-                    'label' => trans($item['label']),
-                    'info' => trans($item['info']),
+                    'label' => trans($item->customField->label),
+                    'info' => trans($item->customField->info),
                 ];
             }),
         ]);
@@ -131,7 +118,7 @@ class TaxonomyController extends Controller
 
         DomiAddModal('translation', '', view('translation::modals.translation-list', [
             'action' => $this->route['set_translation'],
-            'items' => getTaxonomyTypeArg($type, 'translation')
+            'items' => $data['translation']
         ]), options: [
             'size' => 'lg'
         ]);
