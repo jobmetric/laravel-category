@@ -731,10 +731,13 @@ class Taxonomy
         return DB::transaction(function () use ($data) {
             $taxonomy = TaxonomyModel::find($data['translatable_id'] ?? null);
 
-            foreach ($data['translation'] as $translation_key => $translation_value) {
-                $taxonomy->translate($data['locale'] ?? null, [
-                    $translation_key => $translation_value
-                ]);
+            foreach ($data['translation'] as $locale => $translation_data) {
+                foreach ($translation_data as $translation_key => $translation_value) {
+                    $taxonomy->translate($locale, [
+                        $translation_key => $translation_value
+                    ]);
+                }
+
             }
 
             return [

@@ -49,6 +49,9 @@ class SetTranslationRequest extends FormRequest
             throw new InvalidArgumentException('Translatable ID is required', 400);
         }
 
+        /**
+         * @var Taxonomy $taxonomy
+         */
         $taxonomy = Taxonomy::query()->findOrFail($id);
 
         $rules = [
