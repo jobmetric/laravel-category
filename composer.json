@@ -21,8 +21,8 @@
     "require": {
         "php": ">=8.0.1",
         "laravel/framework": ">=9.19",
-        "jobmetric/laravel-package-core": "^1.18.2",
-        "jobmetric/laravel-translation": "^2.18",
+        "jobmetric/laravel-package-core": "^1.18.3",
+        "jobmetric/laravel-translation": "^2.19",
         "jobmetric/laravel-metadata": "^2.8.2",
         "jobmetric/laravel-comment": "^1.1",
         "jobmetric/laravel-membership": "^1.2",
