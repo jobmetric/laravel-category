@@ -50,16 +50,18 @@ class BaseTaxonomy extends BaseTestCase
     public function create_taxonomy_product(): array
     {
         return Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => null,
             'ordering' => 1,
             'status' => true,
             'translation' => [
-                'name' => 'taxonomy name',
-                'description' => 'taxonomy description',
-                'meta_title' => 'taxonomy meta title',
-                'meta_description' => 'taxonomy meta description',
-                'meta_keywords' => 'taxonomy meta keywords',
+                'en' => [
+                    'name' => 'taxonomy name',
+                    'description' => 'taxonomy description',
+                    'meta_title' => 'taxonomy meta title',
+                    'meta_description' => 'taxonomy meta description',
+                    'meta_keywords' => 'taxonomy meta keywords',
+                ]
             ],
         ]);
     }

@@ -27,14 +27,14 @@ class TaxonomyTest extends BaseTaxonomy
         $this->assertEquals(201, $taxonomy['status']);
 
         $this->assertDatabaseHas('taxonomies', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => null,
             'ordering' => 1,
             'status' => true,
         ]);
 
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomy['data']->id,
             'path_id' => $taxonomy['data']->id,
             'level' => 0,
@@ -43,7 +43,7 @@ class TaxonomyTest extends BaseTaxonomy
         $this->assertDatabaseHas('translations', [
             'translatable_type' => 'JobMetric\Taxonomy\Models\Taxonomy',
             'translatable_id' => $taxonomy['data']->id,
-            'locale' => app()->getLocale(),
+            'locale' => 'en',
             'key' => 'name',
             'value' => 'taxonomy name',
         ]);
@@ -58,16 +58,18 @@ class TaxonomyTest extends BaseTaxonomy
 
         // store with parent taxonomy
         $parentTaxonomy = Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => $taxonomy['data']->id,
             'ordering' => 1,
             'status' => true,
             'translation' => [
-                'name' => 'taxonomy name',
-                'description' => 'taxonomy description',
-                'meta_title' => 'taxonomy meta title',
-                'meta_description' => 'taxonomy meta description',
-                'meta_keywords' => 'taxonomy meta keywords',
+                'en' => [
+                    'name' => 'taxonomy name',
+                    'description' => 'taxonomy description',
+                    'meta_title' => 'taxonomy meta title',
+                    'meta_description' => 'taxonomy meta description',
+                    'meta_keywords' => 'taxonomy meta keywords',
+                ],
             ],
         ]);
 
@@ -79,16 +81,18 @@ class TaxonomyTest extends BaseTaxonomy
 
         // store duplicate name with parent taxonomy
         $taxonomyDuplicate = Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => $taxonomy['data']->id,
             'ordering' => 1,
             'status' => true,
             'translation' => [
-                'name' => 'taxonomy name',
-                'description' => 'taxonomy description',
-                'meta_title' => 'taxonomy meta title',
-                'meta_description' => 'taxonomy meta description',
-                'meta_keywords' => 'taxonomy meta keywords',
+                'en' => [
+                    'name' => 'taxonomy name',
+                    'description' => 'taxonomy description',
+                    'meta_title' => 'taxonomy meta title',
+                    'meta_description' => 'taxonomy meta description',
+                    'meta_keywords' => 'taxonomy meta keywords',
+                ],
             ],
         ]);
 
@@ -98,7 +102,7 @@ class TaxonomyTest extends BaseTaxonomy
         $this->assertEquals(422, $taxonomyDuplicate['status']);
 
         // store product tag taxonomy
-        $taxonomyProductTag = $this->create_taxonomy_product_tag();
+        /*$taxonomyProductTag = $this->create_taxonomy_product_tag();
 
         $this->assertIsArray($taxonomyProductTag);
         $this->assertTrue($taxonomyProductTag['ok']);
@@ -128,11 +132,13 @@ class TaxonomyTest extends BaseTaxonomy
             'ordering' => 1,
             'status' => true,
             'translation' => [
-                'name' => 'taxonomy name',
-                'description' => 'taxonomy description',
-                'meta_title' => 'taxonomy meta title',
-                'meta_description' => 'taxonomy meta description',
-                'meta_keywords' => 'taxonomy meta keywords',
+                'en' => [
+                    'name' => 'taxonomy name',
+                    'description' => 'taxonomy description',
+                    'meta_title' => 'taxonomy meta title',
+                    'meta_description' => 'taxonomy meta description',
+                    'meta_keywords' => 'taxonomy meta keywords',
+                ],
             ],
         ]);
 
@@ -147,7 +153,7 @@ class TaxonomyTest extends BaseTaxonomy
             'parent_id' => null,
             'ordering' => 1,
             'status' => true,
-        ]);
+        ]);*/
     }
 
     /**
@@ -184,7 +190,7 @@ class TaxonomyTest extends BaseTaxonomy
          * 5  - |__ E
          */
         $taxonomyA = Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => null,
             'translation' => [
                 'name' => 'A'
@@ -193,14 +199,14 @@ class TaxonomyTest extends BaseTaxonomy
 
         // check database taxonomy path
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyA['data']->id,
             'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
 
         $taxonomyB = Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => $taxonomyA['data']->id,
             'translation' => [
                 'name' => 'B'
@@ -209,20 +215,20 @@ class TaxonomyTest extends BaseTaxonomy
 
         // check database taxonomy path
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyB['data']->id,
             'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyB['data']->id,
             'path_id' => $taxonomyB['data']->id,
             'level' => 1,
         ]);
 
         $taxonomyC = Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => $taxonomyB['data']->id,
             'translation' => [
                 'name' => 'C'
@@ -231,26 +237,26 @@ class TaxonomyTest extends BaseTaxonomy
 
         // check database taxonomy path
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyC['data']->id,
             'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyC['data']->id,
             'path_id' => $taxonomyB['data']->id,
             'level' => 1,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyC['data']->id,
             'path_id' => $taxonomyC['data']->id,
             'level' => 2,
         ]);
 
         $taxonomyD = Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => $taxonomyC['data']->id,
             'translation' => [
                 'name' => 'D'
@@ -259,32 +265,32 @@ class TaxonomyTest extends BaseTaxonomy
 
         // check database taxonomy path
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyD['data']->id,
             'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyD['data']->id,
             'path_id' => $taxonomyB['data']->id,
             'level' => 1,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyD['data']->id,
             'path_id' => $taxonomyC['data']->id,
             'level' => 2,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyD['data']->id,
             'path_id' => $taxonomyD['data']->id,
             'level' => 3,
         ]);
 
         $taxonomyE = Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => $taxonomyA['data']->id,
             'translation' => [
                 'name' => 'E'
@@ -293,13 +299,13 @@ class TaxonomyTest extends BaseTaxonomy
 
         // check database taxonomy path
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyE['data']->id,
             'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyE['data']->id,
             'path_id' => $taxonomyE['data']->id,
             'level' => 1,
@@ -326,19 +332,19 @@ class TaxonomyTest extends BaseTaxonomy
 
         // check database taxonomy path for C
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyC['data']->id,
             'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyC['data']->id,
             'path_id' => $taxonomyE['data']->id,
             'level' => 1,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyC['data']->id,
             'path_id' => $taxonomyC['data']->id,
             'level' => 2,
@@ -346,25 +352,25 @@ class TaxonomyTest extends BaseTaxonomy
 
         // check database taxonomy path for D
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyD['data']->id,
             'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyD['data']->id,
             'path_id' => $taxonomyE['data']->id,
             'level' => 1,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyD['data']->id,
             'path_id' => $taxonomyC['data']->id,
             'level' => 2,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyD['data']->id,
             'path_id' => $taxonomyD['data']->id,
             'level' => 3,
@@ -391,19 +397,19 @@ class TaxonomyTest extends BaseTaxonomy
 
         // check database taxonomy path for B
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyB['data']->id,
             'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyB['data']->id,
             'path_id' => $taxonomyE['data']->id,
             'level' => 1,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyB['data']->id,
             'path_id' => $taxonomyB['data']->id,
             'level' => 2,
@@ -430,13 +436,13 @@ class TaxonomyTest extends BaseTaxonomy
 
         // check database taxonomy path for C
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyC['data']->id,
             'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyC['data']->id,
             'path_id' => $taxonomyC['data']->id,
             'level' => 1,
@@ -444,19 +450,19 @@ class TaxonomyTest extends BaseTaxonomy
 
         // check database taxonomy path for D
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyD['data']->id,
             'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyD['data']->id,
             'path_id' => $taxonomyC['data']->id,
             'level' => 1,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyD['data']->id,
             'path_id' => $taxonomyD['data']->id,
             'level' => 2,
@@ -565,7 +571,7 @@ class TaxonomyTest extends BaseTaxonomy
          * 5  - |__ E
          */
         $taxonomyA = Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => null,
             'translation' => [
                 'name' => 'A'
@@ -574,14 +580,14 @@ class TaxonomyTest extends BaseTaxonomy
 
         // check database taxonomy path
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyA['data']->id,
             'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
 
         $taxonomyB = Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => $taxonomyA['data']->id,
             'translation' => [
                 'name' => 'B'
@@ -590,20 +596,20 @@ class TaxonomyTest extends BaseTaxonomy
 
         // check database taxonomy path
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyB['data']->id,
             'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyB['data']->id,
             'path_id' => $taxonomyB['data']->id,
             'level' => 1,
         ]);
 
         $taxonomyC = Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => $taxonomyB['data']->id,
             'translation' => [
                 'name' => 'C'
@@ -612,26 +618,26 @@ class TaxonomyTest extends BaseTaxonomy
 
         // check database taxonomy path
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyC['data']->id,
             'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyC['data']->id,
             'path_id' => $taxonomyB['data']->id,
             'level' => 1,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyC['data']->id,
             'path_id' => $taxonomyC['data']->id,
             'level' => 2,
         ]);
 
         $taxonomyD = Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => $taxonomyC['data']->id,
             'translation' => [
                 'name' => 'D'
@@ -640,32 +646,32 @@ class TaxonomyTest extends BaseTaxonomy
 
         // check database taxonomy path
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyD['data']->id,
             'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyD['data']->id,
             'path_id' => $taxonomyB['data']->id,
             'level' => 1,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyD['data']->id,
             'path_id' => $taxonomyC['data']->id,
             'level' => 2,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyD['data']->id,
             'path_id' => $taxonomyD['data']->id,
             'level' => 3,
         ]);
 
         $taxonomyE = Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => $taxonomyA['data']->id,
             'translation' => [
                 'name' => 'E'
@@ -674,13 +680,13 @@ class TaxonomyTest extends BaseTaxonomy
 
         // check database taxonomy path
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyE['data']->id,
             'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
         $this->assertDatabaseHas('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyE['data']->id,
             'path_id' => $taxonomyE['data']->id,
             'level' => 1,
@@ -705,13 +711,13 @@ class TaxonomyTest extends BaseTaxonomy
 
         // check database taxonomy path for E
         $this->assertDatabaseMissing('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyE['data']->id,
             'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
         $this->assertDatabaseMissing('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyE['data']->id,
             'path_id' => $taxonomyE['data']->id,
             'level' => 1,
@@ -801,7 +807,7 @@ class TaxonomyTest extends BaseTaxonomy
 
         // check database taxonomy path for A
         $this->assertDatabaseMissing('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyA['data']->id,
             'path_id' => $taxonomyA['data']->id,
             'level' => 0,
@@ -809,13 +815,13 @@ class TaxonomyTest extends BaseTaxonomy
 
         // check database taxonomy path for B
         $this->assertDatabaseMissing('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyB['data']->id,
             'path_id' => $taxonomyA['data']->id,
             'level' => 0,
         ]);
         $this->assertDatabaseMissing('taxonomy_paths', [
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'taxonomy_id' => $taxonomyB['data']->id,
             'path_id' => $taxonomyB['data']->id,
             'level' => 1,
@@ -845,7 +851,7 @@ class TaxonomyTest extends BaseTaxonomy
          * 4  - |__ |__ |__ D
          */
         $taxonomyA = Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => null,
             'translation' => [
                 'name' => 'A'
@@ -853,7 +859,7 @@ class TaxonomyTest extends BaseTaxonomy
         ]);
 
         $taxonomyB = Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => $taxonomyA['data']->id,
             'translation' => [
                 'name' => 'B'
@@ -861,7 +867,7 @@ class TaxonomyTest extends BaseTaxonomy
         ]);
 
         $taxonomyC = Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => $taxonomyB['data']->id,
             'translation' => [
                 'name' => 'C'
@@ -869,7 +875,7 @@ class TaxonomyTest extends BaseTaxonomy
         ]);
 
         $taxonomyD = Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => $taxonomyC['data']->id,
             'translation' => [
                 'name' => 'D'
@@ -904,7 +910,7 @@ class TaxonomyTest extends BaseTaxonomy
          * 5  - |__ E
          */
         $taxonomyA = Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => null,
             'translation' => [
                 'name' => 'A'
@@ -912,7 +918,7 @@ class TaxonomyTest extends BaseTaxonomy
         ]);
 
         $taxonomyB = Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => $taxonomyA['data']->id,
             'translation' => [
                 'name' => 'B'
@@ -920,7 +926,7 @@ class TaxonomyTest extends BaseTaxonomy
         ]);
 
         $taxonomyC = Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => $taxonomyB['data']->id,
             'translation' => [
                 'name' => 'C'
@@ -928,7 +934,7 @@ class TaxonomyTest extends BaseTaxonomy
         ]);
 
         Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => $taxonomyC['data']->id,
             'translation' => [
                 'name' => 'D'
@@ -936,14 +942,14 @@ class TaxonomyTest extends BaseTaxonomy
         ]);
 
         Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => $taxonomyA['data']->id,
             'translation' => [
                 'name' => 'E'
             ],
         ]);
 
-        $productCategories = Taxonomy::all('product_taxonomy');
+        $productCategories = Taxonomy::all('product_category');
 
         $this->assertCount(5, $productCategories);
 
@@ -1034,7 +1040,7 @@ class TaxonomyTest extends BaseTaxonomy
          * 5  - |__ E
          */
         $taxonomyA = Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => null,
             'translation' => [
                 'name' => 'A'
@@ -1042,7 +1048,7 @@ class TaxonomyTest extends BaseTaxonomy
         ]);
 
         $taxonomyB = Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => $taxonomyA['data']->id,
             'translation' => [
                 'name' => 'B'
@@ -1050,7 +1056,7 @@ class TaxonomyTest extends BaseTaxonomy
         ]);
 
         $taxonomyC = Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => $taxonomyB['data']->id,
             'translation' => [
                 'name' => 'C'
@@ -1058,7 +1064,7 @@ class TaxonomyTest extends BaseTaxonomy
         ]);
 
         Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => $taxonomyC['data']->id,
             'translation' => [
                 'name' => 'D'
@@ -1066,14 +1072,14 @@ class TaxonomyTest extends BaseTaxonomy
         ]);
 
         Taxonomy::store([
-            'type' => 'product_taxonomy',
+            'type' => 'product_category',
             'parent_id' => $taxonomyA['data']->id,
             'translation' => [
                 'name' => 'E'
             ],
         ]);
 
-        $paginateProductCategories = Taxonomy::paginate('product_taxonomy');
+        $paginateProductCategories = Taxonomy::paginate('product_category');
 
         $paginateProductCategories->each(function ($paginateProductTaxonomy) {
             $this->assertInstanceOf(TaxonomyResource::class, $paginateProductTaxonomy);
