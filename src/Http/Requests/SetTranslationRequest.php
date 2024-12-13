@@ -5,13 +5,12 @@ namespace JobMetric\Taxonomy\Http\Requests;
 use Exception;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use InvalidArgumentException;
+use JobMetric\Taxonomy\Facades\TaxonomyType;
 use JobMetric\Taxonomy\Models\Taxonomy;
 use JobMetric\Taxonomy\Rules\TaxonomyExistRule;
-use JobMetric\Media\Http\Requests\MediaTypeObjectRequest;
-use JobMetric\Metadata\Http\Requests\MetadataTypeObjectRequest;
 use JobMetric\Translation\Http\Requests\TranslationTypeObjectRequest;
-use JobMetric\Url\Http\Requests\UrlTypeObjectRequest;
-use InvalidArgumentException;
+use JobMetric\Translation\ServiceType\Translation;
 
 class SetTranslationRequest extends FormRequest
 {
@@ -59,8 +58,11 @@ class SetTranslationRequest extends FormRequest
             'translatable_id' => ['required', 'integer', new TaxonomyExistRule($type)],
         ];
 
-        $taxonomyTypes = getTaxonomyType();
-        $this->renderTranslationFiled($rules, $taxonomyTypes[$type], Taxonomy::class, 'name', $locale, $id, $taxonomy->parent_id, ['type' => $type]);
+        TaxonomyType::checkType($type);
+
+        $taxonomyType = TaxonomyType::type($type);
+
+        $this->renderTranslationFiled($rules, $taxonomyType->getTranslation(), Taxonomy::class, locale: $locale, object_id: $id, parent_id: $taxonomy->parent_id, parent_where: ['type' => $type]);
 
         return $rules;
     }
@@ -72,25 +74,21 @@ class SetTranslationRequest extends FormRequest
      */
     public function attributes(): array
     {
+        $form_data = request()->all();
         $type = $this->route()->parameters()['type'];
 
-        $params = [
-            'translation.name' => trans('translation::base.components.translation_card.fields.name.label'),
-        ];
+        $locale = $form_data['locale'] ?? null;
 
-        $taxonomyTypes = getTaxonomyType(type: $type);
+        $taxonomyType = TaxonomyType::type($type);
 
-        if (isset($taxonomyTypes['translation'])) {
-            if (isset($taxonomyTypes['translation']['fields'])) {
-                foreach ($taxonomyTypes['translation']['fields'] as $field_key => $field_value) {
-                    $params['translation.' . $field_key] = trans($field_value['label']);
-                }
-            }
-            if (isset($taxonomyTypes['translation']['seo']) && $taxonomyTypes['translation']['seo']) {
-                $params['translation.meta_title'] = trans('translation::base.components.translation_card.fields.meta_title.label');
-                $params['translation.meta_description'] = trans('translation::base.components.translation_card.fields.meta_description.label');
-                $params['translation.meta_keywords'] = trans('translation::base.components.translation_card.fields.meta_keywords.label');
-            }
+        $params = [];
+        foreach ($taxonomyType->getTranslation() as $item) {
+            /**
+             * @var Translation $item
+             */
+            $uniqName = $item->customField->params['uniqName'];
+
+            $params["translation.$locale.$uniqName"] = trans("translation::base.components.translation_card.fields.$uniqName.label");
         }
 
         return $params;
