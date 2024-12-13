@@ -5,6 +5,7 @@ namespace JobMetric\Taxonomy;
 use Illuminate\Support\Traits\Macroable;
 use JobMetric\Media\MediaServiceType;
 use JobMetric\Metadata\MetadataServiceType;
+use JobMetric\PackageCore\Services\BaseServiceType;
 use JobMetric\PackageCore\Services\HierarchicalServiceType;
 use JobMetric\PackageCore\Services\InformationServiceType;
 use JobMetric\PackageCore\Services\ListChangeStatusServiceType;
@@ -19,6 +20,7 @@ use JobMetric\Url\UrlServiceType;
 class TaxonomyType extends ServiceType
 {
     use Macroable,
+        BaseServiceType,
         InformationServiceType,
         TranslationServiceType,
         MetadataServiceType,

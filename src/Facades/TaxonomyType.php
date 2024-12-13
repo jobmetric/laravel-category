@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Facade;
  *
  * @method static \JobMetric\Taxonomy\TaxonomyType define(string $type)
  * @method static \JobMetric\Taxonomy\TaxonomyType type(string $type)
+ * @method static array getTypes()
+ * @method static bool hasType(string $type)
+ * @method static void checkType(string $type)
  */
 class TaxonomyType extends Facade
 {
