@@ -2,7 +2,6 @@
 
 namespace JobMetric\Taxonomy;
 
-use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +12,7 @@ use JobMetric\Taxonomy\Events\TaxonomyUpdateEvent;
 use JobMetric\Taxonomy\Exceptions\CannotMakeParentSubsetOwnChild;
 use JobMetric\Taxonomy\Exceptions\TaxonomyNotFoundException;
 use JobMetric\Taxonomy\Exceptions\TaxonomyUsedException;
-use JobMetric\Taxonomy\Http\Requests\SetTranslationRequest;
+use JobMetric\Taxonomy\Facades\TaxonomyType;
 use JobMetric\Taxonomy\Http\Requests\StoreTaxonomyRequest;
 use JobMetric\Taxonomy\Http\Requests\UpdateTaxonomyRequest;
 use JobMetric\Taxonomy\Http\Resources\TaxonomyRelationResource;
@@ -28,23 +27,6 @@ use Throwable;
 class Taxonomy
 {
     /**
-     * The application instance.
-     *
-     * @var Application
-     */
-    protected Application $app;
-
-    /**
-     * Create a new Setting instance.
-     *
-     * @param Application $app
-     */
-    public function __construct(Application $app)
-    {
-        $this->app = $app;
-    }
-
-    /**
      * Get the specified taxonomy.
      *
      * @param string $type
@@ -56,7 +38,11 @@ class Taxonomy
      */
     public function query(string $type, array $filter = [], array $with = []): QueryBuilder
     {
-        checkTypeInTaxonomyTypes($type);
+        TaxonomyType::checkType($type);
+
+        $taxonomyType = TaxonomyType::type($type);
+
+        $hierarchical = $taxonomyType->hasHierarchical();
 
         $fields = [
             'id',
@@ -69,11 +55,11 @@ class Taxonomy
 
         $taxonomy_table = config('taxonomy.tables.taxonomy');
         $translation_table = config('translation.tables.translation');
-        $metadata_table = config('metadata.tables.meta');
+
         $dbDriver = DB::getDriverName();
+        $locale = app()->getLocale();
 
-
-        if (getTaxonomyTypeArg($type, 'hierarchical')) {
+        if ($hierarchical) {
             $fields[] = 'parent_id';
 
             $taxonomy_path_table = config('taxonomy.tables.taxonomy_path');
@@ -89,7 +75,7 @@ class Taxonomy
                 ->whereColumn('translatable_id', 'c.id')
                 ->where([
                     'translatable_type' => TaxonomyModel::class,
-                    'locale' => app()->getLocale(),
+                    'locale' => $locale,
                     'key' => 'name'
                 ])
                 ->getQuery();
@@ -99,7 +85,7 @@ class Taxonomy
             $char = config('taxonomy.arrow_icon.' . trans('domi::base.direction'));
 
             if ($dbDriver == 'pgsql') {
-                // PostgreSQL
+                // PostgresSQL
                 $query->selectSub(
                     "CASE WHEN COUNT(t.value) = MAX(cp.level) + 1 THEN STRING_AGG(t.value, '" . $char . "' ORDER BY cp.level) ELSE NULL END",
                     "name_multiple"
@@ -108,49 +94,22 @@ class Taxonomy
 
             if ($dbDriver == 'mysql') {
                 // MySQL
-                $query->selectSub("CASE WHEN COUNT(t.value) = MAX(cp.level) + 1 THEN GROUP_CONCAT(t.value ORDER BY cp.level SEPARATOR '" . $char . "') ELSE NULL END","name_multiple");
+                $query->selectSub("CASE WHEN COUNT(t.value) = MAX(cp.level) + 1 THEN GROUP_CONCAT(t.value ORDER BY cp.level SEPARATOR '" . $char . "') ELSE NULL END", "name_multiple");
             }
 
             // Join the taxonomy table for select all fields
             $query->join($taxonomy_table . ' as c', 'cp.taxonomy_id', '=', 'c.id');
 
             // Join the translation table for select the name of the taxonomy
-            $query->leftJoin($translation_table . ' as t', function ($join) use ($taxonomy_table) {
+            $query->leftJoin($translation_table . ' as t', function ($join) use ($taxonomy_table, $locale) {
                 $join->on('t.translatable_id', '=', 'cp.path_id')
                     ->where('t.translatable_type', '=', TaxonomyModel::class)
-                    ->where('t.locale', '=', app()->getLocale())
+                    ->where('t.locale', '=', $locale)
                     ->where('t.key', '=', 'name');
             });
 
             // filter metadata
-            if (request()->has('metadata')) {
-                $metadata = request()->get('metadata', []);
-                if (!empty($metadata)) {
-                    $flagMeta = false;
-                    foreach ($metadata as $meta) {
-                        if (!is_null($meta) && $meta != '') {
-                            $flagMeta = true;
-                            break;
-                        }
-                    }
-
-                    if ($flagMeta) {
-                        $query->join($metadata_table . ' as m', 'm.metaable_id', '=', 'c.id')
-                            ->where('m.metaable_type', '=', TaxonomyModel::class);
-
-                        $query->where(function (Builder $q) use ($metadata) {
-                            foreach ($metadata as $meta_key => $meta_value) {
-                                if (!is_null($meta_value) && $meta_value != '') {
-                                    $q->where(function () use ($q, $meta_key, $meta_value) {
-                                        $q->where('m.key', $meta_key);
-                                        $q->where('m.value', $meta_value);
-                                    });
-                                }
-                            }
-                        });
-                    }
-                }
-            }
+            $this->queryFilterMetadata($query);
 
             // Where the type of the taxonomy is equal to the specified type
             $query->where([
@@ -160,7 +119,7 @@ class Taxonomy
 
             // Group by the taxonomy id for get the unique taxonomy
             if ($dbDriver == 'pgsql') {
-                // PostgreSQL
+                // PostgresSQL
                 $query->groupBy([
                     'cp.taxonomy_id',
                     'c.id', 'c.parent_id', 'c.ordering', 'c.status', 'c.created_at', 'c.updated_at'
@@ -190,49 +149,22 @@ class Taxonomy
                 ->whereColumn('translatable_id', $taxonomy_table . '.id')
                 ->where([
                     'translatable_type' => TaxonomyModel::class,
-                    'locale' => app()->getLocale(),
+                    'locale' => $locale,
                     'key' => 'name'
                 ])
                 ->getQuery();
             $query->selectSub($taxonomy_name, 'name');
 
             // Join the translation table for select the name of the taxonomy
-            $query->leftJoin($translation_table . ' as t', function ($join) use ($taxonomy_table) {
+            $query->leftJoin($translation_table . ' as t', function ($join) use ($taxonomy_table, $locale) {
                 $join->on('t.translatable_id', '=', $taxonomy_table . '.id')
                     ->where('t.translatable_type', '=', TaxonomyModel::class)
-                    ->where('t.locale', '=', app()->getLocale())
+                    ->where('t.locale', '=', $locale)
                     ->where('t.key', '=', 'name');
             });
 
             // filter metadata
-            if (request()->has('metadata')) {
-                $metadata = request()->get('metadata', []);
-                if (!empty($metadata)) {
-                    $flagMeta = false;
-                    foreach ($metadata as $meta) {
-                        if (!is_null($meta) && $meta != '') {
-                            $flagMeta = true;
-                            break;
-                        }
-                    }
-
-                    if ($flagMeta) {
-                        $query->join($metadata_table . ' as m', 'm.metaable_id', '=', 'c.id')
-                            ->where('m.metaable_type', '=', TaxonomyModel::class);
-
-                        $query->where(function (Builder $q) use ($metadata) {
-                            foreach ($metadata as $meta_key => $meta_value) {
-                                if (!is_null($meta_value) && $meta_value != '') {
-                                    $q->where(function () use ($q, $meta_key, $meta_value) {
-                                        $q->where('m.key', $meta_key);
-                                        $q->where('m.value', $meta_value);
-                                    });
-                                }
-                            }
-                        });
-                    }
-                }
-            }
+            $this->queryFilterMetadata($query);
 
             // Where the type of the taxonomy is equal to the specified type
             $query->where('type', $type);
@@ -255,6 +187,44 @@ class Taxonomy
         }
 
         return $queryBuilder;
+    }
+
+    /**
+     * Query filter Metadata
+     *
+     * @param Builder $query
+     */
+    private function queryFilterMetadata(Builder &$query): void
+    {
+        if (request()->filled('metadata')) {
+            $metadata = request()->input('metadata');
+
+            $metadata_table = config('metadata.tables.meta');
+
+            $flagMeta = false;
+            foreach ($metadata as $meta) {
+                if (!is_null($meta) && $meta != '') {
+                    $flagMeta = true;
+                    break;
+                }
+            }
+
+            if ($flagMeta) {
+                $query->join($metadata_table . ' as m', 'm.metaable_id', '=', 'c.id')
+                    ->where('m.metaable_type', '=', TaxonomyModel::class);
+
+                $query->where(function (Builder $q) use ($metadata) {
+                    foreach ($metadata as $meta_key => $meta_value) {
+                        if (!is_null($meta_value) && $meta_value != '') {
+                            $q->where(function () use ($q, $meta_key, $meta_value) {
+                                $q->where('m.key', $meta_key);
+                                $q->where('m.value', $meta_value);
+                            });
+                        }
+                    }
+                });
+            }
+        }
     }
 
     /**
@@ -301,7 +271,7 @@ class Taxonomy
      */
     public function store(array $data): array
     {
-        $validator = Validator::make($data, (new StoreTaxonomyRequest)->setType($data['type'] ?? null)->setParentId($data['parent_id'] ?? null)->rules());
+        $validator = Validator::make($data, (new StoreTaxonomyRequest)->setData($data)->rules());
         if ($validator->fails()) {
             $errors = $validator->errors()->all();
 
@@ -316,7 +286,9 @@ class Taxonomy
         }
 
         return DB::transaction(function () use ($data) {
-            $hierarchical = getTaxonomyTypeArg($data['type'], 'hierarchical');
+            $taxonomyType = TaxonomyType::type($data['type']);
+
+            $hierarchical = $taxonomyType->hasHierarchical();
 
             $taxonomy = new TaxonomyModel;
             $taxonomy->type = $data['type'];
@@ -329,10 +301,12 @@ class Taxonomy
                 $taxonomy->dispatchUrl($data['slug'], $data['type']);
             }
 
-            foreach ($data['translation'] as $translation_key => $translation_value) {
-                $taxonomy->translate(app()->getLocale(), [
-                    $translation_key => $translation_value
-                ]);
+            foreach ($data['translation'] as $locale => $translation_data) {
+                foreach ($translation_data as $translation_key => $translation_value) {
+                    $taxonomy->translate($locale, [
+                        $translation_key => $translation_value
+                    ]);
+                }
             }
 
             foreach ($data['metadata'] ?? [] as $metadata_key => $metadata_value) {
