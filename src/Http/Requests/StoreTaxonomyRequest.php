@@ -4,17 +4,21 @@ namespace JobMetric\Taxonomy\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use JobMetric\Media\Http\Requests\MediaTypeObjectRequest;
+use JobMetric\Media\ServiceType\Media;
+use JobMetric\Metadata\Http\Requests\MetadataTypeObjectRequest;
+use JobMetric\Taxonomy\Facades\TaxonomyType;
 use JobMetric\Taxonomy\Models\Taxonomy;
 use JobMetric\Taxonomy\Rules\TaxonomyExistRule;
-use JobMetric\Media\Http\Requests\MediaTypeObjectRequest;
-use JobMetric\Metadata\Http\Requests\MetadataTypeObjectRequest;
 use JobMetric\Translation\Http\Requests\TranslationTypeObjectRequest;
 use JobMetric\Url\Http\Requests\UrlTypeObjectRequest;
+use Throwable;
 
 class StoreTaxonomyRequest extends FormRequest
 {
     use TranslationTypeObjectRequest, MetadataTypeObjectRequest, MediaTypeObjectRequest, UrlTypeObjectRequest;
 
+    public array $data = [];
     public string|null $type = null;
     public int|null $parent_id = null;
 
@@ -30,43 +34,39 @@ class StoreTaxonomyRequest extends FormRequest
      * Get the validation rules that apply to the request.
      *
      * @return array<string, ValidationRule|array|string>
+     * @throws Throwable
      */
     public function rules(): array
     {
-        if (is_null($this->type)) {
-            $type = $this->input('type');
-        } else {
-            $type = $this->type;
+        if (!empty(request()->all())) {
+            $this->data = request()->all();
         }
 
-        if (is_null($this->parent_id)) {
-            $parent_id = $this->input('parent_id');
-        } else {
-            $parent_id = $this->parent_id;
-        }
+        $type = $this->data['type'] ?? null;
+        $parent_id = $this->data['parent_id'] ?? -1;
 
         $rules = [
-            'type' => 'required|string|in:' . implode(',', getTaxonomyType('key')),
+            'type' => 'required|string|in:' . implode(',', TaxonomyType::getTypes()),
             'parent_id' => [
                 'nullable',
                 'integer',
-                new TaxonomyExistRule($type)
+                new TaxonomyExistRule($type ?? null)
             ],
             'ordering' => 'numeric|sometimes',
             'status' => 'boolean|sometimes',
         ];
 
-        $taxonomyTypes = getTaxonomyType();
+        // check type
+        TaxonomyType::checkType($type);
 
-        checkTypeInTaxonomyTypes($type);
-        $this->renderTranslationFiled($rules, $taxonomyTypes[$type], Taxonomy::class, 'name', parent_id: $parent_id, parent_where: ['type' => $type]);
-        $this->renderMetadataFiled($rules, $taxonomyTypes[$type]);
-        $this->renderMediaFiled($rules, $taxonomyTypes[$type]);
-        if($taxonomyTypes[$type]['has_url']) {
-            $this->renderUrlFiled($rules, Taxonomy::class, $type);
-        }
+        $taxonomyType = TaxonomyType::type($type);
 
-        if (!getTaxonomyTypeArg($type, 'hierarchical')) {
+        $this->renderTranslationFiled($rules, $this->data, $taxonomyType->getTranslation(), Taxonomy::class, parent_id: $parent_id, parent_where: ['type' => $type]);
+        $this->renderMetadataFiled($rules, $taxonomyType->getMetadata());
+        $this->renderMediaFiled($rules, $taxonomyType->hasBaseMedia(), $taxonomyType->getMedia());
+        $this->renderUrlFiled($rules, $taxonomyType->hasUrl(), Taxonomy::class, $type);
+
+        if (!$taxonomyType->hasHierarchical()) {
             unset($rules['parent_id']);
         }
 
@@ -74,27 +74,14 @@ class StoreTaxonomyRequest extends FormRequest
     }
 
     /**
-     * Set type for validation
+     * Set data for validation
      *
-     * @param string $type
+     * @param array $data
      * @return static
      */
-    public function setType(string $type): static
+    public function setData(array $data): static
     {
-        $this->type = $type;
-
-        return $this;
-    }
-
-    /**
-     * Set parent_id for validation
-     *
-     * @param int|null $parent_id
-     * @return static
-     */
-    public function setParentId(int $parent_id = null): static
-    {
-        $this->parent_id = $parent_id;
+        $this->data = $data;
 
         return $this;
     }
@@ -106,9 +93,14 @@ class StoreTaxonomyRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        $type = $this->type ?? $this->input('type');
+        $type = $this->data['type'] ?? null;
 
-        if (!getTaxonomyTypeArg($type, 'hierarchical')) {
+        // check type
+        TaxonomyType::checkType($type);
+
+        $taxonomyType = TaxonomyType::type($type);
+
+        if (!$taxonomyType->hasHierarchical()) {
             $this->merge([
                 'parent_id' => null,
             ]);
@@ -127,48 +119,34 @@ class StoreTaxonomyRequest extends FormRequest
      */
     public function attributes(): array
     {
-        $type = $this->type ?? $this->input('type');
+        $type = $this->data['type'] ?? null;
+
+        // check type
+        TaxonomyType::checkType($type);
+
+        $taxonomyType = TaxonomyType::type($type);
 
         $params = [
             'parent_id' => trans('taxonomy::base.form.fields.parent.title'),
             'ordering' => trans('taxonomy::base.form.fields.ordering.title'),
             'status' => trans('package-core::base.components.boolean_status.label'),
-            'translation.name' => trans('translation::base.components.translation_card.fields.name.label'),
         ];
 
-        $taxonomyTypes = getTaxonomyType(type: $type);
+        $this->renderTranslationAttribute($params, $this->data, $taxonomyType->getTranslation());
+        $this->renderMetadataAttribute($params, $taxonomyType->getMetadata());
+        $this->renderUrlAttribute($params, $taxonomyType->hasUrl());
 
-        if (isset($taxonomyTypes['translation'])) {
-            if (isset($taxonomyTypes['translation']['fields'])) {
-                foreach ($taxonomyTypes['translation']['fields'] as $field_key => $field_value) {
-                    $params['translation.' . $field_key] = trans($field_value['label']);
-                }
-            }
-            if (isset($taxonomyTypes['translation']['seo']) && $taxonomyTypes['translation']['seo']) {
-                $params['translation.meta_title'] = trans('translation::base.components.translation_card.fields.meta_title.label');
-                $params['translation.meta_description'] = trans('translation::base.components.translation_card.fields.meta_description.label');
-                $params['translation.meta_keywords'] = trans('translation::base.components.translation_card.fields.meta_keywords.label');
-            }
-        }
-
-        if (isset($taxonomyTypes['metadata'])) {
-            foreach ($taxonomyTypes['metadata'] as $field_key => $field_value) {
-                $params['metadata.' . $field_key] = trans($field_value['label']);
-            }
-        }
-
-        if (isset($taxonomyTypes['has_url']) && $taxonomyTypes['has_url']) {
-            $params['slug'] = trans('url::base.components.url_slug.title');
-        }
-
-        if (isset($taxonomyTypes['has_base_media']) && $taxonomyTypes['has_base_media']) {
+        if ($taxonomyType->hasBaseMedia()) {
             $params['media.base'] = trans('taxonomy::base.form.media.base.title');
         }
 
-        if (isset($taxonomyTypes['media'])) {
-            foreach ($taxonomyTypes['media'] as $media_collection => $media_item) {
-                $params['media.' . $media_collection] = trans('taxonomy::base.form.media.' . $media_collection . '.title');
-            }
+        foreach ($taxonomyType->getMedia() as $item) {
+            /**
+             * @var Media $item
+             */
+            $collection = $item->getCollection();
+
+            $params["media.$collection"] = trans('taxonomy::base.form.media.' . $collection . '.title');
         }
 
         return $params;
