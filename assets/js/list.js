@@ -144,9 +144,8 @@ loadScriptsSequentially([
                         name: $('#filter-name').val()
                     }
 
-                    data.metadata = {}
                     $('.filter-metadata').each(function(){
-                        data.metadata[$(this).attr('name')] = $(this).val();
+                        data[$(this).attr('name')] = $(this).val();
                     });
                 }
             },
