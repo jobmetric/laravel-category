@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \JobMetric\Taxonomy\TaxonomyType type(string $type)
  * @method static array getTypes()
  * @method static bool hasType(string $type)
- * @method static void checkType(string $type)
+ * @method static void checkType(string|null $type)
  */
 class TaxonomyType extends Facade
 {
