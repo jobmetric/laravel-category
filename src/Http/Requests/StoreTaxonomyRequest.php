@@ -19,8 +19,6 @@ class StoreTaxonomyRequest extends FormRequest
     use TranslationTypeObjectRequest, MetadataTypeObjectRequest, MediaTypeObjectRequest, UrlTypeObjectRequest;
 
     public array $data = [];
-    public string|null $type = null;
-    public int|null $parent_id = null;
 
     /**
      * Determine if the user is authorized to make this request.
