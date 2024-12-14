@@ -10,7 +10,6 @@ use JobMetric\Taxonomy\Facades\TaxonomyType;
 use JobMetric\Taxonomy\Models\Taxonomy;
 use JobMetric\Taxonomy\Rules\TaxonomyExistRule;
 use JobMetric\Translation\Http\Requests\TranslationTypeObjectRequest;
-use JobMetric\Translation\ServiceType\Translation;
 
 class SetTranslationRequest extends FormRequest
 {
@@ -62,7 +61,7 @@ class SetTranslationRequest extends FormRequest
 
         $taxonomyType = TaxonomyType::type($type);
 
-        $this->renderTranslationFiled($rules, $taxonomyType->getTranslation(), Taxonomy::class, locale: $locale, object_id: $id, parent_id: $taxonomy->parent_id, parent_where: ['type' => $type]);
+        $this->renderTranslationFiled($rules, $form_data, $taxonomyType->getTranslation(), Taxonomy::class, object_id: $id, parent_id: $taxonomy->parent_id, parent_where: ['type' => $type]);
 
         return $rules;
     }
@@ -77,19 +76,10 @@ class SetTranslationRequest extends FormRequest
         $form_data = request()->all();
         $type = $this->route()->parameters()['type'];
 
-        $locale = $form_data['locale'] ?? null;
-
         $taxonomyType = TaxonomyType::type($type);
 
         $params = [];
-        foreach ($taxonomyType->getTranslation() as $item) {
-            /**
-             * @var Translation $item
-             */
-            $uniqName = $item->customField->params['uniqName'];
-
-            $params["translation.$locale.$uniqName"] = trans("translation::base.components.translation_card.fields.$uniqName.label");
-        }
+        $this->renderTranslationAttribute($params, $form_data, $taxonomyType->getTranslation());
 
         return $params;
     }
