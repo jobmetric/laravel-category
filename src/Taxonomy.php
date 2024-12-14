@@ -395,7 +395,9 @@ class Taxonomy
         }
 
         return DB::transaction(function () use ($taxonomy_id, $data, $taxonomy) {
-            $hierarchical = getTaxonomyTypeArg($taxonomy->type, 'hierarchical');
+            $taxonomyType = TaxonomyType::type($taxonomy->type);
+
+            $hierarchical = $taxonomyType->hasHierarchical();
 
             $change_parent_id = false;
             if (array_key_exists('parent_id', $data) && $taxonomy->parent_id != $data['parent_id'] && $hierarchical) {
