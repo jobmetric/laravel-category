@@ -481,17 +481,15 @@ class TaxonomyTest extends BaseTaxonomy
         ]);
 
         // Entering an illegitimate relationship from A to B
-        /*try {
+        try {
             $taxonomyUpdate = Taxonomy::update($taxonomyA['data']->id, [
                 'parent_id' => $taxonomyB['data']->id
             ]);
 
             $this->assertIsArray($taxonomyUpdate);
-        } catch (CannotMakeParentSubsetOwnChild $e) {
-            $this->assertInstanceOf(CannotMakeParentSubsetOwnChild::class, $e);
         } catch (Throwable $e) {
-            $this->fail('Unexpected exception: ' . $e->getMessage());
-        }*/
+            $this->assertInstanceOf(CannotMakeParentSubsetOwnChild::class, $e);
+        }
 
         // Test Full translation
         $taxonomyUpdate = Taxonomy::update($taxonomyA['data']->id, [

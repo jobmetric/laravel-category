@@ -394,29 +394,28 @@ class Taxonomy
             $data = $validator->validated();
         }
 
-        return DB::transaction(function () use ($taxonomy_id, $data, $taxonomy) {
-            $taxonomyType = TaxonomyType::type($taxonomy->type);
+        $taxonomyType = TaxonomyType::type($taxonomy->type);
 
-            $hierarchical = $taxonomyType->hasHierarchical();
+        $hierarchical = $taxonomyType->hasHierarchical();
 
-            $change_parent_id = false;
-            if (array_key_exists('parent_id', $data) && $taxonomy->parent_id != $data['parent_id'] && $hierarchical) {
-                // If the parent_id is changed, the path of the taxonomy must be updated.
-
-                // You cannot make a parent a subset of its own child.
-                if (TaxonomyPath::query()->where([
-                    'type' => $taxonomy->type,
-                    'taxonomy_id' => $data['parent_id'],
-                    'path_id' => $taxonomy_id
-                ])->exists()) {
-                    throw new CannotMakeParentSubsetOwnChild;
-                }
-
-                $taxonomy->parent_id = $data['parent_id'];
-
-                $change_parent_id = true;
+        $change_parent_id = false;
+        if (array_key_exists('parent_id', $data) && $taxonomy->parent_id != $data['parent_id'] && $hierarchical) {
+            // If the parent_id is changed, the path of the taxonomy must be updated.
+            // You cannot make a parent a subset of its own child.
+            if (TaxonomyPath::query()->where([
+                'type' => $taxonomy->type,
+                'taxonomy_id' => $data['parent_id'],
+                'path_id' => $taxonomy_id
+            ])->exists()) {
+                throw new CannotMakeParentSubsetOwnChild;
             }
 
+            $taxonomy->parent_id = $data['parent_id'];
+
+            $change_parent_id = true;
+        }
+
+        return DB::transaction(function () use ($taxonomy_id, $data, $taxonomy, $change_parent_id) {
             if (array_key_exists('ordering', $data)) {
                 $taxonomy->ordering = $data['ordering'];
             }
